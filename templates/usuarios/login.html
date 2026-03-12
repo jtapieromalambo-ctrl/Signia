@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% extends  'local.html' %}
+{% block content %}
+
+<h2>Iniciar sesión</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+```
+<label>Correo:</label>
+<input type="email" name="email">
+
+<br><br>
+
+<label>Contraseña:</label>
+<input type="password" name="password">
+
+<br><br>
+
+<button type="submit">Ingresar</button>
+```
+
+</form>
+
+{% endblock %}
