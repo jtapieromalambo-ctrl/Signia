@@ -1,0 +1,49 @@
+/* estilo general */
+body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#eaf6ff;
+}
+
+/* NAVBAR */
+
+.navbar{
+    background:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 40px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* LOGO */
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color:#3498db;
+}
+
+/* MENU */
+
+.menu{
+    list-style:none;
+    display:flex;
+    gap:25px;
+}
+
+.menu li a{
+    text-decoration:none;
+    color:#555;
+    font-weight:500;
+}
+
+.menu li a:hover{
+    color:#3498db;
+}
+
+/* CONTENIDO */
+
+.contenido{
+    padding:40px;
+}

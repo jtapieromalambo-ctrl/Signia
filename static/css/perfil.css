@@ -1,0 +1,143 @@
+/* ── PERFIL ── */
+
+.perfil-container {
+  max-width: 500px;
+  margin: 3rem auto;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.06), 0 20px 60px rgba(59, 130, 246, 0.10);
+}
+
+.perfil-banner {
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+  padding: 2rem 2.2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.perfil-banner::before {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  right: -50px;
+  top: -60px;
+}
+
+.perfil-avatar {
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.perfil-avatar svg {
+  color: white;
+}
+
+.perfil-banner h1 {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: white;
+  position: relative;
+}
+
+.perfil-banner p {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 0.3rem;
+  position: relative;
+}
+
+.perfil-body {
+  padding: 2rem 2.2rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #dbeafe;
+  font-size: 0.9rem;
+}
+
+.info-row:last-of-type {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-value {
+  color: #6b7280;
+}
+
+.badge-discapacidad {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-ninguna { background: #dcfce7; color: #16a34a; }
+.badge-sordo   { background: #dbeafe; color: #2563eb; }
+.badge-mudo    { background: #fef9c3; color: #ca8a04; }
+
+.btn-logout {
+  display: block;
+  width: 100%;
+  padding: 0.85rem;
+  margin-top: 1.5rem;
+  background: #fee2e2;
+  color: #dc2626;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: #fecaca;
+}
+
+.btn-ir {
+  display: block;
+  width: 100%;
+  padding: 0.85rem;
+  margin-top: 0.75rem;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.btn-ir:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.42);
+}

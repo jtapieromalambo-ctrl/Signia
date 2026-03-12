@@ -1,29 +1,36 @@
+{% load static %}
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Signia - Lenguaje de Señas</title>
+    <title>Signia</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
+
 <body>
 
-```
-<header>
-    <h1>Sistema de Reconocimiento de Lenguaje de Señas</h1>
+<!-- NAVBAR -->
+<nav class="navbar">
 
-    <nav>
-        <a href="/">Inicio</a>
-        <a href="/login">Login</a>
-        <a href="/reconocimiento">Reconocimiento</a>
-        <a href="/historial">Historial</a>
-    </nav>
-</header>
+    <div class="logo">
+        Signia
+    </div>
 
-<hr>
+    <ul class="menu">
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/login/">Login</a></li>
+        <li><a href="#">Traductor</a></li>
+        <li><a href="#">Reconocimiento</a></li>
+    </ul>
 
-{% block content %}
-{% endblock %}
-```
+</nav>
+
+<!-- CONTENIDO -->
+<div class="contenido">
+    {% block content %}
+    {% endblock %}
+</div>
 
 </body>
 </html>
