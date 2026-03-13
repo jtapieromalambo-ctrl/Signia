@@ -3,12 +3,17 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import RegistroForm
-from django.shortcuts import render
+
+
+# ── INICIO ─────────────────────────────────────────────
+def index(request):
+    if request.user.is_authenticated:
+        return redirigir_por_discapacidad(request.user)
+    return render(request, 'usuarios/index.html')
 
 
 # ── LOGIN ──────────────────────────────────────────────
 def home(request):
-    """Vista principal: muestra el formulario de login."""
     if request.user.is_authenticated:
         return redirigir_por_discapacidad(request.user)
 
@@ -16,7 +21,6 @@ def home(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-
         if user is not None:
             login(request, user)
             return redirigir_por_discapacidad(user)
@@ -28,7 +32,6 @@ def home(request):
 
 # ── REGISTRO ───────────────────────────────────────────
 def registro(request):
-    """Registro de nuevo usuario con campo discapacidad."""
     if request.user.is_authenticated:
         return redirigir_por_discapacidad(request.user)
 
@@ -47,18 +50,17 @@ def registro(request):
 # ── LOGOUT ─────────────────────────────────────────────
 def logout_view(request):
     logout(request)
-    return redirect('home')
+    return redirect('index')
 
 
 # ── REDIRECCIÓN POR DISCAPACIDAD ───────────────────────
 def redirigir_por_discapacidad(user):
-    """Redirige al módulo correcto según la discapacidad del usuario."""
     if user.discapacidad == 'sordo':
-        return redirect('traduccion')   # texto → avatar señas
+        return redirect('traduccion')
     elif user.discapacidad == 'mudo':
-        return redirect('reconocimiento')  # cámara → texto
+        return redirect('reconocimiento')
     else:
-        return redirect('perfil')  # usuario sin discapacidad
+        return redirect('perfil')
 
 
 # ── PERFIL ─────────────────────────────────────────────
@@ -67,14 +69,24 @@ def perfil(request):
     return render(request, 'usuarios/perfil.html', {'usuario': request.user})
 
 
-##---  contacto ----------
-
+# ── CONTACTO ───────────────────────────────────────────
 def contacto(request):
-    if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        email = request.POST.get("email")
-        mensaje = request.POST.get("mensaje")
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        email = request.POST.get('email')
+        asunto = request.POST.get('asunto')
+        mensaje = request.POST.get('mensaje')
+        print(nombre, email, asunto, mensaje)
+    return render(request, 'usuarios/contacto.html')
 
-        print(nombre, email, mensaje)
 
-    return render(request, "usuarios/contacto.html")
+# ── TRADUCTOR ──────────────────────────────────────────
+@login_required
+def traduccion(request):
+    return render(request, 'usuarios/traduccion.html', {'usuario': request.user})
+
+
+# ── RECONOCIMIENTO ─────────────────────────────────────
+@login_required
+def reconocimiento(request):
+    return render(request, 'usuarios/reconocimiento.html', {'usuario': request.user})
