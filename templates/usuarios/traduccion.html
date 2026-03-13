@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signia – Traductor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
+      --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
+      --shadow: 0 4px 24px rgba(37,99,235,0.10);
+    }
+    body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text-dark); min-height: 100vh; }
+    nav {
+      background: var(--white); display: flex; align-items: center;
+      padding: 0 2.5rem; height: 64px;
+      box-shadow: 0 2px 12px rgba(37,99,235,0.08); position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; margin-right: auto; }
+    .logo-icon { width: 38px; height: 38px; background: var(--blue-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 22px; height: 22px; fill: white; }
+    .logo-text { font-size: 1.35rem; font-weight: 700; color: var(--blue-primary); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; list-style: none; }
+    .nav-links a { text-decoration: none; font-size: 0.95rem; font-weight: 500; color: var(--text-muted); padding: 0.45rem 1rem; border-radius: 999px; transition: color 0.2s, background 0.2s; }
+    .nav-links a:hover { color: var(--blue-primary); background: var(--blue-light); }
+    .nav-links .active a { background: var(--blue-light); color: var(--blue-primary); font-weight: 600; }
+    .page { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem; }
+    .card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+    .card-header {
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+      padding: 2rem 2.5rem; color: white;
+    }
+    .card-header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .card-header p { color: rgba(255,255,255,0.82); font-size: 0.95rem; }
+    .card-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .field label { font-size: 0.88rem; font-weight: 600; color: var(--text-dark); }
+    .field textarea {
+      background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
+      padding: 0.85rem 1rem; font-family: inherit; font-size: 0.95rem;
+      color: var(--text-dark); outline: none; resize: none; height: 140px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field textarea:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .avatar-area {
+      background: #F0F7FF; border: 2px dashed #BFDBFE; border-radius: 16px;
+      min-height: 220px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.75rem; color: var(--text-muted);
+    }
+    .avatar-area .emoji { font-size: 3.5rem; }
+    .avatar-area p { font-size: 0.9rem; font-weight: 500; }
+    .btn {
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+      color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
+      font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35); transition: transform 0.15s, box-shadow 0.15s;
+      align-self: flex-start;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+    footer { text-align: center; padding: 1.5rem; font-size: 0.85rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="{% url 'index' %}">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+      </div>
+      <span class="logo-text">Signia</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="{% url 'perfil' %}">Perfil</a></li>
+      <li class="active"><a href="{% url 'traduccion' %}">Traductor</a></li>
+      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+      <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+    <div class="card">
+      <div class="card-header">
+        <h1>🖐️ Traductor de Señas</h1>
+        <p>Escribe un texto y el avatar lo traducirá a lenguaje de señas colombiano</p>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Texto a traducir</label>
+          <textarea placeholder="Escribe aquí el texto que quieres traducir a señas..."></textarea>
+        </div>
+        <button class="btn">Traducir a señas →</button>
+        <div class="avatar-area">
+          <span class="emoji">🤟</span>
+          <p>El avatar aparecerá aquí</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
+</body>
+</html>
