@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import RegistroForm
+from django.shortcuts import render
 
 
 # ── LOGIN ──────────────────────────────────────────────
@@ -64,3 +65,16 @@ def redirigir_por_discapacidad(user):
 @login_required
 def perfil(request):
     return render(request, 'usuarios/perfil.html', {'usuario': request.user})
+
+
+##---  contacto ----------
+
+def contacto(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        email = request.POST.get("email")
+        mensaje = request.POST.get("mensaje")
+
+        print(nombre, email, mensaje)
+
+    return render(request, "usuarios/contacto.html")
