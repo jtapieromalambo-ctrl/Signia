@@ -6,29 +6,33 @@
     <title>Signia</title>
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}
+    {% endblock %}
 </head>
 
 <body>
 
 <!-- NAVBAR -->
+
 <nav class="navbar">
 
-    <div class="logo">
-        Signia
+    <div class="nav-logo">
+        <img src="{% static 'img/logo.png' %}" alt="logo">
+        <span>Signia</span>
     </div>
 
-    <ul class="menu">
+    <ul class="nav-links">
         <li><a href="/">Inicio</a></li>
-        <li><a href="/login/">Login</a></li>
+        <li><a href="/login/" class="btn-login">Login</a></li>
         <li><a href="#">Traductor</a></li>
-        <li><a href="#">SESION</a></li>
         <li><a href="#">Reconocimiento</a></li>
-         <li><a href="#">Herramientas</a></li>
+        <li><a href="#">Herramientas</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
     </ul>
 
 </nav>
 
-<!-- CONTENIDO -->
 <div class="contenido">
     {% block content %}
     {% endblock %}
