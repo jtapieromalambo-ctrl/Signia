@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+
+def traductor(request):
+    return render(request, 'traduccion/traductor.html')
