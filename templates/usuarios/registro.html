@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signia - Registro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/registro.css' %}">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a href="{% url 'home' %}" class="nav-logo">
+      <span class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 3.25 2.09 6.03 5 7.1V20h4v-3.9c2.91-1.07 5-3.85 5-7.1 0-3.87-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+        </svg>
+      </span>
+      Signia
+    </a>
+    <ul class="nav-links">
+      <li><a href="{% url 'home' %}">Inicio</a></li>
+      <li><a href="{% url 'home' %}">Login</a></li>
+      <li><a href="#" class="active">Registro</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="page">
+    <div class="registro-container">
+      <div class="card">
+
+        <!-- Banner -->
+        <div class="card-banner">
+          <div class="banner-badge">
+            <span class="dot"></span>
+            Crear cuenta
+          </div>
+          <h1>Regístrate en Signia</h1>
+          <p>Completa el formulario para comenzar</p>
+        </div>
+
+        <!-- Formulario -->
+        <div class="card-body">
+          <form method="post" action="{% url 'registro' %}">
+            {% csrf_token %}
+
+            <!-- Errores generales -->
+            {% if form.non_field_errors %}
+              {% for error in form.non_field_errors %}
+                <div class="error-msg">{{ error }}</div>
+              {% endfor %}
+            {% endif %}
+
+            <!-- Usuario -->
+            <div class="field">
+              <label for="id_username">Nombre de usuario</label>
+              <div class="input-wrap">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                  </svg>
+                </span>
+                <input type="text" id="id_username" name="username"
+                       placeholder="Ej: juan123"
+                       value="{{ form.username.value|default:'' }}"
+                       autocomplete="username" required>
+              </div>
+              {% if form.username.errors %}
+                <ul class="errorlist">
+                  {% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+            <!-- Correo -->
+            <div class="field">
+              <label for="id_email">Correo electrónico</label>
+              <div class="input-wrap">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                  </svg>
+                </span>
+                <input type="email" id="id_email" name="email"
+                       placeholder="tucorreo@ejemplo.com"
+                       value="{{ form.email.value|default:'' }}"
+                       autocomplete="email" required>
+              </div>
+              {% if form.email.errors %}
+                <ul class="errorlist">
+                  {% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+            <!-- Contraseña -->
+            <div class="field">
+              <label for="id_password1">Contraseña</label>
+              <div class="input-wrap">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input type="password" id="id_password1" name="password1"
+                       placeholder="Mínimo 8 caracteres"
+                       autocomplete="new-password" required>
+              </div>
+              {% if form.password1.errors %}
+                <ul class="errorlist">
+                  {% for error in form.password1.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+            <!-- Confirmar contraseña -->
+            <div class="field">
+              <label for="id_password2">Confirmar contraseña</label>
+              <div class="input-wrap">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input type="password" id="id_password2" name="password2"
+                       placeholder="Repite tu contraseña"
+                       autocomplete="new-password" required>
+              </div>
+              {% if form.password2.errors %}
+                <ul class="errorlist">
+                  {% for error in form.password2.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+            <!-- Discapacidad -->
+            <div class="discapacidad-section">
+              <p class="section-title">¿Tienes alguna discapacidad?</p>
+              <p class="section-desc">Esto nos ayuda a mostrarte el módulo adecuado al ingresar.</p>
+
+              <div class="opciones-discapacidad">
+
+                <label class="opcion-label">
+                  <input type="radio" name="discapacidad" value="ninguna"
+                    {% if not form.discapacidad.value or form.discapacidad.value == 'ninguna' %}checked{% endif %}>
+                  <span class="opcion-icon">🙂</span>
+                  <span class="opcion-texto">
+                    <strong>No tengo discapacidad</strong>
+                    <span>Acceso general a Signia</span>
+                  </span>
+                </label>
+
+                <label class="opcion-label">
+                  <input type="radio" name="discapacidad" value="sordo"
+                    {% if form.discapacidad.value == 'sordo' %}checked{% endif %}>
+                  <span class="opcion-icon">👂</span>
+                  <span class="opcion-texto">
+                    <strong>Soy sordo</strong>
+                    <span>Escribo texto → el avatar lo traduce a señas</span>
+                  </span>
+                </label>
+
+                <label class="opcion-label">
+                  <input type="radio" name="discapacidad" value="mudo"
+                    {% if form.discapacidad.value == 'mudo' %}checked{% endif %}>
+                  <span class="opcion-icon">🤟</span>
+                  <span class="opcion-texto">
+                    <strong>Soy mudo</strong>
+                    <span>Hago señas a la cámara → se traduce a texto</span>
+                  </span>
+                </label>
+
+              </div>
+
+              {% if form.discapacidad.errors %}
+                <ul class="errorlist">
+                  {% for error in form.discapacidad.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+            <button type="submit" class="btn-registro">Crear cuenta</button>
+
+          </form>
+
+          <div class="divider">o</div>
+          <p class="login-link">¿Ya tienes cuenta? <a href="{% url 'home' %}">Inicia sesión</a></p>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
+
+</body>
+</html>
