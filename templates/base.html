@@ -3,35 +3,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Signia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Signia{% endblock %}</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
 
-<!-- NAVBAR -->
+<!-- ══════════════════════════════
+     NAVBAR — igual en todas las páginas
+══════════════════════════════ -->
 <nav class="navbar">
 
-    <div class="logo">
+    <!-- Logo -->
+    <a href="{% url 'home' %}" class="navbar__logo">
+        <span class="navbar__logo-icon">🤟</span>
         Signia
-    </div>
+    </a>
 
-    <ul class="menu">
-        <li><a href="/">Inicio</a></li>
-        <li><a href="/login/">Login</a></li>
-        <li><a href="#">Traductor</a></li>
-        <li><a href="#">SESION</a></li>
-        <li><a href="#">Reconocimiento</a></li>
+    <!-- Menú -->
+    <ul class="navbar__menu">
+        <li>
+            <a href="{% url 'home' %}"
+               class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+               Inicio
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'traductor' %}"
+               class="{% if request.resolver_match.url_name == 'traductor' %}active{% endif %}">
+               Traductor
+            </a>
+        </li>
+        <li>
+            <a href="#"
+               class="{% if request.resolver_match.url_name == 'reconocimiento' %}active{% endif %}">
+               Reconocimiento
+            </a>
+        </li>
     </ul>
+
+    <!-- Sesión -->
+    <div class="navbar__session">
+        {% if user.is_authenticated %}
+            <span class="navbar__user">👤 {{ user.username }}</span>
+            <a href="{% url 'logout' %}" class="navbar__btn navbar__btn--outline">Cerrar sesión</a>
+        {% else %}
+            <a href="{% url 'home' %}" class="navbar__btn navbar__btn--outline">Iniciar sesión</a>
+            <a href="{% url 'registro' %}" class="navbar__btn navbar__btn--primary">Registrarse</a>
+        {% endif %}
+    </div>
 
 </nav>
 
-<!-- CONTENIDO -->
+<!-- ══════════════════════════════
+     CONTENIDO DE CADA PÁGINA
+══════════════════════════════ -->
 <div class="contenido">
     {% block content %}
     {% endblock %}
 </div>
+
+<!-- ══════════════════════════════
+     FOOTER
+══════════════════════════════ -->
+<footer class="footer">
+    © 2025 Signia · Sistema de traducción de lenguaje de señas
+</footer>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>
