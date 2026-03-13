@@ -14,7 +14,7 @@
 <body>
 
 <!-- ══════════════════════════════
-     NAVBAR — igual en todas las páginas
+    NAVBAR — igual en todas las páginas
 ══════════════════════════════ -->
 <nav class="navbar">
 
@@ -27,22 +27,13 @@
     <!-- Menú -->
     <ul class="navbar__menu">
         <li>
-            <a href="{% url 'home' %}"
-               class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-               Inicio
-            </a>
+            <a href="{% url 'home' %}">Inicio</a>
         </li>
         <li>
-            <a href="{% url 'traductor' %}"
-               class="{% if request.resolver_match.url_name == 'traductor' %}active{% endif %}">
-               Traductor
-            </a>
+            <a href="{% url 'traductor' %}">Traductor</a>
         </li>
         <li>
-            <a href="#"
-               class="{% if request.resolver_match.url_name == 'reconocimiento' %}active{% endif %}">
-               Reconocimiento
-            </a>
+            <a href="#">Reconocimiento</a>
         </li>
     </ul>
 
@@ -60,7 +51,7 @@
 </nav>
 
 <!-- ══════════════════════════════
-     CONTENIDO DE CADA PÁGINA
+    CONTENIDO DE CADA PÁGINA
 ══════════════════════════════ -->
 <div class="contenido">
     {% block content %}
@@ -68,7 +59,7 @@
 </div>
 
 <!-- ══════════════════════════════
-     FOOTER
+    FOOTER
 ══════════════════════════════ -->
 <footer class="footer">
     © 2025 Signia · Sistema de traducción de lenguaje de señas
