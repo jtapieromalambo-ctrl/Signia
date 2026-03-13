@@ -1,99 +1,71 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signia - Iniciar Sesión</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/login.css' %}">
-</head>
-<body>
 
-  <!-- NAVBAR -->
-  <nav>
-    <a href="{% url 'home' %}" class="nav-logo">
-      <span class="logo-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 3.25 2.09 6.03 5 7.1V20h4v-3.9c2.91-1.07 5-3.85 5-7.1 0-3.87-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
-        </svg>
-      </span>
-      Signia
-    </a>
-    <ul class="nav-links">
-      <li><a href="{% url 'home' %}">Inicio</a></li>
-      <li><a href="{% url 'home' %}" class="active">Login</a></li>
-      <li><a href="{% url 'traduccion' %}">Traductor</a></li>
-      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
-      <a href="{% url 'contacto' %}">Contacto</a>
-    </ul>
-  </nav>
+{% block title %}Signia — Iniciar Sesión{% endblock %}
 
-  <!-- MAIN -->
-  <main class="page">
-    <div class="card">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/usuarios/login.css' %}">
+{% endblock %}
 
-      <!-- Banner superior -->
-      <div class="card-banner">
-        <div class="banner-badge">
-          <span class="dot"></span>
-          Lenguaje de señas
+{% block content %}
+
+<main class="page">
+  <div class="card">
+
+    <div class="card-banner">
+      <div class="banner-badge">
+        <span class="dot"></span>
+        Lenguaje de señas
+      </div>
+      <h1>Iniciar Sesión</h1>
+      <p>Bienvenido a Signia — accede a tu cuenta</p>
+    </div>
+
+    <div class="card-body">
+      <form method="post" action="{% url 'home' %}">
+        {% csrf_token %}
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="error-msg">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="field">
+          <label for="username">Usuario</label>
+          <div class="input-wrap">
+            <span class="icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+            </span>
+            <input type="text" id="username" name="username" placeholder="Tu nombre de usuario" autocomplete="username" required>
+          </div>
         </div>
-        <h1>Iniciar Sesión</h1>
-        <p>Bienvenido a Signia — accede a tu cuenta</p>
-      </div>
 
-      <!-- Formulario Django -->
-      <div class="card-body">
-        <form method="post" action="{% url 'home' %}">
-          {% csrf_token %}
-
-          <!-- Mensajes de error -->
-          {% if messages %}
-            {% for message in messages %}
-              <div class="error-msg">{{ message }}</div>
-            {% endfor %}
-          {% endif %}
-
-          <div class="field">
-            <label for="username">Usuario</label>
-            <div class="input-wrap">
-              <span class="icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="8" r="4"/>
-                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                </svg>
-              </span>
-              <input type="text" id="username" name="username" placeholder="Tu nombre de usuario" autocomplete="username" required>
-            </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <div class="input-wrap">
+            <span class="icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
           </div>
+        </div>
 
-          <div class="field">
-            <label for="password">Contraseña</label>
-            <div class="input-wrap">
-              <span class="icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-              </span>
-              <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
-            </div>
-          </div>
+        <button type="submit" class="btn-login">Ingresar</button>
 
-          <button type="submit" class="btn-login">Ingresar</button>
+      </form>
 
-        </form>
-
-        <div class="divider">o</div>
-        <p class="register-link">¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate</a></p>
-
-      </div>
+      <div class="divider">o</div>
+      <p class="register-link">¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate</a></p>
 
     </div>
-  </main>
+  </div>
+</main>
 
-  <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
-
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Traductor de Señas — Signia{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/traduccion/traductor.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════
+     HERO HEADER — ícono + título + estado
+══════════════════════════════════════ -->
+<div class="page-header">
+  <div class="page-header__inner">
+    <div class="page-header__icon">🤟</div>
+    <div>
+      <h1 class="page-header__title">
+        Intérprete de <span class="accent">Señas</span>
+      </h1>
+      <p class="page-header__sub">
+        Interpreta lengua de señas en tiempo real a través de la cámara
+        y la convierte a texto y audio para una comunicación inclusiva.
+      </p>
+    </div>
+  </div>
+  <div class="status-pill">
+    <span class="status-pill__dot" id="statusDot"></span>
+    <span id="statusText">Sin cámara</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BARRA DE CONTROLES
+     (franja blanca con botones y pastillas)
+══════════════════════════════════════ -->
+<div class="controls-bar">
+
+  <!-- Indicador "CÁMARA EN VIVO" -->
+  <div class="controls-bar__live">
+    <span class="live-dot"></span>
+    Cámara en vivo
+  </div>
+
+  <div class="controls-bar__sep"></div>
+
+  <!-- Botones -->
+  <div class="controls">
+    <button class="btn btn--primary" id="btnStart" onclick="startCam()">
+      📷 Iniciar cámara
+    </button>
+    <button class="btn btn--danger" id="btnStop" onclick="stopCam()" disabled>
+      ⏹ Detener
+    </button>
+    <button class="btn" onclick="clearAll()">
+      ✕ Limpiar
+    </button>
+  </div>
+
+ 
+
+</div>
+
+<!-- ══════════════════════════════════════
+     CUADRÍCULA PRINCIPAL
+══════════════════════════════════════ -->
+<div class="translator-grid">
+
+  <!-- ── COLUMNA IZQUIERDA — Cámara ── -->
+  <div class="col-left">
+
+    <div class="card">
+      <div class="card__head">
+        <span class="card__title">📷 Entrada de cámara</span>
+        <span class="card__badge" id="fpsBadge">— fps</span>
+      </div>
+
+      <div class="cam-wrap">
+        <video id="video" autoplay muted playsinline></video>
+
+        <div class="no-cam" id="noCam">
+          <span class="no-cam__icon">📷</span>
+          <p>Haz clic en Iniciar cámara<br>para comenzar</p>
+        </div>
+
+        <span class="corner corner--tl"></span>
+        <span class="corner corner--tr"></span>
+        <span class="corner corner--bl"></span>
+        <span class="corner corner--br"></span>
+
+        <div class="scan-line" id="scanLine"></div>
+
+        <div class="det-overlay" id="detOverlay">
+          <div>
+            <div class="det-overlay__letter" id="detLetter">—</div>
+            <div class="det-overlay__word"   id="detWord">—</div>
+          </div>
+          <div class="det-overlay__conf" id="detConf">—%</div>
+        </div>
+      </div>
+
+      <div class="conf-strip">
+        <div class="conf-strip__row">
+          <span class="conf-strip__label">Confianza del modelo</span>
+          <span class="conf-strip__pct" id="confPct">0%</span>
+        </div>
+        <div class="conf-strip__bar">
+          <div class="conf-strip__fill" id="confFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sliders de voz -->
+    <div class="voice-controls">
+      <div class="slider-box">
+        <span class="slider-box__label">Velocidad</span>
+        <input type="range" id="sRate" min="0.5" max="2" step="0.1" value="1"
+               oninput="rateVal.textContent = parseFloat(this.value).toFixed(1) + '×'; speechRate = +this.value">
+        <span class="slider-box__val" id="rateVal">1.0×</span>
+      </div>
+      <div class="slider-box">
+        <span class="slider-box__label">Tono</span>
+        <input type="range" id="sPitch" min="0.5" max="2" step="0.1" value="1"
+               oninput="pitchVal.textContent = parseFloat(this.value).toFixed(1); speechPitch = +this.value">
+        <span class="slider-box__val" id="pitchVal">1.0</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── COLUMNA DERECHA — Traducción ── -->
+  <div class="col-right">
+
+    <div class="card">
+      <div class="card__head">
+        <span class="card__title">💬 Traducción en tiempo real</span>
+        <button class="speak-btn" id="mainSpeak" onclick="speakAll()" title="Leer todo">🔊</button>
+      </div>
+
+      <div class="trans-display">
+        <div class="trans-display__label">Texto detectado</div>
+        <div class="trans-display__text" id="transText">
+          <span class="trans-display__placeholder">Inicia la cámara para comenzar la detección</span>
+        </div>
+      </div>
+
+      <div class="chips" id="chips"></div>
+
+      <div class="audio-panel">
+        <button class="speak-btn" id="waveSpeak" onclick="speakAll()">🔊</button>
+        <div class="wave">
+          <div class="wave__bar"></div>
+          <div class="wave__bar"></div>
+          <div class="wave__bar"></div>
+          <div class="wave__bar"></div>
+          <div class="wave__bar"></div>
+          <div class="wave__bar"></div>
+          <div class="wave__bar"></div>
+        </div>
+        <span class="audio-panel__label" id="audioLbl">síntesis de voz lista</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__head">
+        <span class="card__title">🕑 Historial</span>
+        <button class="btn btn--sm" onclick="clearHistory()">limpiar</button>
+      </div>
+      <div class="history" id="histList">
+        <div class="history__empty">Las señas detectadas<br>aparecerán aquí</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/traduccion/traductor.js' %}"></script>
+<script>
+  // Actualiza las pastillas de info con cada detección
+  function updatePills(manos, cara, cuerpo) {
+    document.getElementById('pillManos').textContent  = manos;
+    document.getElementById('pillCara').textContent   = cara;
+    document.getElementById('pillCuerpo').textContent = cuerpo;
+  }
+</script>
+{% endblock %}
