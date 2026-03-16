@@ -81,12 +81,10 @@ def contacto(request):
 
 
 # ── TRADUCTOR ──────────────────────────────────────────
-@login_required
 def traduccion(request):
-    return render(request, 'usuarios/traduccion.html', {'usuario': request.user})
+    return render(request, 'traduccion/traductor.html')
 
 
 # ── RECONOCIMIENTO ─────────────────────────────────────
-@login_required
 def reconocimiento(request):
-    return render(request, 'usuarios/reconocimiento.html', {'usuario': request.user})
+    return render(request, 'usuarios/reconocimiento.html')
