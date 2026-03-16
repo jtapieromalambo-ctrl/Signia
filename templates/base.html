@@ -6,62 +6,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Signia{% endblock %}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
+
+    <style>
+        /* ── NAVBAR NUEVA ── */
+        nav.main-nav {
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 0 2.5rem;
+            height: 64px;
+            box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav.main-nav .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            text-decoration: none;
+            margin-right: auto;
+        }
+
+        nav.main-nav .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: #2563EB;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        nav.main-nav .logo-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        nav.main-nav .logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #2563EB;
+        }
+
+        nav.main-nav .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav.main-nav .nav-links a {
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #64748B;
+            padding: 0.45rem 1rem;
+            border-radius: 999px;
+            transition: color 0.2s, background 0.2s;
+            display: block;
+        }
+
+        nav.main-nav .nav-links a:hover {
+            color: #2563EB;
+            background: #DBEAFE;
+        }
+
+        nav.main-nav .nav-links .active a {
+            background: #DBEAFE;
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        nav.main-nav .nav-links .btn-cerrar a {
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+
+        nav.main-nav .nav-links .btn-cerrar a:hover {
+            opacity: 0.9;
+            background: linear-gradient(135deg, #1d4ed8, #2563EB);
+        }
+
+        /* ── FOOTER ── */
+        footer.main-footer {
+            background: #ffffff;
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 0.85rem;
+            color: #64748B;
+            border-top: 1px solid #E2E8F0;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- ══════════════════════════════
-    NAVBAR — igual en todas las páginas
-══════════════════════════════ -->
-<nav class="navbar">
-
-    <!-- Logo -->
-    <a href="{% url 'home' %}" class="navbar__logo">
-        <span class="navbar__logo-icon">🤟</span>
-        Signia
+<!-- NAVBAR -->
+<nav class="main-nav">
+    <a class="nav-logo" href="{% url 'index' %}">
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
+            </svg>
+        </div>
+        <span class="logo-text">Signia</span>
     </a>
 
-    <!-- Menú -->
-    <ul class="navbar__menu">
-        <li>
-            <a href="{% url 'home' %}">Inicio</a>
-        </li>
-        <li>
-            <a href="{% url 'traductor' %}">Traductor</a>
-        </li>
-        <li>
-            <a href="#">Reconocimiento</a>
-        </li>
-    </ul>
-
-    <!-- Sesión -->
-    <div class="navbar__session">
+    <ul class="nav-links">
         {% if user.is_authenticated %}
-            <span class="navbar__user">👤 {{ user.username }}</span>
-            <a href="{% url 'logout' %}" class="navbar__btn navbar__btn--outline">Cerrar sesión</a>
+            <!-- Usuario autenticado -->
+            <li><a href="{% url 'perfil' %}">Perfil</a></li>
+            <li><a href="{% url 'traduccion' %}">Traductor</a></li>
+            <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li class="btn-cerrar"><a href="{% url 'logout' %}">Cerrar sesión</a></li>
         {% else %}
-            <a href="{% url 'home' %}" class="navbar__btn navbar__btn--outline">Iniciar sesión</a>
-            <a href="{% url 'registro' %}" class="navbar__btn navbar__btn--primary">Registrarse</a>
+            <!-- Usuario no autenticado -->
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'home' %}">Login</a></li>
+            <li><a href="{% url 'traduccion' %}">Traductor</a></li>
+            <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
         {% endif %}
-    </div>
-
+    </ul>
 </nav>
 
-<!-- ══════════════════════════════
-    CONTENIDO DE CADA PÁGINA
-══════════════════════════════ -->
-<div class="contenido">
-    {% block content %}
-    {% endblock %}
+<!-- CONTENIDO -->
+{% block content %}
+{% endblock %}
 </div>
 
-<!-- ══════════════════════════════
-    FOOTER
-══════════════════════════════ -->
-<footer class="footer">
+<!-- FOOTER -->
+<footer class="main-footer">
     © 2025 Signia · Sistema de traducción de lenguaje de señas
 </footer>
 
