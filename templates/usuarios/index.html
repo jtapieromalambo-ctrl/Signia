@@ -132,9 +132,7 @@
       margin-bottom: 1.25rem;
     }
 
-    .hero-text h1 span {
-      color: var(--blue-primary);
-    }
+    .hero-text h1 span { color: var(--blue-primary); }
 
     .hero-text p {
       font-size: 1.05rem;
@@ -195,11 +193,14 @@
     .visual-card {
       background: var(--white);
       border-radius: 24px;
-      padding: 2.5rem 2rem;
+      padding: 2rem 1.75rem;
       box-shadow: 0 8px 40px rgba(37,99,235,0.13);
       width: 100%;
       max-width: 360px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .visual-card::before {
@@ -219,36 +220,47 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      margin-bottom: 1.25rem;
+      margin: 0;
     }
 
-    .sign-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .sign-item {
-      background: var(--bg);
+    /* ── VIDEO (reemplaza .sign-grid) ── */
+    .video-wrapper {
+      width: 100%;
       border-radius: 12px;
-      padding: 1rem 0.5rem;
-      text-align: center;
-      font-size: 1.8rem;
-      line-height: 1;
-      transition: transform 0.2s;
+      overflow: hidden;
+      background: #0F172A;
+      line-height: 0;
     }
 
-    .sign-item:hover { transform: scale(1.08); }
-
-    .sign-item span {
+    .video-wrapper video {
+      width: 100%;
       display: block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-top: 0.3rem;
+      border-radius: 12px;
+      max-height: 220px;
+      object-fit: cover;
     }
 
+    /* Caja de traducción sincronizada */
+    .translation-box {
+      background: var(--blue-light);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sign-translation-text {
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--blue-primary);
+      margin: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Indicador activo */
     .visual-stat {
       display: flex;
       align-items: center;
@@ -260,15 +272,21 @@
 
     .stat-dot {
       width: 10px; height: 10px;
-      background: var(--blue-primary);
+      background: #22C55E;
       border-radius: 50%;
       flex-shrink: 0;
+      animation: pulse-dot 1.4s ease-in-out infinite;
     }
 
     .visual-stat p {
       font-size: 0.85rem;
       font-weight: 600;
       color: var(--blue-primary);
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.45; transform: scale(1.4); }
     }
 
     /* ── FEATURES ── */
@@ -348,11 +366,7 @@
       box-shadow: 0 8px 32px rgba(37,99,235,0.30);
     }
 
-    .cta h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-    }
+    .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
 
     .cta p {
       color: rgba(255,255,255,0.85);
@@ -428,23 +442,38 @@
         <a href="{% url 'home' %}" class="btn-secondary">Iniciar sesión</a>
       </div>
     </div>
+
+    <!-- ════════════════════════════════════════════════
+         CAMBIO: se reemplazó .sign-grid (emojis) por
+         video con traducción sincronizada
+    ════════════════════════════════════════════════ -->
     <div class="hero-visual">
       <div class="visual-card">
         <p class="visual-title">Señas del abecedario</p>
-        <div class="sign-grid">
-          <div class="sign-item">🤟<span>Hola</span></div>
-          <div class="sign-item">👋<span>Saludo</span></div>
-          <div class="sign-item">✌️<span>Paz</span></div>
-          <div class="sign-item">👍<span>Bien</span></div>
-          <div class="sign-item">🤝<span>Acuerdo</span></div>
-          <div class="sign-item">👌<span>OK</span></div>
+
+        <div class="video-wrapper">
+          <video
+            id="sign-video"
+            src="{% static 'señas.mp4' %}"
+            autoplay
+            muted
+            loop
+            playsinline
+          ></video>
         </div>
+
+        <div class="translation-box">
+          <p id="sign-translation" class="sign-translation-text">–</p>
+        </div>
+
         <div class="visual-stat">
           <div class="stat-dot"></div>
           <p>Traducción en tiempo real activa</p>
         </div>
       </div>
     </div>
+    <!-- ════════════════════ fin del bloque ════════════════════ -->
+
   </section>
 
   <!-- FEATURES -->
@@ -482,6 +511,46 @@
   </div>
 
   <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
+
+  <!-- ════════════════════════════════════════════════════════
+       JAVASCRIPT — va aquí, justo antes de </body>
+       Archivo: index.html (este mismo archivo)
+  ════════════════════════════════════════════════════════ -->
+  <script>
+    const video = document.getElementById('sign-video');
+    const translationEl = document.getElementById('sign-translation');
+
+    // ✏️ EDITA estos tiempos (en segundos) según las señas reales de tu video
+    const signs = [
+      { start: 0,  end: 3,  text: "Hola" },
+      { start: 3,  end: 6,  text: "¿Cómo estás?" },
+      
+    ];
+
+    function updateTranslation() {
+      const t = video.currentTime;
+      const current = signs.find(s => t >= s.start && t < s.end);
+      const newText = current ? current.text : "–";
+
+      if (translationEl.textContent !== newText) {
+        translationEl.style.opacity = '0';
+        setTimeout(() => {
+          translationEl.textContent = newText;
+          translationEl.style.opacity = '1';
+        }, 150);
+      }
+
+      requestAnimationFrame(updateTranslation);
+    }
+
+    video.addEventListener('loadedmetadata', () => {
+      requestAnimationFrame(updateTranslation);
+    });
+
+    if (video.readyState >= 1) {
+      requestAnimationFrame(updateTranslation);
+    }
+  </script>
 
 </body>
 </html>
