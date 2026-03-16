@@ -37,11 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',        # ← agregar
+    'allauth',                     # ← agregar
+    'allauth.account',             # ← agregar
+    'allauth.socialaccount',       # ← agregar
+    'allauth.socialaccount.providers.google',  # ← agregar
     'usuarios',
     'reconocimientos',
     'traduccion',
     'avatar',
-    'historial'
+    'historial',
+    'allauth.socialaccount.providers.facebook',  # ← agregar
 ]
 
 MIDDLEWARE = [
@@ -52,8 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # ← agregar
 ]
-
 ROOT_URLCONF = 'Signia.urls'
 
 TEMPLATES = [
@@ -134,8 +140,39 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Email con Gmail
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'osorioescobardavidfelipe@gmail.com'      # ← tu correo
 EMAIL_HOST_PASSWORD = 'axbr cqtv wowh uidz' # ← contraseña de aplicación Gmail
 DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
+
+import ssl
+EMAIL_SSL_CONTEXT = ssl.create_default_context()
+EMAIL_SSL_CONTEXT.check_hostname = False
+EMAIL_SSL_CONTEXT.verify_mode = ssl.CERT_NONE
+
+# Para producción cambia esto por el backend de Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+SITE_ID = 2
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
+    'facebook': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email', 'public_profile'],
+        'FIELDS': ['id', 'email', 'name'],
+    }
+}
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
