@@ -127,3 +127,15 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/perfil/'
+
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email con Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'osorioescobardavidfelipe@gmail.com'      # ← tu correo
+EMAIL_HOST_PASSWORD = 'axbr cqtv wowh uidz' # ← contraseña de aplicación Gmail
+DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
