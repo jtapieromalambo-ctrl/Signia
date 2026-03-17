@@ -1,373 +1,140 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Signia – Contacto</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% extends 'base.html' %}
+{% load static %}
 
-    :root {
-      --blue-primary: #2563EB;
-      --blue-light: #DBEAFE;
-      --blue-mid: #3B82F6;
-      --blue-dark: #1D4ED8;
-      --bg: #E8F3FC;
-      --white: #FFFFFF;
-      --text-dark: #1E293B;
-      --text-muted: #64748B;
-      --input-bg: #F0F7FF;
-      --shadow: 0 4px 24px rgba(37,99,235,0.10);
-    }
+{% block title %}Signia — Contacto{% endblock %}
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: var(--text-dark);
-      min-height: 100vh;
-    }
+{% block extra_css %}
+<style>
+  :root {
+    --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
+    --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
+    --input-bg: #F0F7FF; --shadow: 0 4px 24px rgba(37,99,235,0.10);
+  }
+  body { background: var(--bg); }
+  .hero { text-align: center; padding: 5rem 1rem 2.5rem; }
+  .hero h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .hero p { color: var(--text-muted); font-size: 1.05rem; max-width: 680px; margin: 0 auto; }
+  .content { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start; }
+  .info-card { background: var(--white); border-radius: 20px; padding: 2rem 1.75rem; box-shadow: var(--shadow); }
+  .info-card h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .info-item { margin-bottom: 1.25rem; }
+  .info-item h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+  .info-item p { font-size: 0.95rem; font-weight: 500; }
+  .form-card { background: var(--white); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+  .form-header { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); padding: 1.75rem 2rem 1.5rem; position: relative; overflow: hidden; }
+  .form-header::before { content: ''; position: absolute; right: -30px; top: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.12); }
+  .form-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.18); color: white; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.85rem; border-radius: 999px; margin-bottom: 0.85rem; }
+  .form-badge::before { content: ''; width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; }
+  .form-header h2 { font-size: 1.6rem; font-weight: 700; color: white; margin-bottom: 0.25rem; }
+  .form-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; }
+  .form-body { padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field label { font-size: 0.88rem; font-weight: 600; }
+  .field input, .field textarea { background: var(--input-bg); border: 1.5px solid #BFDBFE; border-radius: 12px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .field textarea { height: 130px; }
+  .btn-submit { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.9rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(37,99,235,0.35); width: 100%; }
+  .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
 
-    /* ── NAVBAR ── */
-    nav {
-      background: var(--white);
-      display: flex;
-      align-items: center;
-      padding: 0 2.5rem;
-      height: 64px;
-      box-shadow: 0 2px 12px rgba(37,99,235,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+  /* Mensaje de éxito */
+  .success-box {
+    background: #DCFCE7;
+    border: 1.5px solid #86EFAC;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: #16A34A;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
 
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      text-decoration: none;
-      margin-right: auto;
-    }
+  /* Mensajes de error */
+  .error-box {
+    background: #FEE2E2;
+    border: 1.5px solid #FCA5A5;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: #DC2626;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
 
-    .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: var(--blue-primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  @media (max-width: 680px) {
+    .content { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2rem; }
+  }
+</style>
+{% endblock %}
 
-    .logo-icon svg {
-      width: 22px;
-      height: 22px;
-      fill: white;
-    }
+{% block content %}
+<div class="hero">
+  <h1>Ponte en Contacto</h1>
+  <p>¿Tienes alguna duda o quieres colaborar con nosotros? Envíanos un mensaje y te responderemos lo antes posible.</p>
+</div>
 
-    .logo-text {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--blue-primary);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      padding: 0.45rem 1rem;
-      border-radius: 999px;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--blue-primary); }
-
-    .nav-links .active a {
-      background: var(--blue-light);
-      color: var(--blue-primary);
-      font-weight: 600;
-    }
-
-    /* ── HERO ── */
-    .hero {
-      text-align: center;
-      padding: 5rem 1rem 2.5rem;
-    }
-
-    .hero h1 {
-      font-size: 2.8rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-    }
-
-    .hero p {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      max-width: 680px;
-      margin: 0 auto;
-    }
-
-    /* ── CONTENT GRID ── */
-    .content {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 5rem;
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 3rem;
-      align-items: start;
-    }
-
-    /* ── INFO CARD ── */
-    .info-card {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 2rem 1.75rem;
-      box-shadow: var(--shadow);
-    }
-
-    .info-card h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-      color: var(--text-dark);
-    }
-
-    .info-item { margin-bottom: 1.25rem; }
-
-    .info-item h3 {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.3rem;
-    }
-
-    .info-item p {
-      font-size: 0.95rem;
-      color: var(--text-dark);
-      font-weight: 500;
-    }
-
-    /* ── FORM CARD ── */
-    .form-card {
-      background: var(--white);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-
-    .form-header {
-      background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-mid) 100%);
-      padding: 1.75rem 2rem 1.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .form-header::before {
-      content: '';
-      position: absolute;
-      right: -30px; top: -30px;
-      width: 120px; height: 120px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-    }
-
-    .form-header::after {
-      content: '';
-      position: absolute;
-      right: 40px; bottom: -40px;
-      width: 90px; height: 90px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-    }
-
-    .form-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(255,255,255,0.18);
-      color: white;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 0.3rem 0.85rem;
-      border-radius: 999px;
-      margin-bottom: 0.85rem;
-    }
-
-    .form-badge::before {
-      content: '';
-      width: 8px; height: 8px;
-      background: #4ADE80;
-      border-radius: 50%;
-    }
-
-    .form-header h2 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 0.25rem;
-    }
-
-    .form-header p {
-      color: rgba(255,255,255,0.82);
-      font-size: 0.9rem;
-    }
-
-    .form-body {
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    .field { display: flex; flex-direction: column; gap: 0.4rem; }
-
-    .field label {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    .field input,
-    .field textarea {
-      background: var(--input-bg);
-      border: 1.5px solid #BFDBFE;
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-      font-family: inherit;
-      font-size: 0.95rem;
-      color: var(--text-dark);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      resize: none;
-    }
-
-    .field input::placeholder,
-    .field textarea::placeholder { color: #93C5FD; }
-
-    .field input:focus,
-    .field textarea:focus {
-      border-color: var(--blue-primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    }
-
-    .field textarea { height: 130px; }
-
-    .btn-submit {
-      background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 0.9rem;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-      margin-top: 0.25rem;
-    }
-
-    .btn-submit:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(37,99,235,0.45);
-    }
-
-    .btn-submit:active { transform: translateY(0); }
-
-    @media (max-width: 680px) {
-      .content { grid-template-columns: 1fr; }
-      .hero h1 { font-size: 2rem; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- NAVBAR -->
-  <nav>
-    <a class="nav-logo" href="#">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-        </svg>
-      </div>
-      <span class="logo-text">Signia</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="#">Inicio</a></li>
-      <li class="active"><a href="#">Login</a></li>
-      <li><a href="#">Traductor</a></li>
-      <li><a href="#">Reconocimiento</a></li>
-      <li><a href="#">Herramientas</a></li>
-      <li><a href="#">Contacto</a></li>
-    </ul>
-  </nav>
-
-  <!-- HERO -->
-  <div class="hero">
-    <h1>Ponte en Contacto</h1>
-    <p>¿Tienes alguna duda o quieres colaborar con nosotros? Envíanos un mensaje y te responderemos lo antes posible.</p>
+<div class="content">
+  <div class="info-card">
+    <h2>Información de Contacto</h2>
+    <div class="info-item">
+      <h3>Email</h3>
+      <p>contacto@signia.com</p>
+    </div>
+    <div class="info-item">
+      <h3>Teléfono</h3>
+      <p>+57 310 0000000</p>
+    </div>
+    <div class="info-item">
+      <h3>Ubicación</h3>
+      <p>Bogotá, Colombia</p>
+    </div>
   </div>
 
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- INFO -->
-    <div class="info-card">
-      <h2>Información de Contacto</h2>
-      <div class="info-item">
-        <h3>Email</h3>
-        <p>contacto@empresa.com</p>
-      </div>
-      <div class="info-item">
-        <h3>Teléfono</h3>
-        <p>+57 310 0000000</p>
-      </div>
-      <div class="info-item">
-        <h3>Ubicación</h3>
-        <p>Bogotá, Colombia</p>
-      </div>
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-badge">Lenguaje de señas</div>
+      <h2>Envíanos un mensaje</h2>
+      <p>Bienvenido a Signia — estamos aquí para ayudarte</p>
     </div>
+    <div class="form-body">
 
-    <!-- FORM -->
-    <div class="form-card">
-      <div class="form-header">
-        <div class="form-badge">Lenguaje de señas</div>
-        <h2>Envíanos un mensaje</h2>
-        <p>Bienvenido a Signia — estamos aquí para ayudarte</p>
-      </div>
-      <div class="form-body">
-        <div class="field">
-          <label>Nombre completo</label>
-          <input type="text" placeholder="Tu nombre completo" />
+      {% if enviado %}
+        <div class="success-box">
+          ✅ ¡Mensaje enviado correctamente! Te responderemos pronto.
         </div>
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input type="email" placeholder="tucorreo@ejemplo.com" />
-        </div>
-        <div class="field">
-          <label>Asunto</label>
-          <input type="text" placeholder="¿En qué podemos ayudarte?" />
-        </div>
-        <div class="field">
-          <label>Tu mensaje</label>
-          <textarea placeholder="Escribe tu mensaje aquí..."></textarea>
-        </div>
-        <button class="btn-submit">Enviar mensaje</button>
-      </div>
+      {% else %}
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="error-box">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'contacto' %}">
+          {% csrf_token %}
+          <div class="field">
+            <label>Nombre completo</label>
+            <input type="text" name="nombre" placeholder="Tu nombre completo" required />
+          </div>
+          <div class="field">
+            <label>Correo electrónico</label>
+            <input type="email" name="email" placeholder="tucorreo@ejemplo.com" required />
+          </div>
+          <div class="field">
+            <label>Asunto</label>
+            <input type="text" name="asunto" placeholder="¿En qué podemos ayudarte?" required />
+          </div>
+          <div class="field">
+            <label>Tu mensaje</label>
+            <textarea name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Enviar mensaje</button>
+        </form>
+
+      {% endif %}
+
     </div>
-
   </div>
-
-</body>
-</html>
+</div>
+{% endblock %}

@@ -1,86 +1,119 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Signia{% endblock %}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    {% block extra_css %}{% endblock %}
-</head>
+{% block title %}Signia — Mi Perfil{% endblock %}
 
-<body>
+{% block extra_css %}
+<style>
+  :root {
+    --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
+    --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
+    --shadow: 0 4px 24px rgba(37,99,235,0.10);
+  }
+  body { background: var(--bg); }
+  .page { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .perfil-card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+  .perfil-header { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); padding: 2.5rem 2.5rem 3.5rem; position: relative; overflow: hidden; }
+  .perfil-header::before { content: ''; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+  .perfil-header::after { content: ''; position: absolute; right: 60px; bottom: -50px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .perfil-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.18); color: white; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.85rem; border-radius: 999px; margin-bottom: 1rem; position: relative; }
+  .perfil-badge::before { content: ''; width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; }
+  .perfil-avatar { width: 72px; height: 72px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; position: relative; }
+  .perfil-header h1 { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 0.25rem; position: relative; }
+  .perfil-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; position: relative; }
+  .perfil-body { padding: 2rem 2.5rem; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+  .info-item { background: #F0F7FF; border: 1.5px solid var(--blue-light); border-radius: 14px; padding: 1.1rem 1.25rem; }
+  .info-item label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+  .info-item p { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
+  .discapacidad-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.85rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+  .disc-ninguna { background: #DCFCE7; color: #16A34A; }
+  .disc-sordo   { background: #DBEAFE; color: #2563EB; }
+  .disc-mudo    { background: #FEF9C3; color: #CA8A04; }
+  .perfil-acciones { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-accion { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; cursor: pointer; border: none; font-family: inherit; }
+  .btn-accion-primary { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+  .btn-accion-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+  .btn-accion-outline { background: white; color: var(--blue-primary); border: 1.5px solid var(--blue-light); }
+  .btn-accion-outline:hover { background: var(--blue-light); transform: translateY(-1px); }
+  .alert-success { background: #DCFCE7; border: 1.5px solid #86EFAC; border-radius: 12px; padding: 0.85rem 1.25rem; color: #16A34A; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+  .accesos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .acceso-card { background: var(--white); border-radius: 18px; padding: 1.5rem; box-shadow: var(--shadow); text-decoration: none; color: var(--text-dark); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; transition: transform 0.2s, box-shadow 0.2s; border: 1.5px solid transparent; }
+  .acceso-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(37,99,235,0.15); border-color: var(--blue-light); }
+  .acceso-icon { width: 52px; height: 52px; background: var(--blue-light); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+  .acceso-card h3 { font-size: 0.95rem; font-weight: 700; }
+  .acceso-card p  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+  @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } .accesos { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
 
-<!-- ══════════════════════════════════════
-     NAVBAR — aparece en TODAS las páginas
-══════════════════════════════════════ -->
-<nav class="navbar">
+{% block content %}
+<div class="page">
 
-    <!-- Logo -->
-    <a href="{% url 'home' %}" class="navbar__logo">
-        <span class="navbar__logo-icon">🤟</span>
-        Signia
-    </a>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert-success">✅ {{ message }}</div>
+    {% endfor %}
+  {% endif %}
 
-    <!-- Enlaces -->
-    <ul class="navbar__menu">
-        <li>
-            <a href="{% url 'home' %}"
-               class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-               Inicio
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'traductor' %}"
-               class="{% if request.resolver_match.url_name == 'traductor' %}active{% endif %}">
-               Traductor
-            </a>
-        </li>
-        <li>
-            <a href="#"
-               class="{% if request.resolver_match.url_name == 'reconocimiento' %}active{% endif %}">
-               Reconocimiento
-            </a>
-        </li>
-    </ul>
-
-    <!-- Sesión: cambia según si está logueado o no -->
-    <div class="navbar__session">
-        {% if user.is_authenticated %}
-            <span class="navbar__user">👤 {{ user.username }}</span>
-            <a href="{% url 'logout' %}" class="navbar__btn navbar__btn--outline">
-                Cerrar sesión
-            </a>
-        {% else %}
-            <a href="{% url 'login' %}" class="navbar__btn navbar__btn--outline">
-                Iniciar sesión
-            </a>
-            <a href="{% url 'registro' %}" class="navbar__btn navbar__btn--primary">
-                Registrarse
-            </a>
-        {% endif %}
+  <div class="perfil-card">
+    <div class="perfil-header">
+      <div class="perfil-badge">Sesión activa</div>
+      <div class="perfil-avatar">👤</div>
+      <h1>{{ usuario.username }}</h1>
+      <p>{{ usuario.email }}</p>
     </div>
+    <div class="perfil-body">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Nombre de usuario</label>
+          <p>{{ usuario.username }}</p>
+        </div>
+        <div class="info-item">
+          <label>Correo electrónico</label>
+          <p>{{ usuario.email|default:"No registrado" }}</p>
+        </div>
+        <div class="info-item">
+          <label>Miembro desde</label>
+          <p>{{ usuario.date_joined|date:"d/m/Y" }}</p>
+        </div>
+        <div class="info-item">
+          <label>Tipo de acceso</label>
+          <p>
+            {% if usuario.discapacidad == 'sordo' %}
+              <span class="discapacidad-badge disc-sordo">👂 Sordo</span>
+            {% elif usuario.discapacidad == 'mudo' %}
+              <span class="discapacidad-badge disc-mudo">🤟 Mudo</span>
+            {% else %}
+              <span class="discapacidad-badge disc-ninguna">🙂 Acceso general</span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      <div class="perfil-acciones">
+        <a href="{% url 'editar_perfil' %}" class="btn-accion btn-accion-primary">✏️ Editar perfil</a>
+        <a href="{% url 'cambiar_password' %}" class="btn-accion btn-accion-outline">🔒 Cambiar contraseña</a>
+      </div>
+    </div>
+  </div>
 
-</nav>
+  <div class="accesos">
+    <a href="{% url 'traduccion' %}" class="acceso-card">
+      <div class="acceso-icon">🖐️</div>
+      <h3>Traductor</h3>
+      <p>Convierte texto a lenguaje de señas</p>
+    </a>
+    <a href="{% url 'reconocimiento' %}" class="acceso-card">
+      <div class="acceso-icon">📷</div>
+      <h3>Reconocimiento</h3>
+      <p>Interpreta señas con la cámara</p>
+    </a>
+    <a href="{% url 'contacto' %}" class="acceso-card">
+      <div class="acceso-icon">✉️</div>
+      <h3>Contacto</h3>
+      <p>Envíanos un mensaje</p>
+    </a>
+  </div>
 
-<!-- ══════════════════════════════════════
-     CONTENIDO — cada página pone lo suyo
-══════════════════════════════════════ -->
-<div class="contenido">
-    {% block content %}
-    {% endblock %}
 </div>
-
-<!-- ══════════════════════════════════════
-     FOOTER
-══════════════════════════════════════ -->
-<footer class="footer">
-    © 2025 Signia · Sistema de traducción de lenguaje de señas
-</footer>
-
-{% block extra_js %}{% endblock %}
-
-</body>
-</html>
+{% endblock %}
