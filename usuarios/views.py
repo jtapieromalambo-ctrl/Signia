@@ -1,14 +1,22 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RegistroForm
-from django.shortcuts import render
+from django.core.mail import send_mail
+from django.conf import settings
+from .forms import RegistroForm, EditarPerfilForm
+from .models import Usuario
+
+
+# ── INICIO ─────────────────────────────────────────────
+def index(request):
+    if request.user.is_authenticated:
+        return redirigir_por_discapacidad(request.user)
+    return render(request, 'usuarios/index.html')
 
 
 # ── LOGIN ──────────────────────────────────────────────
 def home(request):
-    """Vista principal: muestra el formulario de login."""
     if request.user.is_authenticated:
         return redirigir_por_discapacidad(request.user)
 
@@ -16,7 +24,6 @@ def home(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-
         if user is not None:
             login(request, user)
             return redirigir_por_discapacidad(user)
@@ -28,7 +35,6 @@ def home(request):
 
 # ── REGISTRO ───────────────────────────────────────────
 def registro(request):
-    """Registro de nuevo usuario con campo discapacidad."""
     if request.user.is_authenticated:
         return redirigir_por_discapacidad(request.user)
 
@@ -37,6 +43,19 @@ def registro(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+
+            # Correo de bienvenida
+            try:
+                send_mail(
+                    subject='¡Bienvenido a Signia! 🤟',
+                    message=f'Hola {user.username},\n\n¡Gracias por registrarte en Signia! Tu cuenta ha sido creada exitosamente.\n\nYa puedes acceder a todas las herramientas de traducción de lenguaje de señas.\n\n— El equipo de Signia',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # Si falla el correo, el registro igual funciona
+
             return redirigir_por_discapacidad(user)
     else:
         form = RegistroForm()
@@ -47,18 +66,17 @@ def registro(request):
 # ── LOGOUT ─────────────────────────────────────────────
 def logout_view(request):
     logout(request)
-    return redirect('home')
+    return redirect('index')
 
 
 # ── REDIRECCIÓN POR DISCAPACIDAD ───────────────────────
 def redirigir_por_discapacidad(user):
-    """Redirige al módulo correcto según la discapacidad del usuario."""
     if user.discapacidad == 'sordo':
-        return redirect('traduccion')   # texto → avatar señas
+        return redirect('traduccion')
     elif user.discapacidad == 'mudo':
-        return redirect('reconocimiento')  # cámara → texto
+        return redirect('reconocimiento')
     else:
-        return redirect('perfil')  # usuario sin discapacidad
+        return redirect('perfil')
 
 
 # ── PERFIL ─────────────────────────────────────────────
@@ -67,14 +85,73 @@ def perfil(request):
     return render(request, 'usuarios/perfil.html', {'usuario': request.user})
 
 
-##---  contacto ----------
+# ── EDITAR PERFIL ──────────────────────────────────────
+@login_required
+def editar_perfil(request):
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('perfil')
+    else:
+        form = EditarPerfilForm(instance=request.user)
 
+    return render(request, 'usuarios/editar_perfil.html', {
+        'form': form,
+        'usuario': request.user
+    })
+
+
+# ── CAMBIAR CONTRASEÑA ─────────────────────────────────
+@login_required
+def cambiar_password(request):
+    if request.method == 'POST':
+        password_actual = request.POST.get('password_actual')
+        password_nueva  = request.POST.get('password_nueva')
+        password_nueva2 = request.POST.get('password_nueva2')
+
+        user = authenticate(request, username=request.user.username, password=password_actual)
+
+        if user is None:
+            messages.error(request, 'La contraseña actual es incorrecta.')
+        elif password_nueva != password_nueva2:
+            messages.error(request, 'Las contraseñas nuevas no coinciden.')
+        elif len(password_nueva) < 8:
+            messages.error(request, 'La nueva contraseña debe tener mínimo 8 caracteres.')
+        else:
+            user.set_password(password_nueva)
+            user.save()
+            update_session_auth_hash(request, user)  # Mantiene la sesión activa
+            messages.success(request, 'Contraseña cambiada correctamente.')
+            return redirect('perfil')
+
+    return render(request, 'usuarios/cambiar_password.html')
+
+
+# ── CONTACTO ───────────────────────────────────────────
 def contacto(request):
-    if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        email = request.POST.get("email")
-        mensaje = request.POST.get("mensaje")
+    enviado = False
+    if request.method == 'POST':
+        nombre  = request.POST.get('nombre', '').strip()
+        email   = request.POST.get('email', '').strip()
+        asunto  = request.POST.get('asunto', '').strip()
+        mensaje = request.POST.get('mensaje', '').strip()
 
-        print(nombre, email, mensaje)
+        if nombre and email and asunto and mensaje:
+            print(f"[CONTACTO] De: {nombre} <{email}> | Asunto: {asunto}\n{mensaje}")
+            enviado = True
+        else:
+            messages.error(request, 'Por favor completa todos los campos.')
 
-    return render(request, "usuarios/contacto.html")
+    return render(request, 'usuarios/contacto.html', {'enviado': enviado})
+
+
+# ── TRADUCTOR ──────────────────────────────────────────
+def traduccion(request):
+    return render(request, 'traduccion/traductor.html')
+
+
+# ── RECONOCIMIENTO ─────────────────────────────────────
+def reconocimiento(request):
+    return render(request, 'usuarios/reconocimiento.html')
