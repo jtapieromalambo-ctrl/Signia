@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Signia — Reconocimiento{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --blue-primary: #2563EB;
+        --blue-light: #DBEAFE;
+        --blue-mid: #3B82F6;
+        --bg: #E8F3FC;
+        --white: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-muted: #64748B;
+        --shadow: 0 4px 24px rgba(37,99,235,0.10);
+    }
+
+    body { background: var(--bg); }
+
+    .page { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem; }
+
+    .card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+        padding: 2rem 2.5rem; color: white;
+    }
+    .card-header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .card-header p { color: rgba(255,255,255,0.82); font-size: 0.95rem; }
+
+    .card-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .camara-area {
+        background: #0F172A; border-radius: 16px; min-height: 280px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0.75rem; color: #94A3B8; position: relative; overflow: hidden;
+    }
+    .camara-area .emoji { font-size: 3rem; }
+    .camara-area p { font-size: 0.9rem; font-weight: 500; }
+
+    .resultado {
+        background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
+        padding: 1rem 1.25rem; min-height: 80px;
+        font-size: 1rem; color: var(--text-muted); font-style: italic;
+    }
+    .resultado.activo { color: var(--text-dark); font-style: normal; font-weight: 500; }
+
+    .btn {
+        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+        color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
+        font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+        transition: transform 0.15s, box-shadow 0.15s;
+        align-self: flex-start;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+    <div class="card">
+        <div class="card-header">
+            <h1>📷 Reconocimiento de Señas</h1>
+            <p>Activa tu cámara, haz señas y Signia las convertirá a texto automáticamente</p>
+        </div>
+        <div class="card-body">
+            <div class="camara-area">
+                <span class="emoji">📷</span>
+                <p>Haz clic en "Iniciar cámara" para comenzar</p>
+            </div>
+            <button class="btn">Iniciar cámara</button>
+            <div class="resultado">
+                El texto traducido aparecerá aquí...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

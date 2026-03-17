@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Signia — Historial{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
+    --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
+    --shadow: 0 4px 24px rgba(37,99,235,0.10);
+  }
+  body { background: var(--bg); }
+  .page { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .historial-header { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); border-radius: 20px; padding: 2rem 2.5rem; color: white; position: relative; overflow: hidden; }
+  .historial-header::before { content: ''; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+  .historial-header h1 { font-size: 1.8rem; font-weight: 700; position: relative; }
+  .historial-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; margin-top: 0.3rem; position: relative; }
+  .filtros { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .filtro-btn { padding: 0.5rem 1.2rem; border-radius: 999px; font-size: 0.88rem; font-weight: 600; border: 1.5px solid var(--blue-light); background: var(--white); color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
+  .filtro-btn:hover, .filtro-btn.active { background: var(--blue-primary); color: white; border-color: var(--blue-primary); }
+  .historial-lista { display: flex; flex-direction: column; gap: 0.75rem; }
+  .entrada { background: var(--white); border-radius: 14px; padding: 1.1rem 1.5rem; box-shadow: var(--shadow); display: flex; align-items: center; gap: 1rem; border-left: 4px solid transparent; transition: transform 0.15s; }
+  .entrada:hover { transform: translateX(3px); }
+  .entrada.traduccion { border-left-color: var(--blue-primary); }
+  .entrada.reconocimiento { border-left-color: #F59E0B; }
+  .entrada-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+  .entrada.traduccion .entrada-icon { background: var(--blue-light); }
+  .entrada.reconocimiento .entrada-icon { background: #FEF3C7; }
+  .entrada-info { flex: 1; }
+  .entrada-tipo { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.2rem; }
+  .entrada-contenido { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
+  .entrada-fecha { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .vacio { background: var(--white); border-radius: 20px; padding: 4rem 2rem; text-align: center; box-shadow: var(--shadow); }
+  .vacio .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .vacio h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.5rem; }
+  .vacio p { color: var(--text-muted); font-size: 0.9rem; }
+  .paginacion { display: flex; justify-content: center; gap: 0.5rem; }
+  .paginacion a { padding: 0.5rem 1rem; border-radius: 8px; background: var(--white); border: 1.5px solid var(--blue-light); color: var(--blue-primary); font-weight: 600; font-size: 0.88rem; text-decoration: none; transition: all 0.2s; }
+  .paginacion a:hover { background: var(--blue-primary); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="historial-header">
+    <h1>📋 Mi Historial</h1>
+    <p>Registro de todas tus traducciones y reconocimientos</p>
+  </div>
+
+  <div class="filtros">
+    <a href="{% url 'historial' %}" class="filtro-btn {% if not tipo_filtro %}active{% endif %}">Todos</a>
+    <a href="{% url 'historial' %}?tipo=traduccion" class="filtro-btn {% if tipo_filtro == 'traduccion' %}active{% endif %}">🖐️ Traducciones</a>
+    <a href="{% url 'historial' %}?tipo=reconocimiento" class="filtro-btn {% if tipo_filtro == 'reconocimiento' %}active{% endif %}">📷 Reconocimientos</a>
+  </div>
+
+  {% if entradas %}
+    <div class="historial-lista">
+      {% for entrada in entradas %}
+        <div class="entrada {{ entrada.tipo }}">
+          <div class="entrada-icon">
+            {% if entrada.tipo == 'traduccion' %}🖐️{% else %}📷{% endif %}
+          </div>
+          <div class="entrada-info">
+            <div class="entrada-tipo">{{ entrada.get_tipo_display }}</div>
+            <div class="entrada-contenido">{{ entrada.contenido }}</div>
+            <div class="entrada-fecha">{{ entrada.fecha|date:"d/m/Y H:i" }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if entradas.has_other_pages %}
+      <div class="paginacion">
+        {% if entradas.has_previous %}
+          <a href="?page={{ entradas.previous_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">← Anterior</a>
+        {% endif %}
+        {% if entradas.has_next %}
+          <a href="?page={{ entradas.next_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Siguiente →</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="vacio">
+      <div class="icon">📭</div>
+      <h2>Sin registros aún</h2>
+      <p>Cuando uses el traductor o el reconocimiento, tus actividades aparecerán aquí.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
