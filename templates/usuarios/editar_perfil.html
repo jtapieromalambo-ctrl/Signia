@@ -22,6 +22,21 @@
   .field label { font-size: 0.82rem; font-weight: 600; color: var(--text-dark); }
   .field input { background: #F0F7FF; border: 1.5px solid var(--blue-light); border-radius: 10px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
   .field input:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .field input[readonly] { background: #f3f4f6; color: var(--text-muted); cursor: not-allowed; border-color: #e5e7eb; }
+
+  /* Campo de correo solo lectura */
+  .field-readonly label { color: var(--text-muted); }
+  .field-readonly .readonly-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  /* Opciones discapacidad */
+  .discapacidad-opciones { display: flex; flex-direction: column; gap: 0.6rem; }
+  .disc-opcion { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #F0F7FF; border: 1.5px solid var(--blue-light); border-radius: 10px; cursor: pointer; transition: border-color 0.2s; }
+  .disc-opcion:hover { border-color: var(--blue-primary); }
+  .disc-opcion input[type="radio"] { width: 16px; height: 16px; accent-color: var(--blue-primary); }
+  .disc-opcion-texto strong { display: block; font-size: 0.88rem; color: var(--text-dark); font-weight: 600; }
+  .disc-opcion-texto span { font-size: 0.78rem; color: var(--text-muted); }
+  .disc-icon { font-size: 1.2rem; }
+
   .btn-guardar { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 10px; padding: 0.85rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.35); transition: transform 0.15s, box-shadow 0.15s; width: 100%; }
   .btn-guardar:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
   .btn-cancelar { display: block; text-align: center; margin-top: 0.75rem; font-size: 0.88rem; color: var(--text-muted); text-decoration: none; }
@@ -45,6 +60,8 @@
 
       <form method="post">
         {% csrf_token %}
+
+        <!-- Nombre de usuario -->
         <div class="field">
           <label for="id_username">Nombre de usuario</label>
           <input type="text" id="id_username" name="username"
@@ -53,14 +70,48 @@
             <span style="color:#DC2626;font-size:0.8rem;">{{ form.username.errors|join:", " }}</span>
           {% endif %}
         </div>
-        <div class="field">
-          <label for="id_email">Correo electrónico</label>
-          <input type="email" id="id_email" name="email"
-                 value="{{ form.email.value|default:usuario.email }}">
-          {% if form.email.errors %}
-            <span style="color:#DC2626;font-size:0.8rem;">{{ form.email.errors|join:", " }}</span>
-          {% endif %}
+
+        <!-- Correo solo lectura -->
+        <div class="field field-readonly">
+          <label>Correo electrónico</label>
+          <input type="email" value="{{ usuario.email|default:'No registrado' }}" readonly>
+          <span class="readonly-note">🔒 El correo no se puede modificar</span>
         </div>
+
+        <!-- Discapacidad -->
+        <div class="field">
+          <label>Tipo de acceso</label>
+          <div class="discapacidad-opciones">
+            <label class="disc-opcion">
+              <input type="radio" name="discapacidad" value="ninguna"
+                {% if form.discapacidad.value == 'ninguna' or not form.discapacidad.value %}checked{% endif %}>
+              <span class="disc-icon">🙂</span>
+              <span class="disc-opcion-texto">
+                <strong>No tengo discapacidad</strong>
+                <span>Acceso general a Signia</span>
+              </span>
+            </label>
+            <label class="disc-opcion">
+              <input type="radio" name="discapacidad" value="sordo"
+                {% if form.discapacidad.value == 'sordo' %}checked{% endif %}>
+              <span class="disc-icon">👂</span>
+              <span class="disc-opcion-texto">
+                <strong>Soy sordo</strong>
+                <span>Texto → el avatar lo traduce a señas</span>
+              </span>
+            </label>
+            <label class="disc-opcion">
+              <input type="radio" name="discapacidad" value="mudo"
+                {% if form.discapacidad.value == 'mudo' %}checked{% endif %}>
+              <span class="disc-icon">🤟</span>
+              <span class="disc-opcion-texto">
+                <strong>Soy mudo</strong>
+                <span>Hago señas a la cámara → se traduce a texto</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
         <button type="submit" class="btn-guardar">Guardar cambios</button>
       </form>
       <a href="{% url 'perfil' %}" class="btn-cancelar">← Volver al perfil</a>
