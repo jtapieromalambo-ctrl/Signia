@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}Signia — Mi Perfil{% endblock %}
 
@@ -18,7 +19,31 @@
   .perfil-header::after { content: ''; position: absolute; right: 60px; bottom: -50px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.08); }
   .perfil-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.18); color: white; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.85rem; border-radius: 999px; margin-bottom: 1rem; position: relative; }
   .perfil-badge::before { content: ''; width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; }
-  .perfil-avatar { width: 72px; height: 72px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; position: relative; }
+
+  /* ── AVATAR ── */
+  .perfil-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    position: relative;
+    border: 3px solid rgba(255,255,255,0.4);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.2);
+  }
+  .perfil-avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .perfil-avatar-inicial {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+  }
+
   .perfil-header h1 { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 0.25rem; position: relative; }
   .perfil-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; position: relative; }
   .perfil-body { padding: 2rem 2.5rem; }
@@ -59,10 +84,21 @@
   <div class="perfil-card">
     <div class="perfil-header">
       <div class="perfil-badge">Sesión activa</div>
-      <div class="perfil-avatar">👤</div>
+
+      <!-- Avatar: foto de Google o inicial del usuario -->
+      <div class="perfil-avatar">
+        {% get_social_accounts usuario as social_accounts %}
+        {% if social_accounts.google %}
+          <img src="{{ social_accounts.google.0.get_avatar_url }}" alt="Foto de perfil">
+        {% else %}
+          <span class="perfil-avatar-inicial">{{ usuario.username|first }}</span>
+        {% endif %}
+      </div>
+
       <h1>{{ usuario.username }}</h1>
       <p>{{ usuario.email }}</p>
     </div>
+
     <div class="perfil-body">
       <div class="info-grid">
         <div class="info-item">
