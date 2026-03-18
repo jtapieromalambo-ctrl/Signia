@@ -25,7 +25,8 @@ def home(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            request.session['show_disability_modal'] = True
             return redirigir_por_discapacidad(user)
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')
@@ -42,20 +43,20 @@ def registro(request):
         form = RegistroForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-            # Correo de bienvenida
             try:
                 send_mail(
                     subject='¡Bienvenido a Signia! 🤟',
-                    message=f'Hola {user.username},\n\n¡Gracias por registrarte en Signia! Tu cuenta ha sido creada exitosamente.\n\nYa puedes acceder a todas las herramientas de traducción de lenguaje de señas.\n\n— El equipo de Signia',
+                    message=f'Hola {user.username},\n\n¡Gracias por registrarte en Signia!\n\n— El equipo de Signia',
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
                     fail_silently=True,
                 )
             except Exception:
-                pass  # Si falla el correo, el registro igual funciona
+                pass
 
+            request.session['show_disability_modal'] = True
             return redirigir_por_discapacidad(user)
     else:
         form = RegistroForm()
@@ -82,7 +83,9 @@ def redirigir_por_discapacidad(user):
 # ── PERFIL ─────────────────────────────────────────────
 @login_required
 def perfil(request):
-    return render(request, 'usuarios/perfil.html', {'usuario': request.user})
+    return render(request, 'usuarios/perfil.html', {
+        'usuario': request.user,
+    })
 
 
 # ── EDITAR PERFIL ──────────────────────────────────────
@@ -122,11 +125,22 @@ def cambiar_password(request):
         else:
             user.set_password(password_nueva)
             user.save()
-            update_session_auth_hash(request, user)  # Mantiene la sesión activa
+            update_session_auth_hash(request, user)
             messages.success(request, 'Contraseña cambiada correctamente.')
             return redirect('perfil')
 
     return render(request, 'usuarios/cambiar_password.html')
+
+
+# ── ELIMINAR CUENTA ────────────────────────────────────
+@login_required
+def eliminar_cuenta(request):
+    if request.method == 'POST':
+        user = request.user
+        logout(request)
+        user.delete()
+        return redirect('index')
+    return redirect('perfil')
 
 
 # ── CONTACTO ───────────────────────────────────────────
