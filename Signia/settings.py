@@ -51,6 +51,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'usuarios.context_processors.disability_modal',  # ← modal discapacidad
             ],
         },
     },
@@ -88,8 +89,6 @@ LOGIN_REDIRECT_URL = '/perfil/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── EMAIL ──────────────────────────────────────────────
-# En desarrollo muestra los correos en la consola
-# Para producción cambia a smtp.EmailBackend y configura las credenciales
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
