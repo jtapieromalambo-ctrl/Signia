@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Signia — Completar Registro{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
+    --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
+    --shadow: 0 4px 24px rgba(37,99,235,0.10);
+  }
+  body { background: var(--bg); }
+  .page { max-width: 480px; margin: 0 auto; padding: 4rem 1.5rem; }
+  .card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-header { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); padding: 2rem 2.5rem; position: relative; overflow: hidden; }
+  .card-header::before { content: ''; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+  .card-header h1 { font-size: 1.6rem; font-weight: 700; color: white; position: relative; }
+  .card-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; margin-top: 0.3rem; position: relative; }
+  .card-body { padding: 2rem 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field label { font-size: 0.82rem; font-weight: 600; color: var(--text-dark); }
+  .field input { background: #F0F7FF; border: 1.5px solid var(--blue-light); border-radius: 10px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); outline: none; width: 100%; transition: border-color 0.2s; }
+  .field input:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .btn { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 10px; padding: 0.85rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; transition: transform 0.15s; }
+  .btn:hover { transform: translateY(-1px); }
+  .error { color: #DC2626; font-size: 0.8rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="card">
+    <div class="card-header">
+      <h1>🤟 Casi listo</h1>
+      <p>Completa tu perfil para continuar con Google</p>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="field">
+            <label>{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+              <span class="error">{{ error }}</span>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn">Continuar →</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
