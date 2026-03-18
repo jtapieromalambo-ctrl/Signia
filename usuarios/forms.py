@@ -24,8 +24,18 @@ class RegistroForm(UserCreationForm):
 
 
 class EditarPerfilForm(forms.ModelForm):
-    email = forms.EmailField(required=False, label='Correo electrónico')
+    DISCAPACIDAD_CHOICES = [
+        ('ninguna', 'No tengo discapacidad'),
+        ('sordo',   'Soy sordo'),
+        ('mudo',    'Soy mudo'),
+    ]
+
+    discapacidad = forms.ChoiceField(
+        choices=DISCAPACIDAD_CHOICES,
+        label='Tipo de acceso',
+        widget=forms.RadioSelect
+    )
 
     class Meta:
         model  = Usuario
-        fields = ['username', 'email']
+        fields = ['username', 'discapacidad']
