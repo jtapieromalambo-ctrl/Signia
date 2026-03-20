@@ -128,6 +128,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
+MEDIA_ROOT = BASE_DIR / "media"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL ='/media/'
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
