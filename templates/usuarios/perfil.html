@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}Signia — Mi Perfil{% endblock %}
 
@@ -18,7 +19,9 @@
   .perfil-header::after { content: ''; position: absolute; right: 60px; bottom: -50px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.08); }
   .perfil-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.18); color: white; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.85rem; border-radius: 999px; margin-bottom: 1rem; position: relative; }
   .perfil-badge::before { content: ''; width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; }
-  .perfil-avatar { width: 72px; height: 72px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; position: relative; }
+  .perfil-avatar { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 1rem; position: relative; border: 3px solid rgba(255,255,255,0.4); overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); }
+  .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .perfil-avatar-inicial { font-size: 2rem; font-weight: 700; color: white; text-transform: uppercase; }
   .perfil-header h1 { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 0.25rem; position: relative; }
   .perfil-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; position: relative; }
   .perfil-body { padding: 2rem 2.5rem; }
@@ -30,12 +33,14 @@
   .disc-ninguna { background: #DCFCE7; color: #16A34A; }
   .disc-sordo   { background: #DBEAFE; color: #2563EB; }
   .disc-mudo    { background: #FEF9C3; color: #CA8A04; }
-  .perfil-acciones { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .perfil-acciones { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
   .btn-accion { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; cursor: pointer; border: none; font-family: inherit; }
   .btn-accion-primary { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
   .btn-accion-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
   .btn-accion-outline { background: white; color: var(--blue-primary); border: 1.5px solid var(--blue-light); }
   .btn-accion-outline:hover { background: var(--blue-light); transform: translateY(-1px); }
+  .btn-accion-danger { background: white; color: #DC2626; border: 1.5px solid #FCA5A5; margin-left: auto; }
+  .btn-accion-danger:hover { background: #FEE2E2; transform: translateY(-1px); }
   .alert-success { background: #DCFCE7; border: 1.5px solid #86EFAC; border-radius: 12px; padding: 0.85rem 1.25rem; color: #16A34A; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
   .accesos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
   .acceso-card { background: var(--white); border-radius: 18px; padding: 1.5rem; box-shadow: var(--shadow); text-decoration: none; color: var(--text-dark); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; transition: transform 0.2s, box-shadow 0.2s; border: 1.5px solid transparent; }
@@ -43,7 +48,21 @@
   .acceso-icon { width: 52px; height: 52px; background: var(--blue-light); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
   .acceso-card h3 { font-size: 0.95rem; font-weight: 700; }
   .acceso-card p  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
-  @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } .accesos { grid-template-columns: 1fr; } }
+
+  /* ── MODAL ELIMINAR ── */
+  .modal-eliminar { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+  .modal-eliminar-box { background: white; border-radius: 24px; padding: 2.5rem 2rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: popIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  .modal-eliminar-box .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .modal-eliminar-box h2 { font-size: 1.3rem; font-weight: 700; color: #1E293B; margin-bottom: 0.5rem; }
+  .modal-eliminar-box p { font-size: 0.9rem; color: #64748B; line-height: 1.6; margin-bottom: 1.5rem; }
+  .modal-eliminar-acciones { display: flex; gap: 0.75rem; }
+  .btn-cancelar-modal { flex: 1; padding: 0.75rem; background: #F0F7FF; border: 1.5px solid #DBEAFE; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: #2563EB; cursor: pointer; transition: all 0.15s; }
+  .btn-cancelar-modal:hover { background: #DBEAFE; }
+  .btn-confirmar-eliminar { flex: 1; padding: 0.75rem; background: #DC2626; border: none; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; color: white; cursor: pointer; transition: all 0.15s; }
+  .btn-confirmar-eliminar:hover { background: #B91C1C; }
+
+  @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } .accesos { grid-template-columns: 1fr; } .btn-accion-danger { margin-left: 0; } }
 </style>
 {% endblock %}
 
@@ -59,10 +78,18 @@
   <div class="perfil-card">
     <div class="perfil-header">
       <div class="perfil-badge">Sesión activa</div>
-      <div class="perfil-avatar">👤</div>
+      <div class="perfil-avatar">
+        {% get_social_accounts usuario as social_accounts %}
+        {% if social_accounts.google %}
+          <img src="{{ social_accounts.google.0.get_avatar_url }}" alt="Foto de perfil">
+        {% else %}
+          <span class="perfil-avatar-inicial">{{ usuario.username|first }}</span>
+        {% endif %}
+      </div>
       <h1>{{ usuario.username }}</h1>
       <p>{{ usuario.email }}</p>
     </div>
+
     <div class="perfil-body">
       <div class="info-grid">
         <div class="info-item">
@@ -90,9 +117,11 @@
           </p>
         </div>
       </div>
+
       <div class="perfil-acciones">
         <a href="{% url 'editar_perfil' %}" class="btn-accion btn-accion-primary">✏️ Editar perfil</a>
         <a href="{% url 'cambiar_password' %}" class="btn-accion btn-accion-outline">🔒 Cambiar contraseña</a>
+        <button onclick="document.getElementById('modalEliminar').style.display='flex'" class="btn-accion btn-accion-danger">🗑️ Eliminar cuenta</button>
       </div>
     </div>
   </div>
@@ -114,6 +143,21 @@
       <p>Envíanos un mensaje</p>
     </a>
   </div>
+</div>
 
+<!-- Modal confirmar eliminar -->
+<div class="modal-eliminar" id="modalEliminar" style="display:none;">
+  <div class="modal-eliminar-box">
+    <div class="icon">⚠️</div>
+    <h2>¿Eliminar tu cuenta?</h2>
+    <p>Esta acción es <strong>permanente</strong> y no se puede deshacer. Se eliminarán todos tus datos, historial y configuraciones.</p>
+    <div class="modal-eliminar-acciones">
+      <button class="btn-cancelar-modal" onclick="document.getElementById('modalEliminar').style.display='none'">Cancelar</button>
+      <form method="post" action="{% url 'eliminar_cuenta' %}" style="flex:1;">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirmar-eliminar" style="width:100%;">Sí, eliminar</button>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}
