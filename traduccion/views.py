@@ -13,12 +13,14 @@ os.environ["PATH"] += os.pathsep + os.path.join(BASE_DIR, "ffmpeg")
 TEMP_DIR = os.path.join(BASE_DIR, 'temp')
 os.makedirs(TEMP_DIR, exist_ok=True)  # la crea automáticamente si no existe
 
-# Carga el modelo de Whisper una sola vez al iniciar el servidor
-# Modelos: tiny, base, small, medium, large (más grande = más preciso pero más lento)
+# device: "cpu" o "cuda" (si tiene GPU)
+# compute_type: "int8" (rapido/liviano), "float16" (GPU), "float32" (preciso)
 model = WhisperModel("base", device="cpu", compute_type="int8")
+
 
 def pagina_base(request):
     return render(request, 'base.html')
+
 
 def limpiar_texto(texto):
     # Convierte a minúsculas
@@ -30,6 +32,7 @@ def limpiar_texto(texto):
     texto = texto.strip().strip('.,!¿?¡')
     return texto
 
+
 def buscar_video(request):
     resultados = []
     video_base = None
@@ -39,31 +42,29 @@ def buscar_video(request):
         video_base = video.objects.get(nombre__iexact='base')
     except video.DoesNotExist:
         video_base = None
-    print("=============================")
-    print("video_base:", video_base)
-    print("=============================")
+
     if request.method == 'POST':
         palabras_texto = None
 
         # --- CASO 1: El usuario habló con el micrófono ---
         if 'audio' in request.FILES:
-            audio = request.FILES['audio']
+            audio_file = request.FILES['audio']
 
             # Nombre único por petición para evitar conflictos entre peticiones simultáneas
             nombre_archivo = f'temp_audio_{uuid.uuid4().hex}.webm'
-            ruta = os.path.join(TEMP_DIR, nombre_archivo)  # guarda en carpeta temp/
+            ruta = os.path.join(TEMP_DIR, nombre_archivo)
 
             with open(ruta, 'wb') as f:
-                f.write(audio.read())
+                f.write(audio_file.read())
 
             tamanio = os.path.getsize(ruta)
             print("✅ Tamaño:", tamanio, "bytes")
 
             if tamanio > 1000:
                 try:
-                    # Whisper convierte el audio a texto en español
-                    segments, info = model.transcribe(ruta, language='es')
-                    palabras_texto = " ".join([segment.text for segment in segments])
+                    # faster-whisper convierte el audio a texto en español
+                    segments, info = model.transcribe(ruta, language='es', beam_size=5)
+                    palabras_texto = " ".join(segment.text for segment in segments)
                     print("🎤 Whisper escuchó:", palabras_texto)
                 except Exception as e:
                     print("❌ Error Whisper:", e)
@@ -93,6 +94,11 @@ def buscar_video(request):
             i = 0
 
             # Ventana deslizante: intenta combinaciones de mayor a menor longitud
+            # Ejemplo con "buenos dias buenas tardes":
+            # → intenta "buenos dias buenas tardes" → no existe
+            # → intenta "buenos dias buenas"        → no existe
+            # → intenta "buenos dias"               → ✅ encontrado, avanza 2
+            # → intenta "buenas tardes"             → ✅ encontrado, avanza 2
             while i < len(palabras):
                 encontrado = False
 
@@ -104,14 +110,13 @@ def buscar_video(request):
                         v = video.objects.get(nombre__iexact=fragmento)
                         resultados.append(v)
                         print(f"✅ Encontrado: '{fragmento}'")
-                        i += longitud  # avanza tantas palabras como tenga la frase encontrada
+                        i += longitud
                         encontrado = True
                         break
                     except video.DoesNotExist:
                         continue
 
                 if not encontrado:
-                    # Ninguna combinación encontró video, salta esa palabra
                     print(f"❌ Sin video para: '{palabras[i]}'")
                     i += 1
 
