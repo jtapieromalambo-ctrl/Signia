@@ -33,7 +33,7 @@
   .field input, .field textarea { background: var(--input-bg); border: 1.5px solid #BFDBFE; border-radius: 12px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: none; }
   .field input:focus, .field textarea:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
   .field textarea { height: 130px; }
-  .btn-submit { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.9rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(37,99,235,0.35); width: 100%; }
+  .btn-submit { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.9rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(37,99,235,0.35); width: 70%; }
   .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
 
   /* Mensaje de éxito */
@@ -65,6 +65,21 @@
     .content { grid-template-columns: 1fr; }
     .hero h1 { font-size: 2rem; }
   }
+  .button{
+        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+        color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
+        font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+        transition: transform 0.15s, box-shadow 0.15s;
+        width:25%;
+    }
+    .button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+
+    .botones { 
+        dispaly: flex
+        justify-content: space-between;
+        align-items: center
+    }
 </style>
 {% endblock %}
 
@@ -79,15 +94,15 @@
     <h2>Información de Contacto</h2>
     <div class="info-item">
       <h3>Email</h3>
-      <p>contacto@signia.com</p>
+      <p>bo719914@gmail.com.com</p>
     </div>
     <div class="info-item">
       <h3>Teléfono</h3>
-      <p>+57 310 0000000</p>
+      <p>+57 3232392457</p>
     </div>
     <div class="info-item">
       <h3>Ubicación</h3>
-      <p>Bogotá, Colombia</p>
+      <p>Garzon-Huila</p>
     </div>
   </div>
 
@@ -128,9 +143,14 @@
           <div class="field">
             <label>Tu mensaje</label>
             <textarea name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
-          </div>
-          <button type="submit" class="btn-submit">Enviar mensaje</button>
+          </div><br>
+          
         </form>
+        <div class="botones"> 
+          <button type="submit" class="btn-submit">Enviar mensaje</button>
+                <a href="{% url 'index' %}">
+                    <button class="button">Atras</button></a>
+            </div>
 
       {% endif %}
 
