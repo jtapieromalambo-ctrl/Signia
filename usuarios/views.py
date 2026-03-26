@@ -18,6 +18,9 @@ def index(request):
 # ── LOGIN ──────────────────────────────────────────────
 def home(request):
     if request.user.is_authenticated:
+        # Si ya está autenticado y es superusuario, manda al admin
+        if request.user.is_superuser:
+            return redirect('/admin/')
         return redirigir_por_discapacidad(request.user)
 
     if request.method == 'POST':
@@ -26,6 +29,10 @@ def home(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            # ── Si es superusuario → Admin Django ──────────────
+            if user.is_superuser:
+                return redirect('/admin/')
+            # ── Si es usuario normal → flujo normal ────────────
             request.session['show_disability_modal'] = True
             return redirigir_por_discapacidad(user)
         else:
