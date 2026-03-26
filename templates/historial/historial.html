@@ -31,6 +31,22 @@
   .entrada-tipo { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.2rem; }
   .entrada-contenido { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
   .entrada-fecha { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  /* ── BOTÓN ELIMINAR ── */
+  .btn-eliminar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #CBD5E1;
+    font-size: 1.1rem;
+    padding: 0.4rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .btn-eliminar:hover { color: #DC2626; background: #FEE2E2; }
+
   .vacio { background: var(--white); border-radius: 20px; padding: 4rem 2rem; text-align: center; box-shadow: var(--shadow); }
   .vacio .icon { font-size: 3rem; margin-bottom: 1rem; }
   .vacio h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.5rem; }
@@ -57,7 +73,7 @@
   {% if entradas %}
     <div class="historial-lista">
       {% for entrada in entradas %}
-        <div class="entrada {{ entrada.tipo }}">
+        <div class="entrada {{ entrada.tipo }}" id="entrada-{{ entrada.id }}">
           <div class="entrada-icon">
             {% if entrada.tipo == 'traduccion' %}🖐️{% else %}📷{% endif %}
           </div>
@@ -66,6 +82,11 @@
             <div class="entrada-contenido">{{ entrada.contenido }}</div>
             <div class="entrada-fecha">{{ entrada.fecha|date:"d/m/Y H:i" }}</div>
           </div>
+          <!-- Botón eliminar -->
+          <form method="POST" action="{% url 'eliminar_entrada' entrada.id %}" onsubmit="return confirmarEliminar(event, {{ entrada.id }})">
+            {% csrf_token %}
+            <button type="submit" class="btn-eliminar" title="Eliminar">🗑️</button>
+          </form>
         </div>
       {% endfor %}
     </div>
@@ -88,4 +109,22 @@
     </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function confirmarEliminar(event, id) {
+    event.preventDefault();
+    const form = event.target;
+    const entrada = document.getElementById('entrada-' + id);
+
+    // Animación de salida
+    entrada.style.transition = 'opacity 0.3s, transform 0.3s';
+    entrada.style.opacity = '0';
+    entrada.style.transform = 'translateX(20px)';
+
+    setTimeout(() => form.submit(), 300);
+    return false;
+  }
+</script>
 {% endblock %}
