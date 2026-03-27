@@ -1,4 +1,6 @@
 from pathlib import Path
+import dj_database_url
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,7 +39,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'usuarios.middleware.AdminLoginRedirectMiddleware',  
+    'usuarios.middleware.AdminLoginRedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'Signia.urls'
@@ -52,7 +54,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'usuarios.context_processors.disability_modal',  # ← modal discapacidad
+                'usuarios.context_processors.disability_modal',
             ],
         },
     },
@@ -60,11 +62,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Signia.wsgi.application'
 
+# ── BASE DE DATOS con Neon PostgreSQL ─────────────────
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(config('DATABASE_URL'))
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -84,7 +84,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_ROOT = BASE_DIR / "media"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL ='/media/'
+MEDIA_URL = '/media/'
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
@@ -104,7 +104,7 @@ EMAIL_HOST_PASSWORD = 'axbr cqtv wowh uidz'
 DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
 
 # ── ALLAUTH ────────────────────────────────────────────
-SITE_ID = 2
+SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -131,7 +131,6 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-
 
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
