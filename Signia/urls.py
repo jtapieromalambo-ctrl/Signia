@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('traduccion.urls')),
     path('', include('historial.urls')),
     path('accounts/', include('allauth.urls')),
+    path('reconocimientos/', include('reconocimientos.urls')),
 
     # Recuperar contraseña
     path('password-reset/',
