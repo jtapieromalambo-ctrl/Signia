@@ -178,7 +178,7 @@ def procesar_todos_los_videos():
                 etiquetas.append(video.label)
                 agregadas += 1
 
-        print(f"     {len(secuencia)} frames → {agregadas} variaciones generadas")
+        print(f"{len(secuencia)} frames → {agregadas} variaciones generadas")
 
     if datos:
         os.makedirs('reconocimientos/datos', exist_ok=True)
