@@ -62,9 +62,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Signia.wsgi.application'
 
+
 # ── BASE DE DATOS con Neon PostgreSQL ─────────────────
 DATABASES = {
-    'default': dj_database_url.parse(config('DATABASE_URL'))
+    'default': {
+        **dj_database_url.parse(config('DATABASE_URL')),
+        'DISABLE_SERVER_SIDE_CURSORS': True,  # Requerido para Neon pooler
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
