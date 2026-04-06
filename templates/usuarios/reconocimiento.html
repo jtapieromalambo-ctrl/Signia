@@ -4,73 +4,7 @@
 {% block title %}Signia — Reconocimiento{% endblock %}
 
 {% block extra_css %}
-<style>
-    :root {
-        --blue-primary: #2563EB;
-        --blue-light: #DBEAFE;
-        --blue-mid: #3B82F6;
-        --bg: #E8F3FC;
-        --white: #FFFFFF;
-        --text-dark: #1E293B;
-        --text-muted: #64748B;
-        --shadow: 0 4px 24px rgba(37,99,235,0.10);
-    }
-
-    body { background: var(--bg); }
-
-    .page { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem; }
-
-    .card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
-
-    .card-header {
-        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-        padding: 2rem 2.5rem; color: white;
-    }
-    .card-header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .card-header p { color: rgba(255,255,255,0.82); font-size: 0.95rem; }
-
-    .card-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-
-    .camara-area {
-        background: #0F172A; border-radius: 16px; min-height: 280px;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 0.75rem; color: #94A3B8; position: relative; overflow: hidden;
-    }
-    .camara-area .emoji { font-size: 3rem; }
-    .camara-area p { font-size: 0.9rem; font-weight: 500; }
-
-    .resultado {
-        background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
-        padding: 1rem 1.25rem; min-height: 80px;
-        font-size: 1rem; color: var(--text-muted); font-style: italic;
-    }
-    .resultado.activo { color: var(--text-dark); font-style: normal; font-weight: 500; }
-
-    .btn {
-        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-        color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
-        font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
-        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-        transition: transform 0.15s, box-shadow 0.15s;
-        align-self: flex-start;
-    }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-
-    .button{
-        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-        color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
-        font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
-        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-        transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-
-    .botones { 
-        dispaly: flex
-        justify-content: space-between;
-        align-items: center
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/usuarios/reconocimiento.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -81,21 +15,236 @@
             <p>Activa tu cámara, haz señas y Signia las convertirá a texto automáticamente</p>
         </div>
         <div class="card-body">
+
             <div class="camara-area">
-                <span class="emoji">📷</span>
-                <p>Haz clic en "Iniciar cámara" para comenzar</p>
-            </div>
-            <div class="botones"> 
-                <button class="btn">Iniciar cámara</button>
-                <a href="{% url 'index' %}">
-                    <button class="button">Atras</button></a>
+                <div id="placeholder">
+                    <span class="emoji">📷</span>
+                    <p>Haz clic en "Iniciar cámara" para comenzar</p>
+                </div>
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" width="320" height="240"></canvas>
+                <div id="badge-seña">Detectando...</div>
             </div>
 
-            
-            <div class="resultado">
-                El texto traducido aparecerá aquí...
+            <div style="text-align:center;">
+                <div id="seña-actual">--</div>
+                <div id="confianza-texto">Confianza: --</div>
+                <div id="estado-texto">Presiona "Iniciar cámara" para comenzar</div>
             </div>
+
+            <div class="botones">
+                <button class="btn" id="btn-camara" onclick="iniciar()">Iniciar cámara</button>
+
+                <!-- Toggle pill -->
+                <div class="pill-toggle" id="pill-toggle" onclick="cambiarModo()">
+                    <div class="pill-thumb" id="pill-thumb"></div>
+                    <span class="pill-icon pill-icon-left" id="icon-texto">📝</span>
+                    <span class="pill-icon pill-icon-right" id="icon-voz">🔊</span>
+                </div>
+
+                <button class="btn" onclick="limpiarHistorial()" style="background: linear-gradient(135deg,#64748B,#94A3B8); box-shadow:none;">Limpiar texto</button>
+            </div>
+
+            <div class="resultado" id="resultado">
+                <span style="color:var(--text-muted); font-style:italic;">El texto traducido aparecerá aquí...</span>
+            </div>
+
         </div>
     </div>
 </div>
+
+<script>
+    const video          = document.getElementById('video');
+    const canvas         = document.getElementById('canvas');
+    const ctx            = canvas.getContext('2d');
+    const btnCamara      = document.getElementById('btn-camara');
+    const placeholder    = document.getElementById('placeholder');
+    const badgeSeña      = document.getElementById('badge-seña');
+    const señaActual     = document.getElementById('seña-actual');
+    const confianzaTexto = document.getElementById('confianza-texto');
+    const estadoTexto    = document.getElementById('estado-texto');
+    const resultado      = document.getElementById('resultado');
+    const pillToggle     = document.getElementById('pill-toggle');
+    const pillThumb      = document.getElementById('pill-thumb');
+
+    let activo          = false;
+    let intervalo       = null;
+    let textoAcumulado  = '';
+    let modoVoz         = false;
+    let enviando        = false;
+    let grabando        = false;
+    let secuenciaFrames = [];
+    let framesSinMano   = 0;
+
+    const FRAMES_SIN_MANO_MAX = 15;
+    const MIN_FRAMES_SEÑA     = 15;
+
+    // ── Voz ──────────────────────────────────────────────
+    let vozEspanol = null;
+    function cargarVoz() {
+        const voces = speechSynthesis.getVoices();
+        vozEspanol  = voces.find(v => v.lang === 'es-CO')
+                   || voces.find(v => v.lang === 'es-MX')
+                   || voces.find(v => v.lang.startsWith('es'));
+    }
+    speechSynthesis.onvoiceschanged = cargarVoz;
+    cargarVoz();
+
+    function hablar(texto) {
+        speechSynthesis.cancel();
+        const u  = new SpeechSynthesisUtterance(texto);
+        u.lang   = 'es-CO';
+        u.rate   = 0.95;
+        u.pitch  = 1.0;
+        u.volume = 1.0;
+        if (vozEspanol) u.voice = vozEspanol;
+        speechSynthesis.speak(u);
+    }
+
+    // ── Toggle modo ──────────────────────────────────────
+    function cambiarModo() {
+        modoVoz = !modoVoz;
+        pillToggle.classList.toggle('voz', modoVoz);
+        if (modoVoz) {
+            estadoTexto.textContent = 'Modo voz — las señas se leerán en voz alta';
+        } else {
+            estadoTexto.textContent = 'Modo texto activado';
+            speechSynthesis.cancel();
+        }
+    }
+
+    // ── Cámara ───────────────────────────────────────────
+    async function iniciar() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.style.display       = 'block';
+            placeholder.style.display = 'none';
+            badgeSeña.style.display   = 'block';
+            activo   = true;
+            enviando = false;
+            estadoTexto.textContent = 'Listo — muestra tu mano y haz la seña';
+            btnCamara.textContent   = 'Detener cámara';
+            btnCamara.classList.add('rojo');
+            btnCamara.onclick = detener;
+            intervalo = setInterval(capturarFrame, 100);
+        } catch (err) {
+            estadoTexto.textContent = 'Error al acceder a la cámara: ' + err.message;
+        }
+    }
+
+    function detener() {
+        activo   = false;
+        enviando = false;
+        clearInterval(intervalo);
+        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        video.style.display       = 'none';
+        placeholder.style.display = 'flex';
+        badgeSeña.style.display   = 'none';
+        señaActual.textContent     = '--';
+        confianzaTexto.textContent = 'Confianza: --';
+        estadoTexto.textContent    = 'Cámara detenida';
+        btnCamara.textContent      = 'Iniciar cámara';
+        btnCamara.classList.remove('rojo');
+        btnCamara.onclick  = iniciar;
+        secuenciaFrames    = [];
+        grabando           = false;
+        framesSinMano      = 0;
+        speechSynthesis.cancel();
+    }
+
+    async function capturarFrame() {
+        if (!activo || enviando) return;
+        enviando = true;
+        ctx.drawImage(video, 0, 0, 320, 240);
+        const frameBase64 = canvas.toDataURL('image/jpeg', 0.5);
+        try {
+            const formData = new FormData();
+            formData.append('frame', frameBase64);
+            const response = await fetch('/reconocimientos/detectar_mano/', { method: 'POST', body: formData });
+            const data     = await response.json();
+            procesarDeteccion(data.hay_mano, frameBase64);
+        } catch (err) {
+            estadoTexto.textContent = 'Error de red: ' + err.message;
+        } finally {
+            enviando = false;
+        }
+    }
+
+    function procesarDeteccion(hayMano, frameBase64) {
+        if (hayMano) {
+            grabando = true;
+            framesSinMano = 0;
+            secuenciaFrames.push(frameBase64);
+            badgeSeña.textContent   = `Grabando... ${secuenciaFrames.length} frames`;
+            estadoTexto.textContent = 'Grabando seña — mantén el movimiento';
+        } else {
+            if (grabando) {
+                framesSinMano++;
+                estadoTexto.textContent = 'Procesando...';
+                if (framesSinMano >= FRAMES_SIN_MANO_MAX) {
+                    grabando = false;
+                    if (secuenciaFrames.length >= MIN_FRAMES_SEÑA) {
+                        procesarSecuencia();
+                    } else {
+                        estadoTexto.textContent = 'Seña muy corta — intenta de nuevo';
+                    }
+                    secuenciaFrames = [];
+                    framesSinMano   = 0;
+                }
+            } else {
+                badgeSeña.textContent   = 'Esperando mano...';
+                estadoTexto.textContent = 'Listo — muestra tu mano y haz la seña';
+            }
+        }
+    }
+
+    async function procesarSecuencia() {
+        try {
+            estadoTexto.textContent = `Analizando ${secuenciaFrames.length} frames...`;
+            badgeSeña.textContent   = 'Analizando...';
+            const response = await fetch('/reconocimientos/predecir/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ frames: secuenciaFrames })
+            });
+            const data = await response.json();
+
+            if (data.seña && data.confianza >= 70) {
+                señaActual.textContent     = data.seña.toUpperCase();
+                confianzaTexto.textContent = `Confianza: ${data.confianza}%`;
+                estadoTexto.textContent    = `Seña detectada: ${data.seña}`;
+                badgeSeña.textContent      = data.seña.toUpperCase();
+
+                if (modoVoz) {
+                    hablar(data.seña);
+                } else {
+                    textoAcumulado += (textoAcumulado ? ' ' : '') + data.seña;
+                    resultado.classList.add('activo');
+                    resultado.innerHTML = `<div id="historial">${textoAcumulado}</div>`;
+                }
+            } else {
+                señaActual.textContent     = '--';
+                confianzaTexto.textContent = 'Confianza: --';
+                estadoTexto.textContent    = data.confianza
+                    ? `Confianza baja (${data.confianza}%) — intenta de nuevo`
+                    : 'No se reconoció la seña — intenta de nuevo';
+                badgeSeña.textContent = 'Esperando mano...';
+            }
+        } catch (err) {
+            estadoTexto.textContent = 'Error al procesar: ' + err.message;
+        }
+    }
+
+    function limpiarHistorial() {
+        textoAcumulado  = '';
+        secuenciaFrames = [];
+        grabando        = false;
+        resultado.classList.remove('activo');
+        resultado.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">El texto traducido aparecerá aquí...</span>';
+        señaActual.textContent     = '--';
+        confianzaTexto.textContent = 'Confianza: --';
+        speechSynthesis.cancel();
+    }
+</script>
 {% endblock %}

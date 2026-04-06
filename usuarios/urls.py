@@ -12,4 +12,5 @@ urlpatterns = [
     path('perfil/eliminar/',views.eliminar_cuenta,  name='eliminar_cuenta'),
     path('contacto/',       views.contacto,         name='contacto'),
     path('reconocimiento/', views.reconocimiento,   name='reconocimiento'),
+    path('admin-videos/', views.panel_admin_videos, name='panel_admin_videos'),
 ]
