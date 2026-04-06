@@ -1,2 +1,18 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Entornos
+venv/
+env/
+
+# Django
+db.sqlite3
+*.sqlite3
+media/
+
+# Otros
+.env
+.vscode/
+.DS_Store
