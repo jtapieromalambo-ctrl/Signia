@@ -113,12 +113,18 @@ def predecir(request):
                 if len(resultado.hand_landmarks) == 1:
                     puntos.extend([0.0] * 63)
                 secuencia.append(puntos)
+        print(f'[RECONOCIMIENTO]) Frames con mano detectada: {len(secuencia)}/{len(frames_b64)} recibidos')
+
 
         if len(secuencia) < 5:
+
+            print('[RECONOCIMIENTO] ❌ No hay sufuciente movimiento de manos (< 5 frames validos)')
             return JsonResponse({'seña': '', 'confianza': 0})
 
         secuencia_norm = normalizar_secuencia(secuencia)
         if secuencia_norm is None:
+
+            print('[RECONOCIMIENTO] ❌ No hay sufuciente movimiento de manos (< 5 frames validos)')
             return JsonResponse({'seña': '', 'confianza': 0})
 
         features       = construir_features(secuencia_norm)
@@ -129,9 +135,21 @@ def predecir(request):
         seña      = encoder.inverse_transform(prediccion)[0]
         confianza = round(float(np.max(probabilidades)) * 100, 1)
 
+        #top 3 candidatos
+        clases = encoder.classes_
+        top3 = sorted(zip(clases, probabilidades[0]), key=lambda x: x[1], reverse=True)[:3]
+        top3_str = '|' .join(f'{c}:{round(p*100,1)}%' for c, p in top3) 
+
+
+        print(f'[RECONOCIMIENTO] ✅ Seña detectada: "{seña}" — confianza: {confianza}%')
+        print(f'[RECONOCIMIENTO] 🔢 Top 3: {top3_str}')
+
+
         return JsonResponse({'seña': seña, 'confianza': confianza})
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()  # esto imprime el error completo en la consola
         return JsonResponse({'error': str(e)}, status=500)
 
 
