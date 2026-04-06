@@ -81,23 +81,52 @@
 
     // ── Voz ──────────────────────────────────────────────
     let vozEspanol = null;
+
     function cargarVoz() {
         const voces = speechSynthesis.getVoices();
-        vozEspanol  = voces.find(v => v.lang === 'es-CO')
-                   || voces.find(v => v.lang === 'es-MX')
-                   || voces.find(v => v.lang.startsWith('es'));
+        // Evitar Microsoft Raul — no produce audio real en Chrome
+        vozEspanol = voces.find(v => v.lang.startsWith('es') && !v.name.includes('Raul') && v.localService)
+                  || voces.find(v => v.lang.startsWith('es') && !v.name.includes('Raul'))
+                  || voces.find(v => v.lang.startsWith('es'))
+                  || null;
+        console.log('[VOZ] Voz seleccionada:', vozEspanol?.name, '| local:', vozEspanol?.localService);
     }
     speechSynthesis.onvoiceschanged = cargarVoz;
     cargarVoz();
 
+    // Fix Chrome: keepalive ÚNICO global — evita que speechSynthesis se pause solo
+    setInterval(() => {
+        if (speechSynthesis.speaking) {
+            speechSynthesis.pause();
+            speechSynthesis.resume();
+        }
+    }, 5000);
+
     function hablar(texto) {
+        // Cancelar cualquier utterance anterior antes de hablar
         speechSynthesis.cancel();
+        // Pequeño delay para que cancel() surta efecto antes de speak()
+        setTimeout(() => _hablar(texto), 100);
+    }
+
+    function _hablar(texto) {
         const u  = new SpeechSynthesisUtterance(texto);
-        u.lang   = 'es-CO';
         u.rate   = 0.95;
         u.pitch  = 1.0;
         u.volume = 1.0;
-        if (vozEspanol) u.voice = vozEspanol;
+
+        // Asignar voz local si existe — las locales funcionan mejor en Chrome
+        if (vozEspanol) {
+            u.voice = vozEspanol;
+            u.lang  = vozEspanol.lang;
+        } else {
+            u.lang = 'es';
+        }
+
+        u.onerror = (e) => console.error('[VOZ] Error:', e.error);
+        u.onstart = ()  => console.log('[VOZ] Hablando:', texto);
+        u.onend   = ()  => console.log('[VOZ] Terminó');
+
         speechSynthesis.speak(u);
     }
 
@@ -107,6 +136,8 @@
         pillToggle.classList.toggle('voz', modoVoz);
         if (modoVoz) {
             estadoTexto.textContent = 'Modo voz — las señas se leerán en voz alta';
+            // Prueba de voz al activar el modo para "desbloquear" el audio
+            hablar('modo voz activado');
         } else {
             estadoTexto.textContent = 'Modo texto activado';
             speechSynthesis.cancel();
@@ -217,6 +248,7 @@
                 badgeSeña.textContent      = data.seña.toUpperCase();
 
                 if (modoVoz) {
+                    console.log('[VOZ] Intentando hablar:', data.seña, '| voz:', vozEspanol?.name);
                     hablar(data.seña);
                 } else {
                     textoAcumulado += (textoAcumulado ? ' ' : '') + data.seña;
