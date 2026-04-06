@@ -160,6 +160,8 @@
         .dropdown-item:hover { background: #F0F7FF; color: #2563EB; }
         .dropdown-item.danger { color: #DC2626; }
         .dropdown-item.danger:hover { background: #FEE2E2; }
+        .dropdown-item.admin { color: #7C3AED; }
+        .dropdown-item.admin:hover { background: #F5F3FF; color: #6D28D9; }
         .dropdown-divider { height: 1px; background: #DBEAFE; margin: 0.4rem 0; }
 
         footer.main-footer {
@@ -303,6 +305,10 @@
             <a href="{% url 'perfil' %}" class="dropdown-item">👤 Mi perfil</a>
             <a href="{% url 'editar_perfil' %}" class="dropdown-item">✏️ Editar perfil</a>
             <a href="{% url 'cambiar_password' %}" class="dropdown-item">🔒 Cambiar contraseña</a>
+            {% if user.is_staff %}
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'admin_videos' %}" class="dropdown-item admin">🛡️ Panel Admin</a>
+            {% endif %}
             <div class="dropdown-divider"></div>
             <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 Cerrar sesión</a>
         </div>

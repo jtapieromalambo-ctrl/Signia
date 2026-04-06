@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
@@ -8,9 +8,22 @@ from .forms import RegistroForm, EditarPerfilForm
 from .models import Usuario
 
 
+# ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
+def es_admin(user):
+    return user.is_authenticated and user.is_superuser
+
+
+# ── PANEL ADMIN PERSONALIZADO ─────────────────────────
+@user_passes_test(es_admin)
+def panel_admin_videos(request):
+    return render(request, 'usuarios/admin_video.html')
+
+
 # ── INICIO ─────────────────────────────────────────────
 def index(request):
     if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect('panel_admin_videos')  # 🔥 CAMBIO
         return redirigir_por_discapacidad(request.user)
     return render(request, 'usuarios/index.html')
 
@@ -18,21 +31,22 @@ def index(request):
 # ── LOGIN ──────────────────────────────────────────────
 def home(request):
     if request.user.is_authenticated:
-        # Si ya está autenticado y es superusuario, manda al admin
         if request.user.is_superuser:
-            return redirect('/admin/')
+            return redirect('panel_admin_videos')  # 🔥 CAMBIO
         return redirigir_por_discapacidad(request.user)
 
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            # ── Si es superusuario → Admin Django ──────────────
+
+            # 🔥 CAMBIO AQUÍ
             if user.is_superuser:
-                return redirect('/admin/')
-            # ── Si es usuario normal → flujo normal ────────────
+                return redirect('panel_admin_videos')
+
             request.session['show_disability_modal'] = True
             return redirigir_por_discapacidad(user)
         else:
@@ -175,4 +189,4 @@ def traduccion(request):
 
 # ── RECONOCIMIENTO ─────────────────────────────────────
 def reconocimiento(request):
-    return render(request, 'usuarios/reconocimiento.html')
+    return redirect('/reconocimientos/camara/')
