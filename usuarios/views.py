@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .forms import RegistroForm, EditarPerfilForm
 from .models import Usuario
+from reconocimientos.models import VideoSeña
 
 
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
@@ -14,10 +15,17 @@ def es_admin(user):
 
 
 # ── PANEL ADMIN PERSONALIZADO ─────────────────────────
+# ajusta si los nombres son diferentes
+
 @user_passes_test(es_admin)
 def panel_admin_videos(request):
-    return render(request, 'usuarios/admin_video.html')
-
+    context = {
+        'videos_reconocimiento': VideoSeña.objects.all().order_by('-creado'),
+        'videos_traductor':      [],
+        'total_reconocimiento':  VideoSeña.objects.count(),
+        'total_traductor':       0,
+    }
+    return render(request, 'usuarios/admin_video.html', context)
 
 # ── INICIO ─────────────────────────────────────────────
 def index(request):
