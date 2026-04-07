@@ -8,184 +8,209 @@
 {% endblock %}
 
 {% block content %}
+<h1 class="titulo-seccion">Habla o Escribe</h1>
 
-<!-- ══════════════════════════════════════
-     HERO HEADER — ícono + título + estado
-══════════════════════════════════════ -->
-<div class="page-header">
-  <div class="page-header__inner">
-    <div class="page-header__icon">🤟</div>
-    <div>
-      <h1 class="page-header__title">
-        Intérprete de <span class="accent">Señas</span>
-      </h1>
-      <p class="page-header__sub">
-        Interpreta lengua de señas en tiempo real a través de la cámara
-        y la convierte a texto y audio para una comunicación inclusiva.
-      </p>
-    </div>
-  </div>
-  <div class="status-pill">
-    <span class="status-pill__dot" id="statusDot"></span>
-    <span id="statusText">Sin cámara</span>
-  </div>
-</div>
+<form class="con" method="POST" enctype="multipart/form-data" id="formulario">
+    {% csrf_token %}
+    <label for="palabra">Palabra</label>
 
-<!-- ══════════════════════════════════════
-     BARRA DE CONTROLES
-     (franja blanca con botones y pastillas)
-══════════════════════════════════════ -->
-<div class="controls-bar">
-
-  <!-- Indicador "CÁMARA EN VIVO" -->
-  <div class="controls-bar__live">
-    <span class="live-dot"></span>
-    Cámara en vivo
-  </div>
-
-  <div class="controls-bar__sep"></div>
-
-  <!-- Botones -->
-  <div class="controls">
-    <button class="btn btn--primary" id="btnStart" onclick="startCam()">
-      📷 Iniciar cámara
-    </button>
-    <button class="btn btn--danger" id="btnStop" onclick="stopCam()" disabled>
-      ⏹ Detener
-    </button>
-    <button class="btn" onclick="clearAll()">
-      ✕ Limpiar
-    </button>
-  </div>
-
- 
-
-</div>
-
-<!-- ══════════════════════════════════════
-     CUADRÍCULA PRINCIPAL
-══════════════════════════════════════ -->
-<div class="translator-grid">
-
-  <!-- ── COLUMNA IZQUIERDA — Cámara ── -->
-  <div class="col-left">
-
-    <div class="card">
-      <div class="card__head">
-        <span class="card__title">📷 Entrada de cámara</span>
-        <span class="card__badge" id="fpsBadge">— fps</span>
-      </div>
-
-      <div class="cam-wrap">
-        <video id="video" autoplay muted playsinline></video>
-
-        <div class="no-cam" id="noCam">
-          <span class="no-cam__icon">📷</span>
-          <p>Haz clic en Iniciar cámara<br>para comenzar</p>
-        </div>
-
-        <span class="corner corner--tl"></span>
-        <span class="corner corner--tr"></span>
-        <span class="corner corner--bl"></span>
-        <span class="corner corner--br"></span>
-
-        <div class="scan-line" id="scanLine"></div>
-
-        <div class="det-overlay" id="detOverlay">
-          <div>
-            <div class="det-overlay__letter" id="detLetter">—</div>
-            <div class="det-overlay__word"   id="detWord">—</div>
-          </div>
-          <div class="det-overlay__conf" id="detConf">—%</div>
-        </div>
-      </div>
-
-      <div class="conf-strip">
-        <div class="conf-strip__row">
-          <span class="conf-strip__label">Confianza del modelo</span>
-          <span class="conf-strip__pct" id="confPct">0%</span>
-        </div>
-        <div class="conf-strip__bar">
-          <div class="conf-strip__fill" id="confFill"></div>
-        </div>
-      </div>
+    <div class="input-group">
+        <input type="text" name="palabra" id="palabra" placeholder="Escribe una o varias palabras...">
+        <button type="submit" class="btn-lupa">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </button>
     </div>
 
-    <!-- Sliders de voz -->
-    <div class="voice-controls">
-      <div class="slider-box">
-        <span class="slider-box__label">Velocidad</span>
-        <input type="range" id="sRate" min="0.5" max="2" step="0.1" value="1"
-               oninput="rateVal.textContent = parseFloat(this.value).toFixed(1) + '×'; speechRate = +this.value">
-        <span class="slider-box__val" id="rateVal">1.0×</span>
-      </div>
-      <div class="slider-box">
-        <span class="slider-box__label">Tono</span>
-        <input type="range" id="sPitch" min="0.5" max="2" step="0.1" value="1"
-               oninput="pitchVal.textContent = parseFloat(this.value).toFixed(1); speechPitch = +this.value">
-        <span class="slider-box__val" id="pitchVal">1.0</span>
-      </div>
+    <input type="file" name="audio" id="audioInput" style="display:none">
+
+    <div class="video" id="contenedorVideo">
+        {% if video_base %}
+            <video id="videoBase" width="100%" autoplay muted loop playsinline preload="auto">
+                <source src="{{ video_base.video.url }}" type="video/mp4">
+            </video>
+        {% else %}
+            <span class="video-placeholder">Sin video base</span>
+        {% endif %}
+
+        <!-- Video A: primer buffer -->
+        <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
+
+        <!-- Video B: segundo buffer (double buffering) -->
+        <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
     </div>
 
-  </div>
+    <button type="button" id="btnMic" class="btn-mic">🎤 Hablar</button>
+</form>
 
-  <!-- ── COLUMNA DERECHA — Traducción ── -->
-  <div class="col-right">
-
-    <div class="card">
-      <div class="card__head">
-        <span class="card__title">💬 Traducción en tiempo real</span>
-        <button class="speak-btn" id="mainSpeak" onclick="speakAll()" title="Leer todo">🔊</button>
-      </div>
-
-      <div class="trans-display">
-        <div class="trans-display__label">Texto detectado</div>
-        <div class="trans-display__text" id="transText">
-          <span class="trans-display__placeholder">Inicia la cámara para comenzar la detección</span>
-        </div>
-      </div>
-
-      <div class="chips" id="chips"></div>
-
-      <div class="audio-panel">
-        <button class="speak-btn" id="waveSpeak" onclick="speakAll()">🔊</button>
-        <div class="wave">
-          <div class="wave__bar"></div>
-          <div class="wave__bar"></div>
-          <div class="wave__bar"></div>
-          <div class="wave__bar"></div>
-          <div class="wave__bar"></div>
-          <div class="wave__bar"></div>
-          <div class="wave__bar"></div>
-        </div>
-        <span class="audio-panel__label" id="audioLbl">síntesis de voz lista</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card__head">
-        <span class="card__title">🕑 Historial</span>
-        <button class="btn btn--sm" onclick="clearHistory()">limpiar</button>
-      </div>
-      <div class="history" id="histList">
-        <div class="history__empty">Las señas detectadas<br>aparecerán aquí</div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/traduccion/traductor.js' %}"></script>
 <script>
-  // Actualiza las pastillas de info con cada detección
-  function updatePills(manos, cara, cuerpo) {
-    document.getElementById('pillManos').textContent  = manos;
-    document.getElementById('pillCara').textContent   = cara;
-    document.getElementById('pillCuerpo').textContent = cuerpo;
-  }
+    // ─── COLA DE VIDEOS ───────────────────────────────────────────────
+    const colaVideos = [
+        {% for url in urls_videos %}
+            "{{ url }}",
+        {% endfor %}
+    ];
+
+    // ─── REFERENCIAS AL DOM ───────────────────────────────────────────
+    const videoBase = document.getElementById('videoBase');
+    const videoA    = document.getElementById('videoA');
+    const videoB    = document.getElementById('videoB');
+
+    // ─── DOUBLE BUFFERING ─────────────────────────────────────────────
+    let activo       = videoA;
+    let siguiente    = videoB;
+    let indiceActual = 0;
+
+    // ─── FUNCIÓN PRINCIPAL: reproducirSiguiente() ─────────────────────
+    function reproducirSiguiente() {
+
+        if (indiceActual < colaVideos.length) {
+
+            siguiente.src = colaVideos[indiceActual];
+            siguiente.load();
+
+            siguiente.oncanplay = () => {
+
+                // Oculta el video base solo cuando el primer video ya está listo
+                if (indiceActual === 0 && videoBase) {
+                    videoBase.style.display = 'none';
+                }
+
+                activo.style.display = 'none';
+                activo.pause();
+
+                siguiente.style.display = 'block';
+                siguiente.play().catch(() => {
+                    setTimeout(() => siguiente.play().catch(() => {}), 300);
+                });
+
+                // Swap de roles entre buffers
+                [activo, siguiente] = [siguiente, activo];
+                indiceActual++;
+
+                // Precarga el próximo video en segundo plano
+                if (indiceActual < colaVideos.length) {
+                    siguiente.src = colaVideos[indiceActual];
+                    siguiente.load();
+                }
+            };
+
+        } else {
+            // ─── COLA TERMINADA: vuelve al video base ─────────────────
+            indiceActual = 0;
+            activo.style.display = 'none';
+            activo.pause();
+
+            if (videoBase) {
+                videoBase.style.display = 'block';
+                videoBase.play().catch(() => {});
+            }
+        }
+    }
+
+    // ─── EVENTOS "ENDED" ──────────────────────────────────────────────
+    videoA.addEventListener('ended', reproducirSiguiente);
+    videoB.addEventListener('ended', reproducirSiguiente);
+
+    // Arranca si Django ya envió videos (búsqueda por texto)
+    if (colaVideos.length > 0) reproducirSiguiente();
+
+
+    // ─── MICRÓFONO ────────────────────────────────────────────────────
+    const btnMic     = document.getElementById('btnMic');
+    const formulario = document.getElementById('formulario');
+    let mediaRecorder;
+    let grabando   = false;
+    let chunks     = [];
+    let procesando = false;
+
+    btnMic.addEventListener('click', async () => {
+
+        if (procesando) return;
+
+        if (!grabando) {
+            // ── INICIO DE GRABACIÓN ───────────────────────────────────
+            chunks = [];
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                procesando = true;
+
+                const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+                const formData = new FormData(formulario);
+                formData.append('audio', blob, 'audio.webm');
+
+                btnMic.textContent = '⏳ Procesando...';
+                btnMic.disabled = true;
+
+                fetch(window.location.href, { method: 'POST', body: formData })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const scriptNuevo = doc.querySelector('script');
+
+                    if (scriptNuevo) {
+                        const contenido = scriptNuevo.textContent;
+                        const match = contenido.match(/const colaVideos = \[([\s\S]*?)\];/);
+
+                        if (match) {
+                            const urlsTexto = match[1].trim();
+                            const nuevasColas = urlsTexto
+                                .split(',')
+                                .map(s => s.trim().replace(/"/g, ''))
+                                .filter(s => s.length > 0);
+
+                            if (nuevasColas.length > 0) {
+                                indiceActual = 0;
+                                colaVideos.length = 0;
+                                nuevasColas.forEach(url => colaVideos.push(url));
+
+                                // Reset limpio de buffers antes de reproducir
+                                activo.pause();
+                                activo.style.display   = 'none';
+                                activo.oncanplay       = null;
+                                siguiente.oncanplay    = null;
+
+                                // Reinicia roles desde cero
+                                activo    = videoA;
+                                siguiente = videoB;
+
+                                reproducirSiguiente();
+                            }
+                        }
+                    }
+
+                    btnMic.textContent = '🎤 Hablar';
+                    btnMic.disabled    = false;
+                    procesando         = false;
+                })
+                .catch(() => {
+                    btnMic.textContent = '🎤 Hablar';
+                    btnMic.disabled    = false;
+                    procesando         = false;
+                });
+            };
+
+            mediaRecorder.start(100);
+            grabando = true;
+            btnMic.textContent = '⏹ Detener';
+
+        } else {
+            // ── DETENER GRABACIÓN ─────────────────────────────────────
+            mediaRecorder.stop();
+            grabando = false;
+            btnMic.textContent = '🎤 Hablar';
+        }
+    });
 </script>
 {% endblock %}
