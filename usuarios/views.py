@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from .forms import RegistroForm, EditarPerfilForm
 from .models import Usuario
 from reconocimientos.models import VideoSeña
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
@@ -198,3 +200,117 @@ def traduccion(request):
 # ── RECONOCIMIENTO ─────────────────────────────────────
 def reconocimiento(request):
     return redirect('/reconocimientos/camara/')
+
+
+# ── RECUPERAR CONTRASEÑA CON CÓDIGO ───────────────────
+import random
+
+def recuperar_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        try:
+            usuario = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            messages.error(request, 'No existe una cuenta con ese correo.')
+            return render(request, 'registration/recuperar.html')
+
+        codigo = str(random.randint(100000, 999999))
+        request.session['reset_codigo'] = codigo
+        request.session['reset_email']  = email
+
+        # ── CORREO HTML ──────────────────────────────
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F3FC;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#2563EB,#3B82F6);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:24px;">🔑 Recuperar Contraseña</h1>
+            <p style="color:#BFDBFE;margin:8px 0 0;">Signia - Comunicación sin barreras</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 24px;">Hola,</p>
+            <p style="color:#374151;font-size:16px;margin:0 0 24px;">Recibimos una solicitud para restablecer tu contraseña. Usa el siguiente código:</p>
+            <div style="background:#EFF6FF;border:2px dashed #2563EB;border-radius:16px;padding:24px;text-align:center;margin:0 0 24px;">
+              <p style="color:#1E40AF;font-size:13px;margin:0 0 8px;letter-spacing:2px;text-transform:uppercase;">Tu código de verificación</p>
+              <span style="color:#2563EB;font-size:42px;font-weight:bold;letter-spacing:12px;">{codigo}</span>
+            </div>
+            <p style="color:#6B7280;font-size:14px;margin:0 0 8px;">⏱ Este código es válido por <strong>10 minutos</strong>.</p>
+            <p style="color:#6B7280;font-size:14px;margin:0;">Si no solicitaste este cambio, ignora este correo.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#F0F7FF;padding:20px;text-align:center;">
+            <p style="color:#93C5FD;font-size:12px;margin:0;">© 2026 Signia · Comunicación sin barreras 🤟</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+        email_msg = EmailMultiAlternatives(
+            subject='Código para restablecer tu contraseña - Signia',
+            body=f'Tu código de verificación es: {codigo}\n\nEste código es válido por 10 minutos.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[email],
+        )
+        email_msg.attach_alternative(html_content, "text/html")
+        email_msg.send(fail_silently=False)
+
+        messages.success(request, 'Código enviado a tu correo.')
+        return redirect('verificar_codigo')
+
+    return render(request, 'registration/recuperar.html')
+
+def verificar_codigo(request):
+    if request.method == 'POST':
+        codigo_ingresado = request.POST.get('codigo', '').strip()
+        codigo_guardado  = request.session.get('reset_codigo')
+
+        if not codigo_guardado:
+            messages.error(request, 'La sesión expiró. Vuelve a solicitar el código.')
+            return redirect('recuperar_password')
+
+        if codigo_ingresado == codigo_guardado:
+            request.session['reset_verificado'] = True
+            return redirect('nueva_password')
+        else:
+            messages.error(request, 'Código incorrecto. Inténtalo de nuevo.')
+
+    return render(request, 'registration/verificar_codigo.html')
+
+
+def nueva_password(request):
+    if not request.session.get('reset_verificado'):
+        messages.error(request, 'Debes verificar tu código primero.')
+        return redirect('recuperar_password')
+
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        if password1 != password2:
+            messages.error(request, 'Las contraseñas no coinciden.')
+        elif len(password1) < 8:
+            messages.error(request, 'La contraseña debe tener mínimo 8 caracteres.')
+        else:
+            email   = request.session.get('reset_email')
+            usuario = Usuario.objects.get(email=email)
+            usuario.set_password(password1)
+            usuario.save()
+
+            del request.session['reset_codigo']
+            del request.session['reset_email']
+            del request.session['reset_verificado']
+
+            messages.success(request, '¡Contraseña cambiada exitosamente! Ya puedes iniciar sesión.')
+            return redirect('home')
+
+    return render(request, 'registration/nueva_password.html')
