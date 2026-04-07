@@ -13,4 +13,10 @@ urlpatterns = [
     path('contacto/',       views.contacto,         name='contacto'),
     path('reconocimiento/', views.reconocimiento,   name='reconocimiento'),
     path('admin-videos/', views.panel_admin_videos, name='panel_admin_videos'),
+
+
+    # Recuperar contraseña con código
+    path('recuperar/',          views.recuperar_password,  name='recuperar_password'),
+    path('verificar-codigo/',   views.verificar_codigo,    name='verificar_codigo'),
+    path('nueva-password/',     views.nueva_password,      name='nueva_password'),
 ]
