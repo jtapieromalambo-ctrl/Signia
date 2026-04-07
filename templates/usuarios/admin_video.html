@@ -1,0 +1,653 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Signia — Panel Administrador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/usuarios/admin_video.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="admin-header-left">
+            <span class="admin-badge">ADMIN</span>
+            <div>
+                <h1>Panel de Videos</h1>
+                <p>Gestión centralizada de contenido multimedia de Signia</p>
+            </div>
+        </div>
+        <div class="admin-stats">
+            <div class="stat-pill">
+                <span class="stat-num" id="count-reconocimiento">{{ total_reconocimiento }}</span>
+                <span class="stat-label">Reconocimiento</span>
+            </div>
+            <div class="stat-pill">
+                <span class="stat-num" id="count-traductor">{{ total_traductor }}</span>
+                <span class="stat-label">Traductor</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Panel de entrenamiento ── -->
+    <div class="train-panel" id="trainPanel">
+        <div class="train-panel-info">
+            <h3>🧠 Entrenar modelo de IA</h3>
+            <p>Sube todos los videos primero y luego entrena el modelo una sola vez. El proceso corre en segundo plano.</p>
+        </div>
+        <button class="btn-train" id="btnTrain" onclick="iniciarEntrenamiento()">
+            ⚡ Entrenar ahora
+        </button>
+        <div class="train-status-wrap" id="trainStatusWrap" style="display:none;">
+            <div class="train-progress-outer">
+                <div class="train-progress-inner indeterminate" id="trainProgressBar"></div>
+            </div>
+            <p class="train-status-label" id="trainStatusLabel">Iniciando...</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('reconocimiento', this)">
+            <span class="tab-icon">🧠</span> Videos de Reconocimiento
+        </button>
+        <button class="tab-btn" onclick="switchTab('traductor', this)">
+            <span class="tab-icon">🔤</span> Videos del Traductor
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB: RECONOCIMIENTO
+    ═══════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-reconocimiento">
+
+        <div class="section-info">
+            <div class="info-icon">ℹ️</div>
+            <div>
+                <strong>Videos de entrenamiento</strong> — Sube múltiples videos a la vez.
+                Puedes editar el nombre de la seña antes de subir.
+                Los videos con el mismo nombre se acumularán para enriquecer el dataset.
+            </div>
+        </div>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="drop-reconocimiento"
+             ondragover="event.preventDefault(); this.classList.add('dragging')"
+             ondragleave="this.classList.remove('dragging')"
+             ondrop="handleDrop(event, 'reconocimiento')">
+            <div class="upload-icon">📂</div>
+            <p class="upload-title">Arrastra tus videos aquí</p>
+            <p class="upload-sub">o haz clic para seleccionar archivos</p>
+            <input type="file" id="input-reconocimiento" multiple accept="video/*"
+                   onchange="previewFiles(this.files, 'reconocimiento')" hidden>
+            <button class="btn-upload" onclick="document.getElementById('input-reconocimiento').click()">
+                Seleccionar videos
+            </button>
+        </div>
+
+        <!-- Preview lista antes de subir -->
+        <div class="preview-list" id="preview-reconocimiento"></div>
+
+        <!-- Botón subir -->
+        <div id="btn-subir-reconocimiento-wrap" style="display:none; text-align:center; margin-top:1rem;">
+            <button class="btn-primary" onclick="subirReconocimiento()">
+                ⬆️ Subir todos los videos
+            </button>
+            <button class="btn-ghost" onclick="limpiarPreview('reconocimiento')">Cancelar</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-wrap" id="progress-reconocimiento" style="display:none;">
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner" id="progress-bar-r"></div>
+            </div>
+            <p class="progress-label" id="progress-label-r">Subiendo...</p>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast-reconocimiento"></div>
+
+        <!-- Historial de videos subidos -->
+        <div class="section-title-row">
+            <h2>Videos subidos</h2>
+            <div class="search-wrap">
+                <input type="text" class="search-input" placeholder="Buscar seña..."
+                       oninput="filtrarTabla('tabla-reconocimiento', this.value)">
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="video-table" id="tabla-reconocimiento">
+                <thead>
+                    <tr>
+                        <th>Seña (label)</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in videos_reconocimiento %}
+                    <tr data-id="{{ v.id }}">
+                        <td>
+                            <span class="label-chip">{{ v.label }}</span>
+                        </td>
+                        <td class="date-cell">{{ v.creado|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if v.procesado %}
+                                <span class="badge badge-ok">Procesado</span>
+                            {% elif v.procesando %}
+                                <span class="badge badge-pending">Procesando</span>
+                            {% else %}
+                                <span class="badge badge-new">Nuevo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-danger-sm"
+                                    onclick="eliminarVideoReconocimiento({{ v.id }}, this)">
+                                🗑
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="empty-reconocimiento">
+                        <td colspan="4" class="empty-cell">No hay videos subidos aún</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB: TRADUCTOR
+    ═══════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-traductor">
+
+        <div class="section-info">
+            <div class="info-icon">ℹ️</div>
+            <div>
+                <strong>Videos del traductor</strong> — Un video por seña.
+                Puedes crear nuevas señas, reemplazar el video de una existente o eliminarlas.
+            </div>
+        </div>
+
+        <!-- Formulario crear/editar -->
+        <div class="form-card" id="form-traductor">
+            <h3 id="form-titulo">➕ Nueva seña</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre de la seña</label>
+                    <input type="text" id="nombre-seña" placeholder="Ej: hola, gracias, agua...">
+                </div>
+                <div class="form-group">
+                    <label>Video</label>
+                    <input type="file" id="video-traductor" accept="video/*">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn-primary" onclick="guardarTraductor()">
+                    <span id="btn-guardar-label">💾 Guardar</span>
+                </button>
+                <button class="btn-ghost" onclick="cancelarEdicion()">Cancelar</button>
+            </div>
+            <div class="progress-wrap" id="progress-traductor" style="display:none;">
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="progress-bar-t"></div>
+                </div>
+                <p class="progress-label" id="progress-label-t">Guardando...</p>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast-traductor"></div>
+
+        <!-- Tabla -->
+        <div class="section-title-row">
+            <h2>Señas del traductor</h2>
+            <div class="search-wrap">
+                <input type="text" class="search-input" placeholder="Buscar seña..."
+                       oninput="filtrarTabla('tabla-traductor', this.value)">
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="video-table" id="tabla-traductor">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Video</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in videos_traductor %}
+                    <tr data-id="{{ v.id }}">
+                        <td><span class="label-chip">{{ v.nombre }}</span></td>
+                        <td>
+                            <a href="{{ v.video.url }}" target="_blank" class="ver-link">
+                                ▶ Ver video
+                            </a>
+                        </td>
+                        <td class="acciones-cell">
+                            <button class="btn-edit-sm"
+                                    onclick="editarTraductor({{ v.id }}, '{{ v.nombre }}')">
+                                ✏️
+                            </button>
+                            <button class="btn-danger-sm"
+                                    onclick="eliminarTraductor({{ v.id }}, this)">
+                                🗑
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="empty-traductor">
+                        <td colspan="3" class="empty-cell">No hay señas registradas aún</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+let editandoId = null;
+
+// ── Tabs ─────────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── Filtrar tabla ────────────────────────────────────────────────────
+function filtrarTabla(tablaId, q) {
+    const filas = document.querySelectorAll(`#${tablaId} tbody tr`);
+    filas.forEach(tr => {
+        const texto = tr.textContent.toLowerCase();
+        tr.style.display = texto.includes(q.toLowerCase()) ? '' : 'none';
+    });
+}
+
+// ── Preview archivos ─────────────────────────────────────────────────
+let archivosReconocimiento = [];
+
+function handleDrop(event, tipo) {
+    event.preventDefault();
+    document.getElementById('drop-' + tipo).classList.remove('dragging');
+    const files = event.dataTransfer.files;
+    previewFiles(files, tipo);
+}
+
+function previewFiles(files, tipo) {
+    archivosReconocimiento = Array.from(files);
+    const contenedor = document.getElementById('preview-' + tipo);
+    contenedor.innerHTML = '';
+    if (archivosReconocimiento.length === 0) {
+        document.getElementById('btn-subir-' + tipo + '-wrap').style.display = 'none';
+        return;
+    }
+    archivosReconocimiento.forEach((file, i) => {
+        const labelDefault = file.name.replace(/\.[^.]+$/, '');
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        item.id = 'preview-item-' + i;
+        item.innerHTML = `
+            <span class="preview-icon">🎥</span>
+            <input
+                type="text"
+                class="preview-label-input"
+                id="label-input-${i}"
+                value="${labelDefault}"
+                placeholder="Nombre de la seña..."
+                title="Edita el nombre de la seña antes de subir"
+            >
+            <span class="preview-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+            <span class="preview-status" id="status-${i}">Pendiente</span>
+        `;
+        contenedor.appendChild(item);
+    });
+    document.getElementById('btn-subir-' + tipo + '-wrap').style.display = 'flex';
+}
+
+function limpiarPreview(tipo) {
+    archivosReconocimiento = [];
+    document.getElementById('preview-' + tipo).innerHTML = '';
+    document.getElementById('btn-subir-' + tipo + '-wrap').style.display = 'none';
+    document.getElementById('input-' + tipo).value = '';
+}
+
+// ── Subir reconocimiento (lote) ───────────────────────────────────────
+async function subirReconocimiento() {
+    if (archivosReconocimiento.length === 0) return;
+
+    // Validar que ningún nombre esté vacío
+    for (let i = 0; i < archivosReconocimiento.length; i++) {
+        const inputEl = document.getElementById('label-input-' + i);
+        if (!inputEl.value.trim()) {
+            inputEl.focus();
+            inputEl.style.borderColor = '#DC2626';
+            mostrarToast('toast-reconocimiento', '⚠️ El nombre de la seña no puede estar vacío', true);
+            return;
+        }
+        inputEl.style.borderColor = '';
+    }
+
+    const progressWrap = document.getElementById('progress-reconocimiento');
+    const progressBar  = document.getElementById('progress-bar-r');
+    const progressLbl  = document.getElementById('progress-label-r');
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressLbl.textContent = 'Subiendo en paralelo...';
+
+    const total = archivosReconocimiento.length;
+    let completados = 0;
+    let subidos = 0;
+    let errores = 0;
+
+    // Marcar todos como "Subiendo..." antes de lanzar
+    archivosReconocimiento.forEach((_, i) => {
+        document.getElementById('status-' + i).textContent = 'Subiendo...';
+        document.getElementById('status-' + i).className = 'preview-status subiendo';
+        document.getElementById('label-input-' + i).classList.add('subiendo');
+    });
+
+    // Lanzar todas las subidas en paralelo
+    const promesas = archivosReconocimiento.map((file, i) => {
+        const label    = document.getElementById('label-input-' + i).value.trim();
+        const statusEl = document.getElementById('status-' + i);
+        const inputEl  = document.getElementById('label-input-' + i);
+
+        const fd = new FormData();
+        fd.append('label', label);
+        fd.append('video', file);
+
+        return fetch('/reconocimientos/admin-videos/reconocimiento/subir/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF },
+            body: fd
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                subidos++;
+                statusEl.textContent = '✅ Subido';
+                statusEl.className = 'preview-status ok';
+                agregarFilaReconocimiento(data.video);
+            } else {
+                errores++;
+                statusEl.textContent = '❌ Error';
+                statusEl.className = 'preview-status error';
+                inputEl.classList.remove('subiendo');
+            }
+        })
+        .catch(() => {
+            errores++;
+            statusEl.textContent = '❌ Error de red';
+            statusEl.className = 'preview-status error';
+            inputEl.classList.remove('subiendo');
+        })
+        .finally(() => {
+            completados++;
+            progressBar.style.width = Math.round((completados / total) * 100) + '%';
+            progressLbl.textContent = `${completados} de ${total} completados...`;
+        });
+    });
+
+    await Promise.all(promesas);
+
+    progressBar.style.width = '100%';
+    progressLbl.textContent = `Listo — ${subidos} subidos${errores ? ', ' + errores + ' errores' : ''}`;
+    actualizarContador('count-reconocimiento', subidos);
+    mostrarToast('toast-reconocimiento', `✅ ${subidos} video${subidos !== 1 ? 's' : ''} subido${subidos !== 1 ? 's' : ''} correctamente`);
+    setTimeout(() => {
+        limpiarPreview('reconocimiento');
+        progressWrap.style.display = 'none';
+        progressBar.style.width = '0%';
+    }, 3000);
+}
+
+function agregarFilaReconocimiento(v) {
+    const tbody = document.querySelector('#tabla-reconocimiento tbody');
+    const empty = document.getElementById('empty-reconocimiento');
+    if (empty) empty.remove();
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-id', v.id);
+    tr.innerHTML = `
+        <td><span class="label-chip">${v.label}</span></td>
+        <td class="date-cell">${v.creado}</td>
+        <td><span class="badge badge-new">Nuevo</span></td>
+        <td><button class="btn-danger-sm" onclick="eliminarVideoReconocimiento(${v.id}, this)">🗑</button></td>
+    `;
+    tbody.prepend(tr);
+}
+
+// ── Eliminar reconocimiento ───────────────────────────────────────────
+async function eliminarVideoReconocimiento(id, btn) {
+    if (!confirm('¿Eliminar este video de entrenamiento?')) return;
+    btn.disabled = true;
+    btn.textContent = '...';
+    const res = await fetch(`/reconocimientos/admin-videos/reconocimiento/eliminar/${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': CSRF }
+    });
+    const data = await res.json();
+    if (data.ok) {
+        document.querySelector(`#tabla-reconocimiento tr[data-id="${id}"]`).remove();
+        actualizarContador('count-reconocimiento', -1);
+        mostrarToast('toast-reconocimiento', '🗑 Video eliminado');
+    } else {
+        btn.disabled = false;
+        btn.textContent = '🗑';
+        mostrarToast('toast-reconocimiento', '❌ No se pudo eliminar', true);
+    }
+}
+
+// ── Traductor CRUD ────────────────────────────────────────────────────
+function editarTraductor(id, nombre) {
+    editandoId = id;
+    document.getElementById('nombre-seña').value = nombre;
+    document.getElementById('form-titulo').textContent = '✏️ Editando: ' + nombre;
+    document.getElementById('btn-guardar-label').textContent = '💾 Actualizar';
+    document.getElementById('form-traductor').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelarEdicion() {
+    editandoId = null;
+    document.getElementById('nombre-seña').value = '';
+    document.getElementById('video-traductor').value = '';
+    document.getElementById('form-titulo').textContent = '➕ Nueva seña';
+    document.getElementById('btn-guardar-label').textContent = '💾 Guardar';
+}
+
+async function guardarTraductor() {
+    const nombre = document.getElementById('nombre-seña').value.trim();
+    const file   = document.getElementById('video-traductor').files[0];
+
+    if (!nombre) { mostrarToast('toast-traductor', '⚠️ Escribe el nombre de la seña', true); return; }
+    if (!editandoId && !file) { mostrarToast('toast-traductor', '⚠️ Selecciona un video', true); return; }
+
+    const progressWrap = document.getElementById('progress-traductor');
+    const progressBar  = document.getElementById('progress-bar-t');
+    const progressLbl  = document.getElementById('progress-label-t');
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '40%';
+    progressLbl.textContent = 'Guardando...';
+
+    const fd = new FormData();
+    fd.append('nombre', nombre);
+    if (file) fd.append('video', file);
+
+    const url    = editandoId
+        ? `/reconocimientos/admin-videos/traductor/editar/${editandoId}/`
+        : '/reconocimientos/admin-videos/traductor/crear/';
+    const method = editandoId ? 'PUT' : 'POST';
+
+    try {
+        const res  = await fetch(url, {
+            method,
+            headers: { 'X-CSRFToken': CSRF },
+            body: fd
+        });
+        const data = await res.json();
+        progressBar.style.width = '100%';
+
+        if (data.ok) {
+            if (editandoId) {
+                actualizarFilaTraductor(data.video);
+                mostrarToast('toast-traductor', '✅ Seña actualizada');
+            } else {
+                agregarFilaTraductor(data.video);
+                actualizarContador('count-traductor', 1);
+                mostrarToast('toast-traductor', '✅ Seña creada');
+            }
+            cancelarEdicion();
+        } else {
+            mostrarToast('toast-traductor', '❌ ' + (data.error || 'Error al guardar'), true);
+        }
+    } catch {
+        mostrarToast('toast-traductor', '❌ Error de red', true);
+    } finally {
+        setTimeout(() => {
+            progressWrap.style.display = 'none';
+            progressBar.style.width = '0%';
+        }, 1500);
+    }
+}
+
+function agregarFilaTraductor(v) {
+    const tbody = document.querySelector('#tabla-traductor tbody');
+    const empty = document.getElementById('empty-traductor');
+    if (empty) empty.remove();
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-id', v.id);
+    tr.innerHTML = filaTraductor(v);
+    tbody.prepend(tr);
+}
+
+function actualizarFilaTraductor(v) {
+    const tr = document.querySelector(`#tabla-traductor tr[data-id="${v.id}"]`);
+    if (tr) tr.innerHTML = filaTraductor(v);
+}
+
+function filaTraductor(v) {
+    return `
+        <td><span class="label-chip">${v.nombre}</span></td>
+        <td><a href="${v.video_url}" target="_blank" class="ver-link">▶ Ver video</a></td>
+        <td class="acciones-cell">
+            <button class="btn-edit-sm" onclick="editarTraductor(${v.id}, '${v.nombre}')">✏️</button>
+            <button class="btn-danger-sm" onclick="eliminarTraductor(${v.id}, this)">🗑</button>
+        </td>
+    `;
+}
+
+async function eliminarTraductor(id, btn) {
+    if (!confirm('¿Eliminar esta seña del traductor?')) return;
+    btn.disabled = true;
+    btn.textContent = '...';
+    const res  = await fetch(`/reconocimientos/admin-videos/traductor/eliminar/${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': CSRF }
+    });
+    const data = await res.json();
+    if (data.ok) {
+        document.querySelector(`#tabla-traductor tr[data-id="${id}"]`).remove();
+        actualizarContador('count-traductor', -1);
+        mostrarToast('toast-traductor', '🗑 Seña eliminada');
+    } else {
+        btn.disabled = false;
+        btn.textContent = '🗑';
+        mostrarToast('toast-traductor', '❌ No se pudo eliminar', true);
+    }
+}
+
+// ── Entrenamiento ─────────────────────────────────────────────────────
+let _pollingInterval = null;
+
+async function iniciarEntrenamiento() {
+    const btn       = document.getElementById('btnTrain');
+    const wrap      = document.getElementById('trainStatusWrap');
+    const bar       = document.getElementById('trainProgressBar');
+    const label     = document.getElementById('trainStatusLabel');
+
+    btn.disabled = true;
+    wrap.style.display = 'block';
+    bar.className = 'train-progress-inner indeterminate';
+    label.className = 'train-status-label';
+    label.textContent = 'Iniciando entrenamiento...';
+
+    try {
+        const res  = await fetch('/reconocimientos/admin-videos/entrenar/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF }
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+            label.textContent = '⚠️ ' + (data.error || 'Error al iniciar');
+            label.className = 'train-status-label error';
+            btn.disabled = false;
+            return;
+        }
+
+        label.textContent = '⏳ Extrayendo landmarks y entrenando... (puede tardar varios minutos)';
+        _pollingInterval = setInterval(verificarEstado, 3000);
+
+    } catch {
+        label.textContent = '❌ Error de conexión';
+        label.className = 'train-status-label error';
+        btn.disabled = false;
+    }
+}
+
+async function verificarEstado() {
+    try {
+        const res  = await fetch('/reconocimientos/admin-videos/entrenar/estado/');
+        const data = await res.json();
+
+        if (!data.activo) {
+            clearInterval(_pollingInterval);
+            _pollingInterval = null;
+
+            const bar   = document.getElementById('trainProgressBar');
+            const label = document.getElementById('trainStatusLabel');
+            const btn   = document.getElementById('btnTrain');
+
+            bar.className = 'train-progress-inner';
+            bar.style.width = '100%';
+            label.textContent = '✅ Modelo entrenado y cargado en memoria';
+            label.className = 'train-status-label ok';
+            btn.disabled = false;
+
+            setTimeout(() => {
+                document.getElementById('trainStatusWrap').style.display = 'none';
+                bar.style.width = '0%';
+                label.className = 'train-status-label idle';
+            }, 5000);
+        }
+    } catch {
+        // silencioso — reintenta en el siguiente tick
+    }
+}
+
+// ── Utilidades ────────────────────────────────────────────────────────
+function actualizarContador(id, delta) {
+    const el  = document.getElementById(id);
+    const val = parseInt(el.textContent) + delta;
+    el.textContent = Math.max(0, val);
+}
+
+function mostrarToast(id, msg, error = false) {
+    const toast = document.getElementById(id);
+    toast.textContent = msg;
+    toast.className = 'toast show' + (error ? ' error' : '');
+    setTimeout(() => toast.className = 'toast', 2500);
+}
+</script>
+{% endblock %}

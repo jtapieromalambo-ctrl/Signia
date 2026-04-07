@@ -1,0 +1,145 @@
+:root {
+    --blue-primary: #2563EB;
+    --blue-light: #DBEAFE;
+    --blue-mid: #3B82F6;
+    --bg: #E8F3FC;
+    --white: #FFFFFF;
+    --text-dark: #1E293B;
+    --text-muted: #64748B;
+    --shadow: 0 4px 24px rgba(37,99,235,0.10);
+}
+
+body { background: var(--bg); }
+.page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+.card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+
+.card-header {
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+    padding: 1rem 2.5rem; color: white;
+}
+.card-header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+.card-header p  { color: rgba(255,255,255,0.82); font-size: 0.95rem; }
+
+.card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+.camara-area {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0F172A;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.camara-area .emoji { font-size: 3rem; }
+.camara-area p      { font-size: 0.9rem; font-weight: 500; }
+
+#video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    transform: scaleX(-1);
+}
+
+#canvas { display: none; }
+
+#placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    color: white;
+}
+
+#badge-seña {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(37,99,235,0.85); color: white;
+    padding: 6px 20px; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 600;
+    display: none;
+}
+
+.resultado {
+    background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
+    padding: 1rem 1.25rem; min-height: 80px;
+    font-size: 1rem; color: var(--text-muted); font-style: italic;
+}
+.resultado.activo { color: var(--text-dark); font-style: normal; font-weight: 500; }
+
+#seña-actual {
+    font-size: 2.5rem; font-weight: 800; color: var(--blue-primary);
+    text-align: center; min-height: 50px; letter-spacing: 1px;
+}
+#confianza-texto { font-size: 0.85rem; color: var(--text-muted); text-align: center; }
+#estado-texto    { font-size: 0.85rem; color: var(--text-muted); text-align: center; font-style: italic; }
+
+#historial {
+    font-size: 1rem; color: var(--text-dark);
+    font-style: normal; font-weight: 500;
+    word-wrap: break-word;
+}
+
+.btn {
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+    color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
+    font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+.btn.rojo  { background: linear-gradient(135deg, #DC2626, #EF4444); box-shadow: 0 4px 14px rgba(220,38,38,0.35); }
+
+.botones { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+
+/* ── Pill toggle ─────────────────────────────────────── */
+.pill-toggle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 96px;
+    height: 44px;
+    background: #DBEAFE;
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+    flex-shrink: 0;
+}
+
+/* thumb deslizante */
+.pill-thumb {
+    position: absolute;
+    left: 4px;
+    width: 40px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+    border-radius: 999px;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 2px 8px rgba(37,99,235,0.35);
+    z-index: 1;
+}
+
+/* cuando está en modo voz, el thumb se desliza a la derecha */
+.pill-toggle.voz .pill-thumb {
+    transform: translateX(48px);
+}
+
+/* iconos fijos a cada lado */
+.pill-icon {
+    position: absolute;
+    font-size: 1.15rem;
+    z-index: 2;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+
+.pill-icon-left  { left: 12px; }
+.pill-icon-right { right: 12px; }
+
+/* el icono activo (cubierto por el thumb) se hace más brillante */
+.pill-toggle:not(.voz) .pill-icon-left  { filter: brightness(10); }
+.pill-toggle.voz        .pill-icon-right { filter: brightness(10); }
