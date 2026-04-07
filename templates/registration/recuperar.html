@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Recuperar Contraseña{% endblock %}
+
+{% block extra_css %}
+<style>
+body { background: #E8F3FC; }
+
+.page { max-width: 480px; margin: auto; padding: 4rem 1rem; }
+
+.card {
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(37,99,235,0.15);
+}
+
+.header {
+  background: linear-gradient(135deg,#2563EB,#3B82F6);
+  padding: 2rem;
+  color: white;
+}
+
+.body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 12px;
+  border: 1.5px solid #DBEAFE;
+  background: #F0F7FF;
+}
+
+.btn {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg,#2563EB,#3B82F6);
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  cursor: pointer;
+}
+
+.error   { background: #FEE2E2; padding: 0.7rem; border-radius: 8px; }
+.success { background: #DCFCE7; padding: 0.7rem; border-radius: 8px; }
+
+.volver { text-align: center; margin-top: 1rem; }
+.volver a { color: #2563EB; text-decoration: none; font-size: 0.9rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="card">
+
+    <div class="header">
+      <h1>🔑 Recuperar Contraseña</h1>
+      <p>Te enviaremos un código a tu correo</p>
+    </div>
+
+    <div class="body">
+
+      {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}success{% else %}error{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+
+      <form method="POST">
+        {% csrf_token %}
+        <label>Correo electrónico</label>
+        <input type="email" name="email" placeholder="tucorreo@gmail.com" required>
+        <button class="btn">Enviar código →</button>
+      </form>
+
+      <div class="volver">
+        <a href="{% url 'home' %}">← Volver al login</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
