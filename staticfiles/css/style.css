@@ -1,0 +1,171 @@
+/* ============================================================
+  static/css/style.css — Estilos globales de Signia
+   ============================================================ */
+
+/* ── 1. VARIABLES ── */
+:root {
+  --blue:       #2563eb;
+  --blue-mid:   #3b82f6;
+  --blue-pale:  #dbeafe;
+  --blue-bg:    #eff6ff;
+  --white:      #ffffff;
+  --bg:         #f0f6ff;
+  --text-dark:  #1e3a5f;
+  --text-mid:   #4b6a9b;
+  --border:     #c8daf5;
+}
+
+/* ── 2. RESET ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Nunito', 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-dark);
+  min-height: 100vh;
+}
+
+a { text-decoration: none; }
+ul { list-style: none; }
+
+/* ── 3. NAVBAR ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--border);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* Logo */
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  text-decoration: none;
+  letter-spacing: -0.3px;
+  flex-shrink: 0;
+}
+
+.navbar__logo-icon { font-size: 1.3rem; }
+
+/* Menú central */
+.navbar__menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;       /* ← quita los puntos */
+  flex: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar__menu li { list-style: none; }
+
+.navbar__menu a {
+  display: block;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.navbar__menu a:hover {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+
+.navbar__menu a.active {
+  background: var(--blue-pale);
+  color: var(--blue);
+  font-weight: 700;
+}
+
+/* Sección sesión */
+.navbar__session {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.navbar__user {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-mid);
+  padding: 6px 12px;
+  background: var(--blue-bg);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+}
+
+.navbar__btn--outline {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--text-mid);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.navbar__btn--outline:hover {
+  border-color: var(--blue-mid);
+  color: var(--blue);
+  background: var(--blue-bg);
+}
+
+.navbar__btn--primary {
+  padding: 7px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: var(--white);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s;
+}
+
+.navbar__btn--primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.4);
+}
+
+/* ── 4. CONTENIDO ── */
+.contenido {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── 5. FOOTER ── */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.78rem;
+  color: var(--text-mid);
+  border-top: 1.5px solid var(--border);
+  margin-top: 40px;
+  background: var(--white);
+}
