@@ -98,7 +98,9 @@ LOGIN_REDIRECT_URL = '/perfil/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── EMAIL ──────────────────────────────────────────────
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+EMAIL_BACKEND = 'usuarios.email_backend.SSLEmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
@@ -138,3 +140,10 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
+
+
+# Solución SSL para macOS sin certificados
+import ssl
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+EMAIL_TIMEOUT = 10
