@@ -9,6 +9,7 @@ from .models import Usuario
 from reconocimientos.models import VideoSeña
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+from django.utils import timezone
 
 
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
@@ -164,12 +165,18 @@ def cambiar_password(request):
 
 
 # ── ELIMINAR CUENTA ────────────────────────────────────
+
+
 @login_required
 def eliminar_cuenta(request):
     if request.method == 'POST':
         user = request.user
+        # Marcar como eliminado en lugar de borrar
+        user.is_deleted = True
+        user.deleted_at = timezone.now()
+        user.is_active = False  # Bloquea login normal también
+        user.save()
         logout(request)
-        user.delete()
         return redirect('index')
     return redirect('perfil')
 
@@ -208,11 +215,16 @@ import random
 def recuperar_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
-        try:
-            usuario = Usuario.objects.get(email=email)
-        except Usuario.DoesNotExist:
-            messages.error(request, 'No existe una cuenta con ese correo.')
-            return render(request, 'registration/recuperar.html')
+    try:
+        usuario = Usuario.objects.get(email=email)
+    except Usuario.DoesNotExist:
+        messages.error(request, 'No existe una cuenta con ese correo.')
+        return render(request, 'registration/recuperar.html')
+    except Usuario.MultipleObjectsReturned:
+        usuario = Usuario.objects.filter(email=email, is_active=True).first()
+        if not usuario:
+            messages.error(request, 'No existe una cuenta activa con ese correo.')
+            return render(request, 'registration/recuperar.html')        
 
         codigo = str(random.randint(100000, 999999))
         request.session['reset_codigo'] = codigo
