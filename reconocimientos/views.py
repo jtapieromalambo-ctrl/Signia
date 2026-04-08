@@ -25,12 +25,24 @@ LANDMARKER_PATH = 'reconocimientos/datos/hand_landmarker.task'
 
 FRAMES_OBJETIVO = 30
 
-# ── Cargar modelo y encoder ───────────────────────────────────────────
-with open(MODELO_PATH, 'rb') as f:
-    modelo = pickle.load(f)
+# ── Cargar modelo y encoder (sin crash si no existe) ──────────────────
+modelo  = None
+encoder = None
 
-with open(ENCODER_PATH, 'rb') as f:
-    encoder = pickle.load(f)
+def _cargar_modelo():
+    global modelo, encoder
+    if os.path.exists(MODELO_PATH) and os.path.exists(ENCODER_PATH):
+        with open(MODELO_PATH, 'rb') as f:
+            modelo = pickle.load(f)
+        with open(ENCODER_PATH, 'rb') as f:
+            encoder = pickle.load(f)
+        print('[MODEL] ✅ Modelo cargado en memoria')
+    else:
+        modelo  = None
+        encoder = None
+        print('[MODEL] ⚠️  No hay modelo entrenado todavía — entrena desde el panel admin')
+
+_cargar_modelo()
 
 # ── Configurar detector MediaPipe ─────────────────────────────────────
 options = HandLandmarkerOptions(
@@ -73,12 +85,43 @@ def construir_features(secuencia_norm):
     return np.concatenate([posiciones, deltas.flatten(), magnitud])
 
 
+def aumentar_secuencia(secuencia_array):
+    """
+    Genera variaciones artificiales para aumentar el dataset.
+    Igual que en extraer_secuencias.py
+    """
+    variaciones = [secuencia_array]
+
+    # Variación 1: ruido gaussiano pequeño (temblor natural)
+    ruido = secuencia_array + np.random.normal(0, 0.008, secuencia_array.shape)
+    variaciones.append(ruido)
+
+    # Variación 2: escala (distancia a la cámara)
+    factor = np.random.uniform(0.93, 1.07)
+    variaciones.append(secuencia_array * factor)
+
+    # Variación 3: velocidad diferente
+    n_alt    = np.random.randint(20, 45)
+    idx_orig = np.linspace(0, len(secuencia_array) - 1, len(secuencia_array))
+    idx_alt  = np.linspace(0, len(secuencia_array) - 1, n_alt)
+    sec_alt  = np.zeros((n_alt, secuencia_array.shape[1]))
+    for i in range(secuencia_array.shape[1]):
+        sec_alt[:, i] = np.interp(idx_alt, idx_orig, secuencia_array[:, i])
+    variaciones.append(sec_alt)
+
+    return variaciones
+
+
 def camara(request):
     return render(request, 'usuarios/reconocimiento.html')
 
 
 @csrf_exempt
 def predecir(request):
+    # ── FIX: guarda si el modelo aún no fue entrenado ─────────────────
+    if modelo is None or encoder is None:
+        return JsonResponse({'error': 'Modelo no entrenado aún. Entrena desde el panel admin.'}, status=503)
+
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
 
@@ -113,18 +156,16 @@ def predecir(request):
                 if len(resultado.hand_landmarks) == 1:
                     puntos.extend([0.0] * 63)
                 secuencia.append(puntos)
-        print(f'[RECONOCIMIENTO]) Frames con mano detectada: {len(secuencia)}/{len(frames_b64)} recibidos')
 
+        print(f'[RECONOCIMIENTO] Frames con mano detectada: {len(secuencia)}/{len(frames_b64)} recibidos')
 
         if len(secuencia) < 5:
-
-            print('[RECONOCIMIENTO] ❌ No hay sufuciente movimiento de manos (< 5 frames validos)')
+            print('[RECONOCIMIENTO] ❌ No hay suficiente movimiento de manos (< 5 frames válidos)')
             return JsonResponse({'seña': '', 'confianza': 0})
 
         secuencia_norm = normalizar_secuencia(secuencia)
         if secuencia_norm is None:
-
-            print('[RECONOCIMIENTO] ❌ No hay sufuciente movimiento de manos (< 5 frames validos)')
+            print('[RECONOCIMIENTO] ❌ No hay suficiente movimiento de manos (secuencia nula)')
             return JsonResponse({'seña': '', 'confianza': 0})
 
         features       = construir_features(secuencia_norm)
@@ -135,21 +176,19 @@ def predecir(request):
         seña      = encoder.inverse_transform(prediccion)[0]
         confianza = round(float(np.max(probabilidades)) * 100, 1)
 
-        #top 3 candidatos
-        clases = encoder.classes_
-        top3 = sorted(zip(clases, probabilidades[0]), key=lambda x: x[1], reverse=True)[:3]
-        top3_str = '|' .join(f'{c}:{round(p*100,1)}%' for c, p in top3) 
-
+        # top 3 candidatos
+        clases   = encoder.classes_
+        top3     = sorted(zip(clases, probabilidades[0]), key=lambda x: x[1], reverse=True)[:3]
+        top3_str = '|'.join(f'{c}:{round(p*100,1)}%' for c, p in top3)
 
         print(f'[RECONOCIMIENTO] ✅ Seña detectada: "{seña}" — confianza: {confianza}%')
         print(f'[RECONOCIMIENTO] 🔢 Top 3: {top3_str}')
-
 
         return JsonResponse({'seña': seña, 'confianza': confianza})
 
     except Exception as e:
         import traceback
-        traceback.print_exc()  # esto imprime el error completo en la consola
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -316,15 +355,16 @@ def entrenar_modelo(request):
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.preprocessing import LabelEncoder
 
-            videos = VideoSeña.objects.all()
-            if not videos.exists():
+            videos = list(VideoSeña.objects.all())
+            if not videos:
+                print('[Train] ❌ No hay videos en la base de datos')
                 return
 
             X_data, y_data = [], []
 
             for v in videos:
-                ruta = v.video.path
-                cap  = cv2.VideoCapture(ruta)
+                print(f'[Train] 🎬 Procesando: {v.label} — {v.video.path}')
+                cap       = cv2.VideoCapture(v.video.path)
                 secuencia = []
 
                 while True:
@@ -348,26 +388,43 @@ def entrenar_modelo(request):
                 cap.release()
 
                 if len(secuencia) < 5:
+                    print(f'[Train] ⚠️  {v.label}: muy pocos frames ({len(secuencia)}) — omitiendo')
                     continue
 
-                secuencia_norm = normalizar_secuencia(secuencia)
-                if secuencia_norm is None:
-                    continue
+                # ── FIX: data augmentation (igual que extraer_secuencias.py) ──
+                variaciones = aumentar_secuencia(np.array(secuencia))
+                agregadas   = 0
 
-                features = construir_features(secuencia_norm)
-                X_data.append(features)
-                y_data.append(v.label)
+                for variacion in variaciones:
+                    norm = normalizar_secuencia(variacion.tolist())
+                    if norm is not None:
+                        features = construir_features(norm)
+                        X_data.append(features)
+                        y_data.append(v.label)
+                        agregadas += 1
+
+                print(f'[Train] ✅ {v.label}: {len(secuencia)} frames → {agregadas} variaciones generadas')
 
             if len(X_data) < 2:
+                print('[Train] ❌ Datos insuficientes para entrenar (mínimo 2 muestras)')
                 return
 
             X = np.array(X_data)
             y = np.array(y_data)
 
-            nuevo_encoder = LabelEncoder()
-            y_enc = nuevo_encoder.fit_transform(y)
+            print(f'[Train] 🧠 Entrenando con {len(X_data)} muestras de {len(set(y_data))} señas...')
 
-            nuevo_modelo = RandomForestClassifier(n_estimators=100, random_state=42)
+            nuevo_encoder = LabelEncoder()
+            y_enc         = nuevo_encoder.fit_transform(y)
+
+            # ── FIX: mismo modelo que entrenar_secuencias.py ──────────────
+            nuevo_modelo = RandomForestClassifier(
+                n_estimators=300,
+                max_depth=None,
+                min_samples_leaf=2,
+                random_state=42,
+                n_jobs=-1
+            )
             nuevo_modelo.fit(X, y_enc)
 
             os.makedirs(os.path.dirname(MODELO_PATH), exist_ok=True)
@@ -380,8 +437,13 @@ def entrenar_modelo(request):
             modelo  = nuevo_modelo
             encoder = nuevo_encoder
 
+            print(f'[Train] 🎉 Entrenamiento FINALIZADO — modelo cargado en memoria')
+            print(f'[Train] 📊 Señas entrenadas: {list(nuevo_encoder.classes_)}')
+
         except Exception as e:
-            print(f'[entrenar] Error: {e}')
+            import traceback
+            traceback.print_exc()
+            print(f'[Train] ❌ Error: {e}')
         finally:
             _entrenando = False
 
