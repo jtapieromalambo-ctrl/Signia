@@ -13,6 +13,8 @@ class Usuario(AbstractUser):
         choices=DISCAPACIDAD_CHOICES,
         default='ninguna'
     )
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.username
