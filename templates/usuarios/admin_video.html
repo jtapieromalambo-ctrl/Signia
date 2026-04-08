@@ -38,7 +38,11 @@
             <p>Sube todos los videos primero y luego entrena el modelo una sola vez. El proceso corre en segundo plano.</p>
         </div>
         <button class="btn-train" id="btnTrain" onclick="iniciarEntrenamiento()">
-            ⚡ Entrenar ahora
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+            fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" class="lucide lucide-zap-icon lucide-zap">
+             <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
+            </svg> Entrenar ahora
         </button>
         <div class="train-status-wrap" id="trainStatusWrap" style="display:none;">
             <div class="train-progress-outer">
@@ -51,10 +55,22 @@
     <!-- Tabs -->
     <div class="tabs-bar">
         <button class="tab-btn active" onclick="switchTab('reconocimiento', this)">
-            <span class="tab-icon">🧠</span> Videos de Reconocimiento
+            <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                stroke="#f558a9" stroke-width="2" stroke-linecap="round" 
+                stroke-linejoin="round" class="lucide lucide-file-play-icon lucide-file-play">
+                <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
+                <path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M15.033 13.44a.647.647 0 0 1 0 1.12l-4.065 2.352a.645.645 0 0 1-.968-.56v-4.704a.645.645 0 0 1 .967-.56z"/></svg>
+            </span> Videos de Reconocimiento
         </button>
         <button class="tab-btn" onclick="switchTab('traductor', this)">
-            <span class="tab-icon">🔤</span> Videos del Traductor
+            <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" 
+                height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" 
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                class="lucide lucide-monitor-play-icon lucide-monitor-play">
+                <path d="M15.033 9.44a.647.647 0 0 1 0 1.12l-4.065 2.352a.645.645 0 0 1-.968-.56V7.648a.645.645 0 0 1 .967-.56z"/>
+                <path d="M12 17v4"/><path d="M8 21h8"/><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+            </span> Videos del Traductor
         </button>
     </div>
 
@@ -64,7 +80,11 @@
     <div class="tab-panel active" id="panel-reconocimiento">
 
         <div class="section-info">
-            <div class="info-icon">ℹ️</div>
+            <div class="info-icon"><svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" 
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                 class="lucide lucide-info-icon lucide-info"><circle cx="12" cy="12" r="10"/>
+                 <path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
             <div>
                 <strong>Videos de entrenamiento</strong> — Sube múltiples videos a la vez.
                 Puedes editar el nombre de la seña antes de subir.
@@ -77,7 +97,12 @@
              ondragover="event.preventDefault(); this.classList.add('dragging')"
              ondragleave="this.classList.remove('dragging')"
              ondrop="handleDrop(event, 'reconocimiento')">
-            <div class="upload-icon">📂</div>
+            <div class="upload-icon"><svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" 
+                viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" 
+                stroke-linecap="round" stroke-linejoin="round" 
+                class="lucide lucide-folder-icon lucide-folder">
+                <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+            </svg></div>
             <p class="upload-title">Arrastra tus videos aquí</p>
             <p class="upload-sub">o haz clic para seleccionar archivos</p>
             <input type="file" id="input-reconocimiento" multiple accept="video/*"
@@ -93,7 +118,12 @@
         <!-- Botón subir -->
         <div id="btn-subir-reconocimiento-wrap" style="display:none; text-align:center; margin-top:1rem;">
             <button class="btn-primary" onclick="subirReconocimiento()">
-                ⬆️ Subir todos los videos
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" 
+                 class="lucide lucide-arrow-up-from-line-icon lucide-arrow-up-from-line">
+                 <path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/>
+                </svg> Subir todos los videos
             </button>
             <button class="btn-ghost" onclick="limpiarPreview('reconocimiento')">Cancelar</button>
         </div>
@@ -147,7 +177,12 @@
                         <td>
                             <button class="btn-danger-sm"
                                     onclick="eliminarVideoReconocimiento({{ v.id }}, this)">
-                                🗑
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                 height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626"
+                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                                  class="lucide lucide-trash-icon lucide-trash">
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             </button>
                         </td>
                     </tr>
@@ -167,7 +202,11 @@
     <div class="tab-panel" id="panel-traductor">
 
         <div class="section-info">
-            <div class="info-icon">ℹ️</div>
+            <div class="info-icon"><svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" 
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                 class="lucide lucide-info-icon lucide-info"><circle cx="12" cy="12" r="10"/>
+                 <path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
             <div>
                 <strong>Videos del traductor</strong> — Un video por seña.
                 Puedes crear nuevas señas, reemplazar el video de una existente o eliminarlas.
@@ -176,7 +215,11 @@
 
         <!-- Formulario crear/editar -->
         <div class="form-card" id="form-traductor">
-            <h3 id="form-titulo">➕ Nueva seña</h3>
+            <h3 id="form-titulo"><svg xmlns="http://www.w3.org/2000/svg" 
+                width="26" height="26" viewBox="0 0 24 24" fill="none" 
+                stroke="#2563EB" stroke-width="2" stroke-linecap="round" 
+                stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus">
+                <path d="M5 12h14"/><path d="M12 5v14"/></svg> Nueva seña</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label>Nombre de la seña</label>
@@ -189,7 +232,12 @@
             </div>
             <div class="form-actions">
                 <button class="btn-primary" onclick="guardarTraductor()">
-                    <span id="btn-guardar-label">💾 Guardar</span>
+                    <span id="btn-guardar-label"><svg xmlns="http://www.w3.org/2000/svg" width="22" 
+                        height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" 
+                        stroke-linecap="round" stroke-linejoin="round" 
+                        class="lucide lucide-folder-down-icon lucide-folder-down"><path 
+                        d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+                        <path d="M12 10v6"/><path d="m15 13-3 3-3-3"/></svg> Guardar</span>
                 </button>
                 <button class="btn-ghost" onclick="cancelarEdicion()">Cancelar</button>
             </div>
@@ -234,11 +282,21 @@
                         <td class="acciones-cell">
                             <button class="btn-edit-sm"
                                     onclick="editarTraductor({{ v.id }}, '{{ v.nombre }}')">
-                                ✏️
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                                viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round"
+                                  class="lucide lucide-pencil-icon lucide-pencil">
+                                  <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+                                  <path d="m15 5 4 4"/></svg>
                             </button>
                             <button class="btn-danger-sm"
                                     onclick="eliminarTraductor({{ v.id }}, this)">
-                                🗑
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                 height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626"
+                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                                  class="lucide lucide-trash-icon lucide-trash">
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             </button>
                         </td>
                     </tr>
@@ -299,7 +357,13 @@ function previewFiles(files, tipo) {
         item.className = 'preview-item';
         item.id = 'preview-item-' + i;
         item.innerHTML = `
-            <span class="preview-icon">🎥</span>
+            <span class="preview-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+             height="24" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" 
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+             class="lucide lucide-film-icon lucide-film"><rect width="18" 
+             height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/>
+             <path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/>
+             <path d="M17 16.5h4"/></svg></span>
             <input
                 type="text"
                 class="preview-label-input"
@@ -568,13 +632,13 @@ async function eliminarTraductor(id, btn) {
 }
 
 // ── Entrenamiento ─────────────────────────────────────────────────────
-let _pollingInterval = null;
-
 async function iniciarEntrenamiento() {
-    const btn       = document.getElementById('btnTrain');
-    const wrap      = document.getElementById('trainStatusWrap');
-    const bar       = document.getElementById('trainProgressBar');
-    const label     = document.getElementById('trainStatusLabel');
+    const btn   = document.getElementById('btnTrain');
+    const wrap  = document.getElementById('trainStatusWrap');
+    const bar   = document.getElementById('trainProgressBar');
+    const label = document.getElementById('trainStatusLabel');
+
+    console.log('[Train] 🚀 Iniciando solicitud de entrenamiento...');
 
     btn.disabled = true;
     wrap.style.display = 'block';
@@ -589,17 +653,22 @@ async function iniciarEntrenamiento() {
         });
         const data = await res.json();
 
+        console.log('[Train] 📦 Respuesta del servidor:', data);
+
         if (!data.ok) {
+            console.warn('[Train] ⚠️ El servidor rechazó el entrenamiento:', data.error);
             label.textContent = '⚠️ ' + (data.error || 'Error al iniciar');
             label.className = 'train-status-label error';
             btn.disabled = false;
             return;
         }
 
+        console.log('[Train] ✅ Entrenamiento iniciado en el servidor. Comenzando polling cada 3s...');
         label.textContent = '⏳ Extrayendo landmarks y entrenando... (puede tardar varios minutos)';
         _pollingInterval = setInterval(verificarEstado, 3000);
 
-    } catch {
+    } catch (err) {
+        console.error('[Train] ❌ Error de conexión al iniciar:', err);
         label.textContent = '❌ Error de conexión';
         label.className = 'train-status-label error';
         btn.disabled = false;
@@ -611,9 +680,13 @@ async function verificarEstado() {
         const res  = await fetch('/reconocimientos/admin-videos/entrenar/estado/');
         const data = await res.json();
 
+        console.log('[Train] 🔄 Estado actual:', data);
+
         if (!data.activo) {
             clearInterval(_pollingInterval);
             _pollingInterval = null;
+
+            console.log('[Train] 🎉 Entrenamiento FINALIZADO. El modelo fue cargado en memoria.');
 
             const bar   = document.getElementById('trainProgressBar');
             const label = document.getElementById('trainStatusLabel');
@@ -631,23 +704,9 @@ async function verificarEstado() {
                 label.className = 'train-status-label idle';
             }, 5000);
         }
-    } catch {
-        // silencioso — reintenta en el siguiente tick
+    } catch (err) {
+        console.warn('[Train] ⚠️ Error en polling (reintentando):', err);
     }
-}
-
-// ── Utilidades ────────────────────────────────────────────────────────
-function actualizarContador(id, delta) {
-    const el  = document.getElementById(id);
-    const val = parseInt(el.textContent) + delta;
-    el.textContent = Math.max(0, val);
-}
-
-function mostrarToast(id, msg, error = false) {
-    const toast = document.getElementById(id);
-    toast.textContent = msg;
-    toast.className = 'toast show' + (error ? ' error' : '');
-    setTimeout(() => toast.className = 'toast', 2500);
 }
 </script>
 {% endblock %}
