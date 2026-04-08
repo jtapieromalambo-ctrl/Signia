@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
 from .models import VideoSeña
-from .scripts.train_model import train_and_save
 import os
 
 
