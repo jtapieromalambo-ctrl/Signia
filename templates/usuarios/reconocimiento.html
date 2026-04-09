@@ -11,15 +11,29 @@
 <div class="page">
     <div class="card">
         <div class="card-header">
-            <h1>📷 Reconocimiento de Señas</h1>
+            <h1><svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                 class="lucide lucide-camera-icon lucide-camera">
+                 <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/>
+                 <circle cx="12" cy="13" r="3"/></svg> Reconocimiento de Señas</h1>
             <p>Activa tu cámara, haz señas y Signia las convertirá a texto automáticamente</p>
         </div>
         <div class="card-body">
 
             <div class="camara-area">
                 <div id="placeholder">
-                    <span class="emoji">📷</span>
+                    <span class="emoji"><svg xmlns="http://www.w3.org/2000/svg" 
+                        width="64" height="64" viewBox="0 0 24 24" fill="none" 
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+                        stroke-linejoin="round" class="lucide lucide-camera-off-icon lucide-camera-off">
+                        <path d="M14.564 14.558a3 3 0 1 1-4.122-4.121"/><path d="m2 2 20 20"/>
+                        <path d="M20 20H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 .819-.175"/>
+                        <path d="M9.695 4.024A2 2 0 0 1 10.004 4h3.993a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v7.344"/>
+                        </svg>
+                    </span>
                     <p>Haz clic en "Iniciar cámara" para comenzar</p>
+
                 </div>
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas" width="320" height="240"></canvas>
@@ -38,8 +52,19 @@
                 <!-- Toggle pill -->
                 <div class="pill-toggle" id="pill-toggle" onclick="cambiarModo()">
                     <div class="pill-thumb" id="pill-thumb"></div>
-                    <span class="pill-icon pill-icon-left" id="icon-texto">📝</span>
-                    <span class="pill-icon pill-icon-right" id="icon-voz">🔊</span>
+                    <span class="pill-icon pill-icon-left" id="icon-texto"><svg xmlns="http://www.w3.org/2000/svg" 
+                        width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+                        stroke-linejoin="round" class="lucide lucide-file-type-corner-icon lucide-file-type-corner">
+                        <path d="M12 22h6a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v6"/>
+                        <path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M3 16v-1.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5V16"/>
+                        <path d="M6 22h2"/><path d="M7 14v8"/></svg></span>
+                    <span class="pill-icon pill-icon-right" id="icon-voz"><svg xmlns="http://www.w3.org/2000/svg"
+                         width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                         class="lucide lucide-speech-icon lucide-speech">
+                         <path d="M8.8 20v-4.1l1.9.2a2.3 2.3 0 0 0 2.164-2.1V8.3A5.37 5.37 0 0 0 2 8.25c0 2.8.656 3.054 1 4.55a5.77 5.77 0 0 1 .029 2.758L2 20"/>
+                         <path d="M19.8 17.8a7.5 7.5 0 0 0 .003-10.603"/><path d="M17 15a3.5 3.5 0 0 0-.025-4.975"/></svg></span>
                 </div>
 
                 <button class="btn" onclick="limpiarHistorial()" style="background: linear-gradient(135deg,#64748B,#94A3B8); box-shadow:none;">Limpiar texto</button>
