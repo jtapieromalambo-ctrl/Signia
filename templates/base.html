@@ -252,6 +252,62 @@
             transition: transform 0.15s;
         }
         .modal-btn:hover { transform: translateY(-1px); }
+
+        /* ── AVISO INACTIVIDAD ── */
+        #aviso-inactividad {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .aviso-box {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            max-width: 380px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .aviso-icono { font-size: 2.8rem; margin-bottom: 0.75rem; }
+        .aviso-titulo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 0.5rem;
+        }
+        .aviso-texto {
+            font-size: 0.9rem;
+            color: #64748B;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .aviso-contador {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #DC2626;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 1.25rem;
+        }
+        .aviso-btn {
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.15s;
+        }
+        .aviso-btn:hover { transform: translateY(-1px); }
     </style>
 </head>
 <body>
@@ -357,6 +413,19 @@
 </div>
 {% endif %}
 
+<!-- ── AVISO INACTIVIDAD ── -->
+{% if user.is_authenticated %}
+<div id="aviso-inactividad">
+    <div class="aviso-box">
+        <div class="aviso-icono">⏱️</div>
+        <div class="aviso-titulo">Sesión por vencer</div>
+        <div class="aviso-texto">Tu sesión se cerrará por inactividad en:</div>
+        <div class="aviso-contador" id="cuenta-regresiva">60</div>
+        <button class="aviso-btn" onclick="mantenerSesion()">Seguir conectado</button>
+    </div>
+</div>
+{% endif %}
+
 {% block content %}{% endblock %}
 
 <footer class="main-footer">
@@ -384,13 +453,86 @@
             alert.classList.add('fade-out');
             setTimeout(function() { alert.remove(); }, 500);
         });
-    }, 3000); // desaparece a los 3 segundos
+    }, 3000);
 
     // ── Modal discapacidad ──
     function closeModal() {
         const modal = document.getElementById('discModal');
         if (modal) modal.remove();
     }
+
+    {% if user.is_authenticated %}
+    // ── Inactividad: 5 minutos con aviso al minuto 4 ──
+    const INACTIVIDAD_MS = 5 * 60 * 1000;
+    const AVISO_ANTES_MS = 60 * 1000;
+    let timerInactividad;
+    let timerAviso;
+    let cuentaRegresivaInterval;
+
+    function mostrarAviso() {
+        document.getElementById('aviso-inactividad').style.display = 'flex';
+        let segundos = 60;
+        document.getElementById('cuenta-regresiva').textContent = segundos;
+        clearInterval(cuentaRegresivaInterval);
+        cuentaRegresivaInterval = setInterval(() => {
+            segundos--;
+            document.getElementById('cuenta-regresiva').textContent = segundos;
+            if (segundos <= 0) clearInterval(cuentaRegresivaInterval);
+        }, 1000);
+    }
+
+    function mantenerSesion() {
+        document.getElementById('aviso-inactividad').style.display = 'none';
+        clearInterval(cuentaRegresivaInterval);
+        resetearTimer();
+    }
+
+    function resetearTimer() {
+        clearTimeout(timerInactividad);
+        clearTimeout(timerAviso);
+
+        timerAviso = setTimeout(() => {
+            mostrarAviso();
+        }, INACTIVIDAD_MS - AVISO_ANTES_MS);
+
+        timerInactividad = setTimeout(() => {
+            window.location.href = "{% url 'logout' %}";
+        }, INACTIVIDAD_MS);
+    }
+
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evento => {
+        document.addEventListener(evento, () => {
+            const aviso = document.getElementById('aviso-inactividad');
+            if (aviso.style.display === 'none' || aviso.style.display === '') {
+                resetearTimer();
+            }
+        }, true);
+    });
+
+    resetearTimer();
+
+    // ── Cerrar sesión al cerrar pestaña/navegador ──
+    window.addEventListener('pagehide', (e) => {
+        if (!e.persisted) {
+            navigator.sendBeacon("{% url 'logout' %}", new URLSearchParams({
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }));
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            sessionStorage.setItem('ultimaVez', Date.now());
+        }
+        if (document.visibilityState === 'visible') {
+            const ultimaVez = sessionStorage.getItem('ultimaVez');
+            if (ultimaVez && (Date.now() - parseInt(ultimaVez)) > 30000) {
+                window.location.href = "{% url 'logout' %}";
+            }
+            sessionStorage.removeItem('ultimaVez');
+        }
+    });
+    {% endif %}
 </script>
 </body>
 </html>
