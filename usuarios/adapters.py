@@ -8,17 +8,13 @@ User = get_user_model()
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
-        # Verificar si el email ya existió y fue eliminado
         email = sociallogin.account.extra_data.get('email', '')
         
         if email:
-            try:
-                user = User.objects.get(email=email)
-                if user.is_deleted:  # o not user.is_active
-                    messages.error(
-                        request,
-                        'Esta cuenta fue eliminada. Debes crear una cuenta nueva para ingresar.'
-                    )
-                    raise ImmediateHttpResponse(redirect('registro'))
-            except User.DoesNotExist:
-                pass
+            user = User.objects.filter(email=email).first()
+            if user and user.is_deleted:
+                messages.error(
+                    request,
+                    'Esta cuenta fue eliminada. Debes crear una cuenta nueva para ingresar.'
+                )
+                raise ImmediateHttpResponse(redirect('registro'))
