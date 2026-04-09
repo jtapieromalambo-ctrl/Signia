@@ -148,3 +148,12 @@ import ssl
 EMAIL_SSL_CERTFILE = None
 EMAIL_SSL_KEYFILE = None
 EMAIL_TIMEOUT = 10
+
+# Sesión expira al cerrar el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Sesión expira después de 15 minutos de inactividad
+SESSION_COOKIE_AGE = 60  # 300 segundos = 5 minutos
+
+# Cada request renueva el tiempo de sesión
+SESSION_SAVE_EVERY_REQUEST = True
