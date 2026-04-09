@@ -324,6 +324,9 @@ body {
 
 .btn-primary {
     background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #fff;
     border: none;
     padding: 0.6rem 1.4rem;
@@ -661,6 +664,8 @@ body {
 .form-actions {
     display: flex;
     gap: 0.75rem;
+
+
     flex-wrap: wrap;
 }
 
