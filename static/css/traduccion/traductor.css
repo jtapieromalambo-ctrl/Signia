@@ -16,11 +16,7 @@
   --text-mid:    #4b6a9b;
   --text-light:  #93afd4;
   --border:      #c8daf5;
-  --shadow-sm:   0 2px 8px rgba(37,99,235,.08);
-  --shadow-md:   0 6px 24px rgba(37,99,235,.12);
-  --radius:      16px;
 
-  /* ── Alias usados en el CSS (faltaban) ── */
   --azul:        #2563eb;
   --azul-suave:  #eff6ff;
   --azul-borde:  #bfdbfe;
@@ -38,45 +34,84 @@ body {
   min-height: 100vh;
 }
 
-/* ── 3. TÍTULO ────────────────────────────────────────────── */
-.titulo-seccion {
-    text-align: center;
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-top: 48px;
-    margin-bottom: 8px;
-    color: var(--texto);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-/* ── 4. CONTENEDOR PRINCIPAL ─────────────────────────────── */
+/* ── 3. CONTENEDOR PRINCIPAL ─────────────────────────────── */
 .con {
     display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
-    gap: 16px;
+    align-items: stretch;
     margin: 24px auto 48px;
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
-    padding: 32px 28px;
+    padding: 0;
     width: 100%;
     max-width: 620px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
 }
 
+/* ── 4. HEADER AZUL ──────────────────────────────────────── */
+.gap {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    width: 100%;
+    padding: 24px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+/*  */
+.gap-icon svg{
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    padding: 10px;
+    width: 60px;
+    height: 60px;
+}
+.gap-icon {
+    
+    display: flex;
+    color: #ffffff;
+    margin-bottom: 2px;
+    gap: 10px;
+}
+
+.titulo-seccion {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+    text-transform: none;
+    margin: 0;
+}
+
+.gap-subtitulo {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.88);
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* ── 5. CONTENIDO INTERIOR ───────────────────────────────── */
+.inner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 24px 28px 28px;
+}
+
+/* ── 6. LABEL ────────────────────────────────────────────── */
 label {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--azul);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    align-self: flex-start;
 }
 
-/* ── 5. INPUT CON LUPA ────────────────────────────────────── */
+/* ── 7. INPUT CON LUPA ────────────────────────────────────── */
 .input-group {
     display: flex;
     width: 100%;
@@ -127,7 +162,7 @@ label {
     background: #1d4ed8;
 }
 
-/* ── 6. CONTENEDOR DE VIDEO ───────────────────────────────── */
+/* ── 8. CONTENEDOR DE VIDEO ───────────────────────────────── */
 .video {
     width: 100%;
     height: 320px;
@@ -155,11 +190,12 @@ label {
     text-transform: uppercase;
 }
 
-/* ── 7. BOTÓN MICRÓFONO ───────────────────────────────────── */
+/* ── 9. BOTÓN MICRÓFONO ───────────────────────────────────── */
 .btn-mic {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 8px;
     width: 100%;
     height: 42px;
     border-radius: 10px;
