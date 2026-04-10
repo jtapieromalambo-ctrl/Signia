@@ -34,7 +34,17 @@
     <!-- ── Panel de entrenamiento ── -->
     <div class="train-panel" id="trainPanel">
         <div class="train-panel-info">
-            <h3>🧠 Entrenar modelo de IA</h3>
+            <h3><svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" viewBox="0 0 24 24" 
+                fill="none" stroke="#2563EB" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" 
+                 class="lucide lucide-brain-icon lucide-brain"><path d="M12 18V5"/>
+                 <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/>
+                 <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/>
+                 <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/>
+                 <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/>
+                 <path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/>
+                </svg> Entrenar modelo de IA</h3>
             <p>Sube todos los videos primero y luego entrena el modelo una sola vez. El proceso corre en segundo plano.</p>
         </div>
         <button class="btn-train" id="btnTrain" onclick="iniciarEntrenamiento()">
@@ -227,13 +237,22 @@
                 </div>
                 <div class="form-group">
                     <label>Video</label>
-                    <input type="file" id="video-traductor" accept="video/*">
+                    <label for="video-traductor" class="btn-video">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/>
+      <rect x="3" y="6" width="12" height="12" rx="2"/>
+    </svg>
+    <span id="btn-label">Seleccionar video</span>
+  </label>
+
+  <input type="file" id="video-traductor" name="video" accept="video/*" hidden>
+  <span id="file-name" class="file-name"></span>
                 </div>
             </div>
             <div class="form-actions">
                 <button class="btn-primary" onclick="guardarTraductor()">
-                    <span id="btn-guardar-label"><svg xmlns="http://www.w3.org/2000/svg" width="22" 
-                        height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" 
+                    <span id="btn-guardar-label"><svg xmlns="http://www.w3.org/2000/svg" width="24" 
+                        height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" 
                         stroke-linecap="round" stroke-linejoin="round" 
                         class="lucide lucide-folder-down-icon lucide-folder-down"><path 
                         d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
@@ -476,6 +495,18 @@ async function subirReconocimiento() {
         progressBar.style.width = '0%';
     }, 3000);
 }
+
+const input = document.getElementById('video-traductor');
+const label = document.getElementById('btn-label');
+const name = document.getElementById('file-name');
+
+input.addEventListener('change', () => {
+  if (input.files[0]) {
+    label.textContent = 'Cambiar video';
+    name.style.display = 'inline';
+    name.textContent = input.files[0].name;
+  }
+});
 
 function agregarFilaReconocimiento(v) {
     const tbody = document.querySelector('#tabla-reconocimiento tbody');

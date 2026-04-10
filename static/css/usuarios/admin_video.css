@@ -135,6 +135,9 @@ body {
 .train-panel-info { flex: 1; min-width: 200px; }
 
 .train-panel-info h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-family: 'Syne', sans-serif;
     font-size: 1rem;
     font-weight: 700;
@@ -324,9 +327,6 @@ body {
 
 .btn-primary {
     background: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: #fff;
     border: none;
     padding: 0.6rem 1.4rem;
@@ -339,6 +339,12 @@ body {
 }
 .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(0); }
+
+.btn-primary span{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
 .btn-ghost {
     background: none;
@@ -478,7 +484,10 @@ body {
     font-weight: 700;
     color: var(--text);
 }
-
+.section-info{
+    display: flex;
+    align-items: center;
+}
 /* ── Search ─────────────────────────────────────────────── */
 .search-wrap { display: flex; }
 
@@ -516,7 +525,7 @@ body {
     padding: 0.75rem 1rem;
     text-align: left;
     font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -546,7 +555,7 @@ body {
     border-radius: 6px;
     padding: 0.2rem 0.6rem;
     font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--text);
 }
 
@@ -570,7 +579,7 @@ body {
 .ver-link {
     color: var(--accent);
     text-decoration: none;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     transition: opacity 0.15s;
 }
 .ver-link:hover { opacity: 0.7; }
@@ -599,6 +608,23 @@ body {
 .btn-danger-sm { background: var(--danger-soft); color: var(--danger); }
 .btn-edit-sm   { background: var(--accent-soft); color: var(--accent); }
 
+
+.btn-video {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-video:hover { background: #f9fafb; border-color: #9ca3af; }
+.file-name { display: none; margin-left: 10px; font-size: 13px; color: #6b7280; }
 /* ── Formulario Traductor ────────────────────────────────── */
 .form-card {
     background: var(--surface);
@@ -609,6 +635,9 @@ body {
 }
 
 .form-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-family: 'Syne', sans-serif;
     font-size: 1rem;
     font-weight: 700;

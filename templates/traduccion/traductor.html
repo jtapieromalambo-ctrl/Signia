@@ -8,52 +8,68 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="titulo-seccion">Habla o Escribe</h1>
 
 <form class="con" method="POST" enctype="multipart/form-data" id="formulario">
     {% csrf_token %}
-    <label for="palabra">Palabra</label>
 
-    <div class="input-group">
-        <input type="text" name="palabra" id="palabra" placeholder="Escribe una o varias palabras...">
-        <button type="submit" class="btn-lupa">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <div class="gap">
+        <div class="gap-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19v3"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <rect x="9" y="2" width="6" height="13" rx="3"/>
+            </svg><div><h1>Habla o Escribe</h1>
+                  <p >Escribe o di una palabra y Signia la convertirá a señas automáticamente</p>
+            </div>
+        </div>
+       
+    </div>
+
+    <div class="inner">
+        <label for="palabra">Palabra</label>
+
+        <div class="input-group">
+            <input type="text" name="palabra" id="palabra" placeholder="Escribe una o varias palabras...">
+            <button type="submit" class="btn-lupa">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </button>
+        </div>
+
+        <input type="file" name="audio" id="audioInput" style="display:none">
+
+        <div class="video" id="contenedorVideo">
+            {% if video_base %}
+                <video id="videoBase" width="100%" autoplay muted loop playsinline preload="auto">
+                    <source src="{{ video_base.video.url }}" type="video/mp4">
+                </video>
+            {% else %}
+                <span class="video-placeholder">Sin video base</span>
+            {% endif %}
+
+            <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
+            <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
+        </div>
+
+        <button type="button" id="btnMic" class="btn-mic">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19v3"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <rect x="9" y="2" width="6" height="13" rx="3"/>
             </svg>
+            Hablar
         </button>
     </div>
-
-    <input type="file" name="audio" id="audioInput" style="display:none">
-
-    <div class="video" id="contenedorVideo">
-        {% if video_base %}
-            <video id="videoBase" width="100%" autoplay muted loop playsinline preload="auto">
-                <source src="{{ video_base.video.url }}" type="video/mp4">
-            </video>
-        {% else %}
-            <span class="video-placeholder">Sin video base</span>
-        {% endif %}
-
-        <!-- Video A: primer buffer -->
-        <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
-
-        <!-- Video B: segundo buffer (double buffering) -->
-        <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
-    </div>
-<!-- SVG microfono -->
-    <button type="button" id="btnMic" class="btn-mic"><svg xmlns="http://www.w3.org/2000/svg" 
-          width="24" height="24"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-          class="lucide lucide-mic-icon lucide-mic"><path d="M12 19v3"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" 
-          rx="3"/></svg> Hablar</button>
 </form>
 
 <script>
-    // ─── COLA DE VIDEOS ───────────────────────────────────────────────
     const colaVideos = [
         {% for url in urls_videos %}
             "{{ url }}",
@@ -61,5 +77,6 @@
     ];
 </script>
 
-<script src="{% static "js/traductor/traductor.js" %}">
+<script src="{% static 'js/traductor/traductor.js' %}"></script>
+
 {% endblock %}
