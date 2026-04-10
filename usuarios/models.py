@@ -8,13 +8,13 @@ class Usuario(AbstractUser):
         ('mudo',    'Mudo'),
     ]
 
+    email = models.EmailField(unique=True)  # ← agregado
+
     discapacidad = models.CharField(
         max_length=10,
         choices=DISCAPACIDAD_CHOICES,
         default='ninguna'
     )
-    is_deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.username

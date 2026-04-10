@@ -17,6 +17,11 @@ class RegistroForm(UserCreationForm):
         label='¿Tienes alguna discapacidad?',
         widget=forms.RadioSelect
     )
+    def clean_email(self):  # ← agregar esto
+        email = self.cleaned_data.get('email')
+        if Usuario.objects.filter(email=email).exists():
+            raise forms.ValidationError('Ya existe una cuenta con este correo electrónico.')
+        return email
 
     class Meta:
         model  = Usuario
