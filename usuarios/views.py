@@ -171,12 +171,8 @@ def cambiar_password(request):
 def eliminar_cuenta(request):
     if request.method == 'POST':
         user = request.user
-        # Marcar como eliminado en lugar de borrar
-        user.is_deleted = True
-        user.deleted_at = timezone.now()
-        user.is_active = False  # Bloquea login normal también
-        user.save()
         logout(request)
+        user.delete()  # borra de la base de datos
         return redirect('index')
     return redirect('perfil')
 

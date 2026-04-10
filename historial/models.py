@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
 
 
 class EntradaHistorial(models.Model):
@@ -26,3 +27,24 @@ class EntradaHistorial(models.Model):
 
     def __str__(self):
         return f"{self.usuario} — {self.get_tipo_display()} — {self.fecha:%d/%m/%Y %H:%M}"
+    
+
+class HistoryRecord(models.Model):
+    TYPE_CHOICES = [
+        ("trans", "Traducción LSC → Texto"),
+        ("recog", "Reconocimiento de voz"),
+    ]
+ 
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name="history"
+    )
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+ 
+    class Meta:
+        ordering = ["-created_at"]
+ 
+  

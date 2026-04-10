@@ -16,7 +16,7 @@
   .historial-header::before { content: ''; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.1); }
   .historial-header h1 { font-size: 1.8rem; font-weight: 700; position: relative; }
   .historial-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; margin-top: 0.3rem; position: relative; }
-  .filtros { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .filtros { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
   .filtro-btn { padding: 0.5rem 1.2rem; border-radius: 999px; font-size: 0.88rem; font-weight: 600; border: 1.5px solid var(--blue-light); background: var(--white); color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
   .filtro-btn:hover, .filtro-btn.active { background: var(--blue-primary); color: white; border-color: var(--blue-primary); }
   .historial-lista { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -31,22 +31,8 @@
   .entrada-tipo { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.2rem; }
   .entrada-contenido { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
   .entrada-fecha { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
-
-  /* ── BOTÓN ELIMINAR ── */
-  .btn-eliminar {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #CBD5E1;
-    font-size: 1.1rem;
-    padding: 0.4rem;
-    border-radius: 8px;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    line-height: 1;
-  }
+  .btn-eliminar { background: none; border: none; cursor: pointer; color: #CBD5E1; font-size: 1.1rem; padding: 0.4rem; border-radius: 8px; transition: all 0.2s; flex-shrink: 0; line-height: 1; }
   .btn-eliminar:hover { color: #DC2626; background: #FEE2E2; }
-
   .vacio { background: var(--white); border-radius: 20px; padding: 4rem 2rem; text-align: center; box-shadow: var(--shadow); }
   .vacio .icon { font-size: 3rem; margin-bottom: 1rem; }
   .vacio h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.5rem; }
@@ -54,22 +40,31 @@
   .paginacion { display: flex; justify-content: center; gap: 0.5rem; }
   .paginacion a { padding: 0.5rem 1rem; border-radius: 8px; background: var(--white); border: 1.5px solid var(--blue-light); color: var(--blue-primary); font-weight: 600; font-size: 0.88rem; text-decoration: none; transition: all 0.2s; }
   .paginacion a:hover { background: var(--blue-primary); color: white; }
+  .clear-btn { display: flex; align-items: center; gap: 7px; background: #fff; border: 1.5px solid #f09595; color: #a32d2d; border-radius: 999px; padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; margin-left: auto; }
+  .clear-btn:hover { background: #fcebeb; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page">
+
+  <!-- HEADER — sin cambios -->
   <div class="historial-header">
     <h1>📋 Mi Historial</h1>
     <p>Registro de todas tus traducciones y reconocimientos</p>
   </div>
 
+  <!-- LÍNEA 68: botón usa openModal() en vez de classList.add, y solo aparece si hay entradas -->
   <div class="filtros">
     <a href="{% url 'historial' %}" class="filtro-btn {% if not tipo_filtro %}active{% endif %}">Todos</a>
     <a href="{% url 'historial' %}?tipo=traduccion" class="filtro-btn {% if tipo_filtro == 'traduccion' %}active{% endif %}">🖐️ Traducciones</a>
     <a href="{% url 'historial' %}?tipo=reconocimiento" class="filtro-btn {% if tipo_filtro == 'reconocimiento' %}active{% endif %}">📷 Reconocimientos</a>
+    {% if entradas %}
+      <button class="clear-btn" onclick="openModal()">🗑 Borrar todo el historial</button>
+    {% endif %}
   </div>
 
+  <!-- LISTA — sin cambios -->
   {% if entradas %}
     <div class="historial-lista">
       {% for entrada in entradas %}
@@ -82,7 +77,6 @@
             <div class="entrada-contenido">{{ entrada.contenido }}</div>
             <div class="entrada-fecha">{{ entrada.fecha|date:"d/m/Y H:i" }}</div>
           </div>
-          <!-- Botón eliminar -->
           <form method="POST" action="{% url 'eliminar_entrada' entrada.id %}" onsubmit="return confirmarEliminar(event, {{ entrada.id }})">
             {% csrf_token %}
             <button type="submit" class="btn-eliminar" title="Eliminar">🗑️</button>
@@ -101,6 +95,7 @@
         {% endif %}
       </div>
     {% endif %}
+
   {% else %}
     <div class="vacio">
       <div class="icon">📭</div>
@@ -108,23 +103,71 @@
       <p>Cuando uses el traductor o el reconocimiento, tus actividades aparecerán aquí.</p>
     </div>
   {% endif %}
+
+  <!-- LÍNEA 120: modal movido FUERA del if/else (antes estaba dentro del else, por eso no aparecía) -->
+  <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:100; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; padding:28px; max-width:360px; width:90%;">
+      <h2 style="font-size:17px; font-weight:600; margin-bottom:8px;">⚠️ Borrar todo el historial</h2>
+      <p style="font-size:14px; color:#555; margin-bottom:22px; line-height:1.5;">
+        {% if user.is_staff %}
+          Como administrador, eliminarás permanentemente todos los registros. Esta acción no se puede deshacer.
+        {% else %}
+          Esto eliminará permanentemente todos tus registros. Esta acción no se puede deshacer.
+        {% endif %}
+      </p>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button onclick="closeModal()" style="border-radius:999px; padding:8px 20px; border:1.5px solid #ccc; background:none; cursor:pointer; font-size:14px;">Cancelar</button>
+        <button onclick="clearAll()" style="border-radius:999px; padding:8px 20px; background:#e24b4a; color:#fff; border:none; font-weight:500; cursor:pointer; font-size:14px;">Sí, borrar todo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#2c2c2a; color:#fff; border-radius:999px; padding:10px 22px; font-size:14px; z-index:200;">
+    Historial eliminado correctamente
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+  // Sin cambios
   function confirmarEliminar(event, id) {
     event.preventDefault();
     const form = event.target;
     const entrada = document.getElementById('entrada-' + id);
-
-    // Animación de salida
     entrada.style.transition = 'opacity 0.3s, transform 0.3s';
     entrada.style.opacity = '0';
     entrada.style.transform = 'translateX(20px)';
-
     setTimeout(() => form.submit(), 300);
     return false;
+  }
+
+  // NUEVO: abre el modal
+  function openModal() {
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  // NUEVO: cierra el modal
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  // CAMBIADO: URL corregida a la ruta real de Django, método POST en vez de DELETE
+  function clearAll() {
+    fetch("{% url 'clear_my_history' %}", {
+      method: "POST",
+      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+    })
+    .then(r => r.json())
+    .then(data => {
+      closeModal();
+      const t = document.getElementById('toast');
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; location.reload(); }, 2000);
+    })
+    .catch(err => console.error('Error:', err));
   }
 </script>
 {% endblock %}
