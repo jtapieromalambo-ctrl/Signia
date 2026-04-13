@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import Usuario
+from .models import MensajeContacto
 
 
 class RegistroForm(UserCreationForm):
@@ -44,3 +45,26 @@ class EditarPerfilForm(forms.ModelForm):
     class Meta:
         model  = Usuario
         fields = ['username', 'discapacidad']
+
+
+
+
+class ContactoForm(forms.ModelForm):
+    class Meta:
+        model = MensajeContacto
+        fields = ['nombre', 'correo', 'observacion', 'mensaje']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'placeholder': 'Tu nombre completo'
+            }),
+            'correo': forms.EmailInput(attrs={
+                'placeholder': 'tucorreo@ejemplo.com'
+            }),
+            'observacion': forms.TextInput(attrs={
+                'placeholder': 'Tu observación...'
+            }),
+            'mensaje': forms.Textarea(attrs={
+                'placeholder': 'Escribe tu mensaje aquí...',
+                'rows': 4
+            }),
+        }
