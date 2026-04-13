@@ -72,6 +72,17 @@
                 <path d="M12 17v4"/><path d="M8 21h8"/><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
             </span> Videos del Traductor
         </button>
+        <!-- ✅ TAB MENSAJES — dentro del tabs-bar -->
+        <button class="tab-btn" onclick="switchTab('mensajes', this)">
+            <span class="tab-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+                fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span> Mensajes de Contacto
+            {% if total_mensajes %}
+                <span style="background:#2563EB;color:white;font-size:0.7rem;padding:0.15rem 0.55rem;border-radius:999px;margin-left:0.4rem;">{{ total_mensajes }}</span>
+            {% endif %}
+        </button>
     </div>
 
     <!-- ═══════════════════════════════════════════════
@@ -310,6 +321,60 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════
+         TAB: MENSAJES DE CONTACTO ✅
+    ═══════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-mensajes">
+
+        <div class="section-title-row">
+            <h2>Mensajes de Contacto</h2>
+        </div>
+
+        <div class="table-wrap">
+            <table class="video-table" id="tabla-mensajes">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Observación</th>
+                        <th>Mensaje</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in mensajes_contacto %}
+                    <tr data-id="{{ msg.id }}">
+                        <td><span class="label-chip">{{ msg.nombre }}</span></td>
+                        <td style="color:#2563EB;">{{ msg.correo }}</td>
+                        <td style="color:#64748B;">{{ msg.observacion|default:"—" }}</td>
+                        <td style="max-width:220px;">{{ msg.mensaje }}</td>
+                        <td class="date-cell">{{ msg.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'eliminar_mensaje_contacto' msg.id %}" 
+                                  onsubmit="return confirm('¿Eliminar este mensaje?')" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-danger-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                                    viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" 
+                                    stroke-linecap="round" stroke-linejoin="round" 
+                                    class="lucide lucide-trash-icon lucide-trash">
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-cell">No hay mensajes de contacto aún</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -391,7 +456,6 @@ function limpiarPreview(tipo) {
 async function subirReconocimiento() {
     if (archivosReconocimiento.length === 0) return;
 
-    // Validar que ningún nombre esté vacío
     for (let i = 0; i < archivosReconocimiento.length; i++) {
         const inputEl = document.getElementById('label-input-' + i);
         if (!inputEl.value.trim()) {
@@ -415,14 +479,12 @@ async function subirReconocimiento() {
     let subidos = 0;
     let errores = 0;
 
-    // Marcar todos como "Subiendo..." antes de lanzar
     archivosReconocimiento.forEach((_, i) => {
         document.getElementById('status-' + i).textContent = 'Subiendo...';
         document.getElementById('status-' + i).className = 'preview-status subiendo';
         document.getElementById('label-input-' + i).classList.add('subiendo');
     });
 
-    // Lanzar todas las subidas en paralelo
     const promesas = archivosReconocimiento.map((file, i) => {
         const label    = document.getElementById('label-input-' + i).value.trim();
         const statusEl = document.getElementById('status-' + i);
