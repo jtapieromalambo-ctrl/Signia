@@ -214,27 +214,30 @@ def reconocimiento(request):
 
 
 # ── RECUPERAR CONTRASEÑA CON CÓDIGO ───────────────────
+
+
 import random
 
 def recuperar_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
-    try:
-        usuario = Usuario.objects.get(email=email)
-    except Usuario.DoesNotExist:
-        messages.error(request, 'No existe una cuenta con ese correo.')
-        return render(request, 'registration/recuperar.html')
-    except Usuario.MultipleObjectsReturned:
-        usuario = Usuario.objects.filter(email=email, is_active=True).first()
-        if not usuario:
-            messages.error(request, 'No existe una cuenta activa con ese correo.')
-            return render(request, 'registration/recuperar.html')        
 
+        try:
+            usuario = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            messages.error(request, 'No existe una cuenta con ese correo.')
+            return render(request, 'registration/recuperar.html')
+        except Usuario.MultipleObjectsReturned:
+            usuario = Usuario.objects.filter(email=email, is_active=True).first()
+            if not usuario:
+                messages.error(request, 'No existe una cuenta activa con ese correo.')
+                return render(request, 'registration/recuperar.html')
+
+        # ── Este bloque debe estar FUERA del try/except ──
         codigo = str(random.randint(100000, 999999))
         request.session['reset_codigo'] = codigo
         request.session['reset_email']  = email
 
-        # ── CORREO HTML ──────────────────────────────
         html_content = f"""<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
@@ -285,6 +288,9 @@ def recuperar_password(request):
 
     return render(request, 'registration/recuperar.html')
 
+       
+ 
+        
 def verificar_codigo(request):
     if request.method == 'POST':
         codigo_ingresado = request.POST.get('codigo', '').strip()
