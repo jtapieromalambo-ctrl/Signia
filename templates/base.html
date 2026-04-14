@@ -323,11 +323,13 @@
     </a>
 
     <ul class="nav-links">
-        {% if user.is_authenticated %}
+            {% if user.is_authenticated %}
             <li><a href="{% url 'traduccion' %}">Traductor</a></li>
             <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
             <li><a href="{% url 'historial' %}">Historial</a></li>
+            {% if not user.is_staff %}
             <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            {% endif %}
         {% else %}
             <li><a href="{% url 'index' %}">Inicio</a></li>
             <li><a href="{% url 'home' %}">Login</a></li>
