@@ -35,51 +35,14 @@
   .field textarea { height: 130px; }
   .btn-submit { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.9rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(37,99,235,0.35); width: 70%; }
   .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-
-  /* Mensaje de éxito */
-  .success-box {
-    background: #DCFCE7;
-    border: 1.5px solid #86EFAC;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    color: #16A34A;
-    font-weight: 600;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  /* Mensajes de error */
-  .error-box {
-    background: #FEE2E2;
-    border: 1.5px solid #FCA5A5;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    color: #DC2626;
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-
-  @media (max-width: 680px) {
-    .content { grid-template-columns: 1fr; }
-    .hero h1 { font-size: 2rem; }
-  }
-  .button{
-        background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-        color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
-        font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
-        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-        transition: transform 0.15s, box-shadow 0.15s;
-        width:25%;
-    }
-    .button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-
-    .botones { 
-        dispaly: flex
-        justify-content: space-between;
-        align-items: center
-    }
+  .success-box { background: #DCFCE7; border: 1.5px solid #86EFAC; border-radius: 12px; padding: 1.5rem; color: #16A34A; font-weight: 600; font-size: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; }
+  .success-box span { font-size: 2.5rem; }
+  .success-box a { color: var(--blue-primary); font-size: 0.9rem; margin-top: 0.5rem; }
+  .error-box { background: #FEE2E2; border: 1.5px solid #FCA5A5; border-radius: 12px; padding: 1rem 1.25rem; color: #DC2626; font-weight: 600; font-size: 0.9rem; }
+  .botones { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
+  .button { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.35); transition: transform 0.15s, box-shadow 0.15s; width: 25%; }
+  .button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+  @media (max-width: 680px) { .content { grid-template-columns: 1fr; } .hero h1 { font-size: 2rem; } }
 </style>
 {% endblock %}
 
@@ -94,7 +57,7 @@
     <h2>Información de Contacto</h2>
     <div class="info-item">
       <h3>Email</h3>
-      <p>bo719914@gmail.com.com</p>
+      <p>bo719914@gmail.com</p>
     </div>
     <div class="info-item">
       <h3>Teléfono</h3>
@@ -114,10 +77,23 @@
     </div>
     <div class="form-body">
 
-      {% if enviado %}
+      {% if observacion_enviada %}
+        <!-- Mensaje de gracias por observación -->
         <div class="success-box">
-          ✅ ¡Mensaje enviado correctamente! Te responderemos pronto.
+          <strong>¡Gracias por tu observación!</strong>
+          <p style="font-weight:400; color:#166534;">Hemos recibido tu mensaje y observación. La tendremos en cuenta para mejorar Signia.</p>
+          <a href="{% url 'contacto' %}">← Volver al formulario</a>
         </div>
+
+      {% elif enviado %}
+        <!-- Mensaje cuando no hay observación -->
+        <div class="success-box">
+          <span>✅</span>
+          <strong>¡Mensaje enviado correctamente!</strong>
+          <p style="font-weight:400; color:#166534;">Te responderemos lo antes posible.</p>
+          <a href="{% url 'contacto' %}">← Volver al formulario</a>
+        </div>
+
       {% else %}
 
         {% if messages %}
@@ -126,6 +102,7 @@
           {% endfor %}
         {% endif %}
 
+        <!-- ✅ El botón ahora está DENTRO del form -->
         <form method="post" action="{% url 'contacto' %}">
           {% csrf_token %}
           <div class="field">
@@ -134,23 +111,25 @@
           </div>
           <div class="field">
             <label>Correo electrónico</label>
-            <input type="email" name="email" placeholder="tucorreo@ejemplo.com" required />
+            <input type="email" name="correo" placeholder="tucorreo@ejemplo.com" required />
           </div>
           <div class="field">
-            <label>Asunto</label>
-            <input type="text" name="asunto" placeholder="¿En qué podemos ayudarte?" required />
+            <label>Observación</label>
+            <!-- ✅ name="observacion" para que coincida con el modelo -->
+            <input type="text" name="observacion" placeholder="¿En qué podemos ayudarte?" />
           </div>
           <div class="field">
             <label>Tu mensaje</label>
             <textarea name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
-          </div><br>
-          
+          </div>
+          <br>
+          <div class="botones">
+            <button type="submit" class="btn-submit">Enviar mensaje</button>
+            <a href="{% url 'index' %}">
+              <button type="button" class="button">Atrás</button>
+            </a>
+          </div>
         </form>
-        <div class="botones"> 
-          <button type="submit" class="btn-submit">Enviar mensaje</button>
-                <a href="{% url 'index' %}">
-                    <button class="button">Atras</button></a>
-            </div>
 
       {% endif %}
 

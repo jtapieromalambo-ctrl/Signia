@@ -13,6 +13,7 @@ urlpatterns = [
     path('contacto/',       views.contacto,         name='contacto'),
     path('reconocimiento/', views.reconocimiento,   name='reconocimiento'),
     path('admin-videos/', views.panel_admin_videos, name='panel_admin_videos'),
+    path('mensajes/eliminar/<int:mensaje_id>/', views.eliminar_mensaje_contacto, name='eliminar_mensaje_contacto'),
 
 
     # Recuperar contraseña con código
