@@ -10,7 +10,9 @@ from reconocimientos.models import VideoSeña
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 from django.utils import timezone
-
+from .forms import ContactoForm
+from .models import MensajeContacto
+from django.shortcuts import render, redirect, get_object_or_404
 
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
 def es_admin(user):
@@ -27,6 +29,9 @@ def panel_admin_videos(request):
         'videos_traductor':      [],
         'total_reconocimiento':  VideoSeña.objects.count(),
         'total_traductor':       0,
+        'mensajes_contacto':     MensajeContacto.objects.all().order_by('-fecha'),
+        'total_mensajes':        MensajeContacto.objects.count(),
+
     }
     return render(request, 'usuarios/admin_video.html', context)
 
@@ -179,20 +184,23 @@ def eliminar_cuenta(request):
 
 # ── CONTACTO ───────────────────────────────────────────
 def contacto(request):
-    enviado = False
+    form = ContactoForm()
+    observacion_enviada = False
+
     if request.method == 'POST':
-        nombre  = request.POST.get('nombre', '').strip()
-        email   = request.POST.get('email', '').strip()
-        asunto  = request.POST.get('asunto', '').strip()
-        mensaje = request.POST.get('mensaje', '').strip()
+        form = ContactoForm(request.POST)
+        if form.is_valid():
+            form.save()
 
-        if nombre and email and asunto and mensaje:
-            print(f"[CONTACTO] De: {nombre} <{email}> | Asunto: {asunto}\n{mensaje}")
-            enviado = True
-        else:
-            messages.error(request, 'Por favor completa todos los campos.')
+            if form.cleaned_data.get('observacion'):
+                observacion_enviada = True
+            else:
+                return redirect('contacto')
 
-    return render(request, 'usuarios/contacto.html', {'enviado': enviado})
+    return render(request, 'usuarios/contacto.html', {
+        'form': form,
+        'observacion_enviada': observacion_enviada,
+    })
 
 
 # ── TRADUCTOR ──────────────────────────────────────────
@@ -322,3 +330,16 @@ def nueva_password(request):
             return redirect('home')
 
     return render(request, 'registration/nueva_password.html')
+
+
+
+
+from django.contrib.auth.decorators import user_passes_test
+
+@user_passes_test(es_admin)
+def eliminar_mensaje_contacto(request, mensaje_id):
+    from .models import MensajeContacto
+    mensaje = get_object_or_404(MensajeContacto, id=mensaje_id)
+    if request.method == 'POST':
+        mensaje.delete()
+    return redirect('panel_admin_videos')
