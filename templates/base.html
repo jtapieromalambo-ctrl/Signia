@@ -534,7 +534,17 @@
             sessionStorage.removeItem('ultimaVez');
         }
     });
+
     {% endif %}
 </script>
+
+<script>
+    history.replaceState(null, null, location.href);
+    window.addEventListener('popstate', function () {
+        history.replaceState(null, null, location.href);
+        location.reload();
+    });
+</script>
+
 </body>
 </html>
