@@ -89,65 +89,64 @@
             };
 
             mediaRecorder.onstop = () => {
-                procesando = true;
+    procesando = true;
 
-                const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
-                const formData = new FormData(formulario);
-                formData.append('audio', blob, 'audio.webm');
+    const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+    const formData = new FormData(formulario);
+    formData.append('audio', blob, 'audio.webm');
 
-                btnMic.textContent = '⏳ Procesando...';
-                btnMic.disabled = true;
+    btnMic.textContent = '⏳ Procesando...';
+    btnMic.disabled = true;
 
-                fetch(window.location.href, { method: 'POST', body: formData })
-                .then(res => res.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const scriptNuevo = doc.querySelector('script');
+    fetch(window.location.href, { method: 'POST', body: formData })
+    .then(res => res.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-                    if (scriptNuevo) {
-                        const contenido = scriptNuevo.textContent;
-                        const match = contenido.match(/const colaVideos = \[([\s\S]*?)\];/);
+        let nuevasColas = [];
+        doc.querySelectorAll('script').forEach(script => {
+            const match = script.textContent.match(/const colaVideos\s*=\s*\[([\s\S]*?)\];/);
+            if (match) {
+                const urlsTexto = match[1].trim();
+                if (urlsTexto.length > 0) {
+                    nuevasColas = urlsTexto
+                        .split(',')
+                        .map(s => s.trim().replace(/['"]/g, ''))
+                        .filter(s => s.length > 0);
+                }
+            }
+        });
 
-                        if (match) {
-                            const urlsTexto = match[1].trim();
-                            const nuevasColas = urlsTexto
-                                .split(',')
-                                .map(s => s.trim().replace(/"/g, ''))
-                                .filter(s => s.length > 0);
+        if (nuevasColas.length > 0) {
+            indiceActual = 0;
+            colaVideos.length = 0;
+            nuevasColas.forEach(url => colaVideos.push(url));
 
-                            if (nuevasColas.length > 0) {
-                                indiceActual = 0;
-                                colaVideos.length = 0;
-                                nuevasColas.forEach(url => colaVideos.push(url));
+            activo.pause();
+            activo.style.display  = 'none';
+            activo.oncanplay      = null;
+            siguiente.oncanplay   = null;
 
-                                // Reset limpio de buffers antes de reproducir
-                                activo.pause();
-                                activo.style.display   = 'none';
-                                activo.oncanplay       = null;
-                                siguiente.oncanplay    = null;
+            activo    = videoA;
+            siguiente = videoB;
 
-                                // Reinicia roles desde cero
-                                activo    = videoA;
-                                siguiente = videoB;
+            reproducirSiguiente();
+        } else {
+            mostrarNoEncontrado();
+        }
 
-                                reproducirSiguiente();
-                            } else {
-                                mostrarNoEncontrado();
-                            }
-                        }
-                    }
-
-                    btnMic.textContent = '🎤 Hablar';
-                    btnMic.disabled    = false;
-                    procesando         = false;
-                })
-                .catch(() => {
-                    btnMic.textContent = '🎤 Hablar';
-                    btnMic.disabled    = false;
-                    procesando         = false;
-                });
-            };
+        btnMic.textContent = '🎤 Hablar';
+        btnMic.disabled    = false;
+        procesando         = false;
+    })
+    .catch(() => {
+        btnMic.textContent = '🎤 Hablar';
+        btnMic.disabled    = false;
+        procesando         = false;
+        mostrarNoEncontrado();
+    });
+};
 
             mediaRecorder.start(100);
             grabando = true;
