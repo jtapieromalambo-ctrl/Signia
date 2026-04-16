@@ -132,6 +132,8 @@
                                 siguiente = videoB;
 
                                 reproducirSiguiente();
+                            } else {
+                                mostrarNoEncontrado();
                             }
                         }
                     }
@@ -158,3 +160,19 @@
             btnMic.textContent = '🎤 Hablar';
         }
     });
+    // ─── NOTIFICACION "NO ENCONTRADO" ──────────────────────────────────────────
+const notificacion = document.getElementById('notificacionNoEncontrado');
+
+function mostrarNoEncontrado() {
+    notificacion.style.display = 'flex';
+    notificacion.style.animation = 'none';
+    // Fuerza reflow para reiniciar la animación
+    notificacion.offsetHeight;
+    notificacion.style.animation = 'slideDown 0.3s ease';
+     setTimeout(() => {
+        notificacion.style.animation = 'slideUp 0.3s ease';
+        notificacion.addEventListener('animationend', () => {
+            notificacion.style.display = 'none';
+        }, { once: true }); 
+    }, 2700);
+}
