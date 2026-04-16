@@ -4,70 +4,11 @@
 {% block title %}Signia — Contacto{% endblock %}
 
 {% block extra_css %}
-<style>
-  :root {
-    --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
-    --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
-    --input-bg: #F0F7FF; --shadow: 0 4px 24px rgba(37,99,235,0.10);
-  }
-  body { background: var(--bg); }
-  .hero { text-align: center; padding: 5rem 1rem 2.5rem; }
-  .hero h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 0.75rem; }
-  .hero p { color: var(--text-muted); font-size: 1.05rem; max-width: 680px; margin: 0 auto; }
-  .content { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start; }
-  .info-card { background: var(--white); border-radius: 20px; padding: 2rem 1.75rem; box-shadow: var(--shadow); }
-  .info-card h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.5rem; }
-  .info-item { margin-bottom: 1.25rem; }
-  .info-item h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
-  .info-item p { font-size: 0.95rem; font-weight: 500; }
-  .form-card { background: var(--white); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
-  .form-header { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); padding: 1.75rem 2rem 1.5rem; position: relative; overflow: hidden; }
-  .form-header::before { content: ''; position: absolute; right: -30px; top: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.12); }
-  .form-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.18); color: white; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.85rem; border-radius: 999px; margin-bottom: 0.85rem; }
-  .form-badge::before { content: ''; width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; }
-  .form-header h2 { font-size: 1.6rem; font-weight: 700; color: white; margin-bottom: 0.25rem; }
-  .form-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; }
-  .form-body { padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
-  .field { display: flex; flex-direction: column; gap: 0.4rem; }
-  .field label { font-size: 0.88rem; font-weight: 600; }
-  .field input, .field textarea { background: var(--input-bg); border: 1.5px solid #BFDBFE; border-radius: 12px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: none; }
-  .field input:focus, .field textarea:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
-  .field textarea { height: 130px; }
-  .btn-submit { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.9rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(37,99,235,0.35); width: 70%; }
-  .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-  .success-box { background: #DCFCE7; border: 1.5px solid #86EFAC; border-radius: 12px; padding: 1.5rem; color: #16A34A; font-weight: 600; font-size: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; }
-  .success-box span { font-size: 2.5rem; }
-  .success-box a { color: var(--blue-primary); font-size: 0.9rem; margin-top: 0.5rem; }
-  .error-box { background: #FEE2E2; border: 1.5px solid #FCA5A5; border-radius: 12px; padding: 1rem 1.25rem; color: #DC2626; font-weight: 600; font-size: 0.9rem; }
-  .botones { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
-  .button { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.35); transition: transform 0.15s, box-shadow 0.15s; width: 100px; }
-  .button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-  @media (max-width: 680px) { .content { grid-template-columns: 1fr; } .hero h1 { font-size: 2rem; } }
-</style>
+<link rel="stylesheet" href="{% static 'css/usuarios/contacto.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="hero">
-  <h1>Ponte en Contacto</h1>
-  <p>¿Tienes alguna duda o quieres colaborar con nosotros? Envíanos un mensaje y te responderemos lo antes posible.</p>
-</div>
-
 <div class="content">
-  <div class="info-card">
-    <h2>Información de Contacto</h2>
-    <div class="info-item">
-      <h3>Email</h3>
-      <p>bo719914@gmail.com</p>
-    </div>
-    <div class="info-item">
-      <h3>Teléfono</h3>
-      <p>+57 3232392457</p>
-    </div>
-    <div class="info-item">
-      <h3>Ubicación</h3>
-      <p>Garzon-Huila</p>
-    </div>
-  </div>
 
   <div class="form-card">
     <div class="form-header">
@@ -78,7 +19,6 @@
     <div class="form-body">
 
       {% if observacion_enviada %}
-        <!-- Mensaje de gracias por observación -->
         <div class="success-box">
           <strong>¡Gracias por tu observación!</strong>
           <p style="font-weight:400; color:#166534;">Hemos recibido tu mensaje y observación. La tendremos en cuenta para mejorar Signia.</p>
@@ -86,12 +26,11 @@
         </div>
 
       {% elif enviado %}
-        <!-- Mensaje cuando no hay observación -->
         <div class="success-box">
           <span>✅</span>
           <strong>¡Mensaje enviado correctamente!</strong>
           <p style="font-weight:400; color:#166534;">Te responderemos lo antes posible.</p>
-          <a href="{% url 'contacto' %}">← Volver al formulario</a>
+          <a href="{% url 'contacto' %}">Volver al formulario</a>
         </div>
 
       {% else %}
@@ -102,7 +41,6 @@
           {% endfor %}
         {% endif %}
 
-        <!-- ✅ El botón ahora está DENTRO del form -->
         <form method="post" action="{% url 'contacto' %}">
           {% csrf_token %}
           <div class="field">
@@ -115,7 +53,6 @@
           </div>
           <div class="field">
             <label>Observación</label>
-            <!-- ✅ name="observacion" para que coincida con el modelo -->
             <input type="text" name="observacion" placeholder="¿En qué podemos ayudarte?" />
           </div>
           <div class="field">
@@ -125,9 +62,6 @@
           <br>
           <div class="botones">
             <button type="submit" class="btn-submit">Enviar mensaje</button>
-            <a href="{% url 'index' %}">
-              <button type="button" class="button">Atrás</button>
-            </a>
           </div>
         </form>
 
@@ -135,5 +69,54 @@
 
     </div>
   </div>
+
+  <div class="hero">
+    <h1><svg xmlns="http://www.w3.org/2000/svg" 
+      width="62" height="62" viewBox="0 0 24 24" 
+      fill="none" stroke="#2563EB" 
+      stroke-width="2.5" stroke-linecap="round" 
+      stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail">
+      <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" 
+      width="20" height="16" rx="2"/>
+    </svg>Ponte en <span  class="contacto">Contacto</span></h1>
+    <p>¿Tienes alguna duda o quieres colaborar con nosotros? Envíanos un mensaje y te responderemos lo antes posible.</p>
+  </div>
+
+  <div class="info-card">
+    <h2>Información de Contacto</h2>
+    <div class="info-item">
+      <h3><svg xmlns="http://www.w3.org/2000/svg"
+         width="22" height="22" 
+         viewBox="0 0 24 24" fill="none" 
+         stroke="#1600bf" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" 
+          class="lucide lucide-at-sign-icon lucide-at-sign">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>
+        </svg>Email</h3>
+      <p>bo719914@gmail.com</p>
+    </div>
+    <div class="info-item">
+      <h3><svg xmlns="http://www.w3.org/2000/svg" 
+        width="22" height="22" viewBox="0 0 24 24" 
+        fill="none" stroke="#00af29" stroke-width="2" 
+        stroke-linecap="round" stroke-linejoin="round" 
+        class="lucide lucide-phone-icon lucide-phone">
+        <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>
+      </svg>Teléfono</h3>
+      <p>+57 3232392457</p>
+    </div>
+    <div class="info-item">
+      <h3><svg xmlns="http://www.w3.org/2000/svg" 
+      width="22" height="22" viewBox="0 0 24 24" fill="none"
+       stroke="#2563EB" stroke-width="2" stroke-linecap="round" 
+       stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin">
+       <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+       <circle cx="12" cy="10" r="3"/>
+      </svg>Ubicación</h3>
+      <p>Garzon-Huila</p>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
