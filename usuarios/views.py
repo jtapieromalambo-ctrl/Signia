@@ -7,6 +7,7 @@ from django.conf import settings
 from .forms import RegistroForm, EditarPerfilForm
 from .models import Usuario
 from reconocimientos.models import VideoSeña
+from traduccion.models import video as VideoTraductor
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 from django.utils import timezone
@@ -26,9 +27,9 @@ def es_admin(user):
 def panel_admin_videos(request):
     context = {
         'videos_reconocimiento': VideoSeña.objects.all().order_by('-creado'),
-        'videos_traductor':      [],
+        'videos_traductor':      VideoTraductor.objects.all().order_by('-id'),
         'total_reconocimiento':  VideoSeña.objects.count(),
-        'total_traductor':       0,
+        'total_traductor':       VideoTraductor.objects.count(),
         'mensajes_contacto':     MensajeContacto.objects.all().order_by('-fecha'),
         'total_mensajes':        MensajeContacto.objects.count(),
 
@@ -39,7 +40,7 @@ def panel_admin_videos(request):
 def index(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            return redirect('panel_admin_videos')  # 🔥 CAMBIO
+            return redirect('panel_admin_videos') 
         return redirigir_por_discapacidad(request.user)
     return render(request, 'usuarios/index.html')
 
@@ -48,7 +49,7 @@ def index(request):
 def home(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            return redirect('panel_admin_videos')  # 🔥 CAMBIO
+            return redirect('panel_admin_videos')  
         return redirigir_por_discapacidad(request.user)
 
     if request.method == 'POST':
