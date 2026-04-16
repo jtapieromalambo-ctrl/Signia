@@ -18,6 +18,8 @@ from mediapipe.tasks.python import BaseOptions
 from reconocimientos.models import VideoSeña
 from traduccion.models import video as VideoTraductor
 
+from django.contrib.auth.decorators import login_required
+
 # ── Rutas ─────────────────────────────────────────────────────────────
 MODELO_PATH     = 'reconocimientos/modelo/model_seq.pkl'
 ENCODER_PATH    = 'reconocimientos/modelo/encoder_seq.pkl'

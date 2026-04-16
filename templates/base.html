@@ -361,7 +361,9 @@
                 <strong>{{ user.username }}</strong>
             </div>
             <a href="{% url 'perfil' %}" class="dropdown-item">👤 Mi perfil</a>
+            {% if user.discapacidad == 'ninguna' %}
             <a href="{% url 'editar_perfil' %}" class="dropdown-item">✏️ Editar perfil</a>
+            {% endif %}
             <a href="{% url 'cambiar_password' %}" class="dropdown-item">🔒 Cambiar contraseña</a>
             {% if user.is_staff %}
             <div class="dropdown-divider"></div>
@@ -534,7 +536,17 @@
             sessionStorage.removeItem('ultimaVez');
         }
     });
+
     {% endif %}
 </script>
+
+<script>
+    history.replaceState(null, null, location.href);
+    window.addEventListener('popstate', function () {
+        history.replaceState(null, null, location.href);
+        location.reload();
+    });
+</script>
+
 </body>
 </html>

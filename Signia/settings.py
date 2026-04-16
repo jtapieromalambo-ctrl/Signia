@@ -40,6 +40,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'usuarios.middleware.AdminLoginRedirectMiddleware',
+    'usuarios.middleware.NoCacheMiddleware',  # ajusta la ruta según tu app
 ]
 
 ROOT_URLCONF = 'Signia.urls'
@@ -161,7 +162,7 @@ EMAIL_TIMEOUT = 10
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Sesión expira después de 15 minutos de inactividad
-SESSION_COOKIE_AGE = 60  # 300 segundos = 5 minutos
+SESSION_COOKIE_AGE = 300  # 300 segundos = 5 minutos
 
 # Cada request renueva el tiempo de sesión
 SESSION_SAVE_EVERY_REQUEST = True
