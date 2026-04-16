@@ -78,6 +78,7 @@ function cambiarModo() {
     } else {
         estadoTexto.textContent = 'Modo texto activado';
         speechSynthesis.cancel();
+        hablar('modo texto activado');
     }
 }
 
