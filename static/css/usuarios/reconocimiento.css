@@ -11,7 +11,7 @@
 
 body { background: var(--bg); }
 .page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
-.card { background: var(--white);  border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+.card { background: var(--white);margin-top: -10px;  border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
 
 .card-header {
     background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
@@ -28,7 +28,7 @@ body { background: var(--bg); }
 
 .card-header p  { color: rgba(255,255,255,0.82); font-size: 0.95rem; }
 
-.card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;margin-top: -10px; }
 .card-header  svg{
     background: rgba(255, 255, 255, 0.25);
     border-radius: 10px;
@@ -83,14 +83,15 @@ body { background: var(--bg); }
 
 .resultado {
     background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
-    padding: 1rem 1.25rem; min-height: 80px;
+    padding: 1rem 1.25rem; min-height: 60px;
     font-size: 1rem; color: var(--text-muted); font-style: italic;
+    margin-top: -10px;
 }
 .resultado.activo { color: var(--text-dark); font-style: normal; font-weight: 500; }
 
 #seña-actual {
     font-size: 2.5rem; font-weight: 800; color: var(--blue-primary);
-    text-align: center; min-height: 50px; letter-spacing: 1px;
+    text-align: center; min-height: 50px; letter-spacing: 1px; margin-top: -20px;
 }
 #confianza-texto { font-size: 0.85rem; color: var(--text-muted); text-align: center; }
 #estado-texto    { font-size: 0.85rem; color: var(--text-muted); text-align: center; font-style: italic; }
@@ -105,13 +106,17 @@ body { background: var(--bg); }
     background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
     color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem;
     font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    box-shadow: 0 4px 14px rgba(37,99,235,0.45);
     transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: -15px;
 }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
 .btn.rojo  { background: linear-gradient(135deg, #DC2626, #EF4444); box-shadow: 0 4px 14px rgba(220,38,38,0.35); }
 
-.botones { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.botones { display: flex; 
+           justify-content: space-between;
+           align-items: center; 
+           gap: 1rem; }
 
 /* ── Pill toggle ─────────────────────────────────────── */
 .pill-toggle {
