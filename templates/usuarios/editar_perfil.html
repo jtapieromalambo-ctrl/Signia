@@ -79,38 +79,40 @@
         </div>
 
         <!-- Discapacidad -->
-        <div class="field">
-          <label>Tipo de acceso</label>
-          <div class="discapacidad-opciones">
-            <label class="disc-opcion">
-              <input type="radio" name="discapacidad" value="ninguna"
-                {% if form.discapacidad.value == 'ninguna' or not form.discapacidad.value %}checked{% endif %}>
-              <span class="disc-icon">🙂</span>
-              <span class="disc-opcion-texto">
-                <strong>No tengo discapacidad</strong>
-                <span>Acceso general a Signia</span>
-              </span>
-            </label>
-            <label class="disc-opcion">
-              <input type="radio" name="discapacidad" value="sordo"
-                {% if form.discapacidad.value == 'sordo' %}checked{% endif %}>
-              <span class="disc-icon">👂</span>
-              <span class="disc-opcion-texto">
-                <strong>Soy sordo</strong>
-                <span>Texto → el avatar lo traduce a señas</span>
-              </span>
-            </label>
-            <label class="disc-opcion">
-              <input type="radio" name="discapacidad" value="mudo"
-                {% if form.discapacidad.value == 'mudo' %}checked{% endif %}>
-              <span class="disc-icon">🤟</span>
-              <span class="disc-opcion-texto">
-                <strong>Soy mudo</strong>
-                <span>Hago señas a la cámara → se traduce a texto</span>
-              </span>
-            </label>
-          </div>
-        </div>
+        
+<div class="field">
+  <label>Tipo de acceso</label>
+  <div class="discapacidad-opciones">
+    <label class="disc-opcion" style="{% if usuario.discapacidad == 'ninguna' %}border-color:#2563EB;background:#EFF6FF;{% else %}opacity:0.45;cursor:not-allowed;{% endif %}">
+      <input type="radio" name="discapacidad" value="ninguna" disabled
+        {% if usuario.discapacidad == 'ninguna' %}checked{% endif %}>
+      <span class="disc-icon">🙂</span>
+      <span class="disc-opcion-texto">
+        <strong>No tengo discapacidad</strong>
+        <span>Acceso general a Signia</span>
+      </span>
+    </label>
+    <label class="disc-opcion" style="{% if usuario.discapacidad == 'sordo' %}border-color:#2563EB;background:#EFF6FF;{% else %}opacity:0.45;cursor:not-allowed;{% endif %}">
+      <input type="radio" name="discapacidad" value="sordo" disabled
+        {% if usuario.discapacidad == 'sordo' %}checked{% endif %}>
+      <span class="disc-icon">👂</span>
+      <span class="disc-opcion-texto">
+        <strong>Soy sordo</strong>
+        <span>Texto → el avatar lo traduce a señas</span>
+      </span>
+    </label>
+    <label class="disc-opcion" style="{% if usuario.discapacidad == 'mudo' %}border-color:#2563EB;background:#EFF6FF;{% else %}opacity:0.45;cursor:not-allowed;{% endif %}">
+      <input type="radio" name="discapacidad" value="mudo" disabled
+        {% if usuario.discapacidad == 'mudo' %}checked{% endif %}>
+      <span class="disc-icon">🤟</span>
+      <span class="disc-opcion-texto">
+        <strong>Soy mudo</strong>
+        <span>Hago señas a la cámara → se traduce a texto</span>
+      </span>
+    </label>
+  </div>
+  <span class="readonly-note">🔒 El tipo de acceso no se puede modificar</span>
+</div>
 
         <button type="submit" class="btn-guardar">Guardar cambios</button>
       </form>
