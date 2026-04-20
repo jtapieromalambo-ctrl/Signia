@@ -9,6 +9,8 @@
 
 {% block content %}
 
+{% include 'components/_modal_groserias.html' %}
+
 <form class="con" method="POST" enctype="multipart/form-data" id="formulario">
     {% csrf_token %}
 
@@ -20,28 +22,34 @@
                 <path d="M12 19v3"/>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                 <rect x="9" y="2" width="6" height="13" rx="3"/>
-            </svg><div><h1>Habla o Escribe</h1>
-                  <p >Escribe o di una palabra y Signia la convertirá a señas automáticamente</p>
+            </svg>
+            <div>
+                <h1>Habla o Escribe</h1>
+                <p>Escribe o di una palabra y Signia la convertirá a señas automáticamente</p>
             </div>
         </div>
-       
     </div>
 
     <div class="inner">
         <div id="notificacionNoEncontrado">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-        class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/>
-        <path d="m6 6 12 12"/></svg> Palabra no encontrada
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="lucide lucide-x">
+                <path d="M18 6 6 18"/>
+                <path d="m6 6 12 12"/>
+            </svg>
+            Palabra no encontrada
         </div>
+
         <label for="palabra">Palabra</label>
 
         <div class="input-group">
             <input type="text" name="palabra" id="palabra" placeholder="Escribe una o varias palabras...">
             <button type="submit" class="btn-lupa">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"/>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
@@ -61,7 +69,6 @@
 
             <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
             <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
-        
         </div>
 
         <button type="button" id="btnMic" class="btn-mic">
@@ -83,12 +90,33 @@
             "{{ url }}",
         {% endfor %}
     ];
-    // Si fue una búsqueda por texto y no encontró nada
-{% if request.method == "POST" and not urls_videos %}
-    document.addEventListener('DOMContentLoaded', () => mostrarNoEncontrado());
-{% endif %}
+
+    {% if request.method == "POST" and not urls_videos %}
+        document.addEventListener('DOMContentLoaded', () => mostrarNoEncontrado());
+    {% endif %}
 </script>
 
+<script src="{% static 'js/modal_groserias/groserias.js' %}"></script>
 <script src="{% static 'js/traductor/traductor.js' %}"></script>
+
+<script>
+    // ── Integración groserías ─────────────────────────────────────────────
+
+    // Al limpiar desde el modal, borra el input
+    GroseriasModal.onLimpiar(() => {
+        const input = document.getElementById("palabra");
+        if (input) input.value = "";
+    });
+
+    // Interceptar submit: bloquear si hay grosería
+    document.getElementById("formulario").addEventListener("submit", function(e) {
+        const texto = document.getElementById("palabra")?.value || "";
+        if (GroseriasModal.verificarTexto(texto)) {
+            e.preventDefault();
+            const detectada = GroseriasModal.obtenerPalabraDetectada(texto);
+            GroseriasModal.mostrar(detectada, "texto");
+        }
+    });
+</script>
 
 {% endblock %}
