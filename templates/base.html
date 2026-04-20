@@ -466,8 +466,7 @@
     }
 
     {% if user.is_authenticated %}
-    // ── Inactividad: 5 minutos con aviso al minuto 4 ──
-    const INACTIVIDAD_MS = 5 * 60 * 1000;
+    const INACTIVIDAD_MS = 20 * 60 * 1000;
     const AVISO_ANTES_MS = 60 * 1000;
     let timerInactividad;
     let timerAviso;
@@ -514,29 +513,6 @@
     });
 
     resetearTimer();
-
-    // ── Cerrar sesión al cerrar pestaña/navegador ──
-    window.addEventListener('pagehide', (e) => {
-        if (!e.persisted) {
-            navigator.sendBeacon("{% url 'logout' %}", new URLSearchParams({
-                csrfmiddlewaretoken: '{{ csrf_token }}'
-            }));
-        }
-    });
-
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-            sessionStorage.setItem('ultimaVez', Date.now());
-        }
-        if (document.visibilityState === 'visible') {
-            const ultimaVez = sessionStorage.getItem('ultimaVez');
-            if (ultimaVez && (Date.now() - parseInt(ultimaVez)) > 30000) {
-                window.location.href = "{% url 'logout' %}";
-            }
-            sessionStorage.removeItem('ultimaVez');
-        }
-    });
-
     {% endif %}
 </script>
 
