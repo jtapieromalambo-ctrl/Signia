@@ -20,4 +20,11 @@ urlpatterns = [
     path('recuperar/',          views.recuperar_password,  name='recuperar_password'),
     path('verificar-codigo/',   views.verificar_codigo,    name='verificar_codigo'),
     path('nueva-password/',     views.nueva_password,      name='nueva_password'),
+    # ... tus rutas existentes ...
+    path('verificacion/solicitar/', views.solicitar_verificacion, name='solicitar_verificacion'),
+    path('verificacion/codigo/', views.verificar_otp, name='verificar_otp'),
 ]
+
+
+
+
