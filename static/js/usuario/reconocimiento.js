@@ -206,6 +206,10 @@ async function procesarSecuencia() {
             body: JSON.stringify({ frames: framesAEnviar })
         });
         const data = await response.json();
+        if (GroseriasModal.verificarSena(sena)) {
+        GroseriasModal.mostrar(sena, "sena");
+        return;
+}
 
         if (data.seña && data.confianza >= 70) {
             señaActual.textContent     = data.seña.toUpperCase();
