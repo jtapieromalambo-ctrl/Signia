@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+  <div style="width: 100%; max-width: 480px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.12);">
+    
+    <!-- Header azul -->
+    <div style="background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 36px 30px; text-align: center;">
+      <div style="font-size: 48px;">✉️</div>
+      <h2 style="color: white; margin: 10px 0 6px; font-size: 28px;">Verificar Correo</h2>
+      <p style="color: rgba(255,255,255,0.85); margin: 0; font-size: 15px;">
+        Te enviaremos un código a tu correo
+      </p>
+    </div>
+
+    <!-- Cuerpo -->
+    <div style="background: white; padding: 36px 30px;">
+
+      {% if messages %}
+        {% for message in messages %}
+          <p style="color: {% if message.tags == 'error' %}#d32f2f{% else %}#2e7d32{% endif %};
+                    background: {% if message.tags == 'error' %}#ffebee{% else %}#e8f5e9{% endif %};
+                    padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;">
+            {{ message }}
+          </p>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+        <label style="font-size: 14px; color: #555; font-weight: 600;">Correo electrónico</label>
+        <input type="email" name="email" required autofocus
+               style="width: 100%; padding: 14px; margin: 10px 0 20px;
+                      font-size: 15px; border: 2px solid #e0e0e0;
+                      border-radius: 12px; outline: none; box-sizing: border-box;"
+               placeholder="tucorreo@gmail.com">
+
+        <button type="submit"
+                style="width: 100%; padding: 14px; background: linear-gradient(135deg, #1a73e8, #0d47a1);
+                       color: white; font-size: 16px; font-weight: bold;
+                       border: none; border-radius: 12px; cursor: pointer;">
+          Enviar código →
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="{% url 'home' %}" 
+           style="color: #1a73e8; text-decoration: none; font-size: 14px;">
+          ← Volver al login
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

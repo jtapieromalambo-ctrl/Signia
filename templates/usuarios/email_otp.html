@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;">
+  <div style="max-width: 480px; margin: auto; background: white; border-radius: 8px; padding: 30px;">
+    
+    <h2 style="color: #333;">Verificación de correo</h2>
+    <p>Hola <strong>{{ usuario.first_name }}</strong>,</p>
+    <p>Tu código de verificación es:</p>
+
+    <div style="font-size: 36px; font-weight: bold; letter-spacing: 10px; 
+                color: #4A90D9; text-align: center; padding: 20px 0;">
+      {{ codigo }}
+    </div>
+
+    <p style="color: #888; font-size: 13px;">
+      Este código es válido por <strong>10 minutos</strong>. 
+      Si no solicitaste esto, ignora este correo.
+    </p>
+
+  </div>
+</body>
+</html>
