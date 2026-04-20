@@ -513,14 +513,29 @@
     });
 
     resetearTimer();
+
+    // ── Cerrar sesión al cerrar pestaña/navegador ──
+    window.addEventListener('pagehide', (e) => {
+        if (!e.persisted) {
+            navigator.sendBeacon("{% url 'logout' %}", new URLSearchParams({
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }));
+        }
+    });
+
     {% endif %}
 </script>
 
 <script>
+    // ── Botón atrás cierra sesión si está logueado ──
     history.replaceState(null, null, location.href);
     window.addEventListener('popstate', function () {
-        history.replaceState(null, null, location.href);
-        location.reload();
+        {% if user.is_authenticated %}
+            window.location.href = "{% url 'logout' %}";
+        {% else %}
+            history.replaceState(null, null, location.href);
+            location.reload();
+        {% endif %}
     });
 </script>
 
