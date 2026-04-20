@@ -6,411 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Signia – Inicio</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --blue-primary: #2563EB;
-      --blue-light: #DBEAFE;
-      --blue-mid: #3B82F6;
-      --blue-dark: #1D4ED8;
-      --bg: #E8F3FC;
-      --white: #FFFFFF;
-      --text-dark: #1E293B;
-      --text-muted: #64748B;
-      --shadow: 0 4px 24px rgba(37,99,235,0.10);
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: var(--text-dark);
-      min-height: 100vh;
-    }
-
-    /* ── NAVBAR ── */
-    nav {
-      background: var(--white);
-      display: flex;
-      align-items: center;
-      padding: 0 2.5rem;
-      height: 64px;
-      box-shadow: 0 2px 12px rgba(37,99,235,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      text-decoration: none;
-      margin-right: auto;
-    }
-
-    .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: var(--blue-primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .logo-icon svg { width: 22px; height: 22px; fill: white; }
-
-    .logo-text {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--blue-primary);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      padding: 0.45rem 1rem;
-      border-radius: 999px;
-      transition: color 0.2s, background 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--blue-primary); background: var(--blue-light); }
-
-    .nav-links .active a {
-      background: var(--blue-light);
-      color: var(--blue-primary);
-      font-weight: 600;
-    }
-
-    /* ── HERO ── */
-    .hero {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 5rem 1.5rem 4rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: center;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--blue-light);
-      color: var(--blue-primary);
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 0.35rem 1rem;
-      border-radius: 999px;
-      margin-bottom: 1.25rem;
-      letter-spacing: 0.03em;
-    }
-
-    .hero-badge::before {
-      content: '';
-      width: 8px; height: 8px;
-      background: var(--blue-primary);
-      border-radius: 50%;
-    }
-
-    .hero-text h1 {
-      font-size: 3.2rem;
-      font-weight: 800;
-      line-height: 1.15;
-      color: var(--text-dark);
-      margin-bottom: 1.25rem;
-    }
-
-    .hero-text h1 span { color: var(--blue-primary); }
-
-    .hero-text p {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      line-height: 1.7;
-      margin-bottom: 2rem;
-      max-width: 460px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-      color: white;
-      text-decoration: none;
-      padding: 0.85rem 2rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-      transition: transform 0.15s, box-shadow 0.15s;
-      display: inline-block;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37,99,235,0.45);
-    }
-
-    .btn-secondary {
-      background: var(--white);
-      color: var(--blue-primary);
-      text-decoration: none;
-      padding: 0.85rem 2rem;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: 2px solid #BFDBFE;
-      transition: border-color 0.2s, background 0.2s;
-      display: inline-block;
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--blue-primary);
-      background: var(--blue-light);
-    }
-
-    /* ── HERO VISUAL CARD ── */
-    .hero-visual {
-      display: flex;
-      justify-content: center;
-    }
-
-    .visual-card {
-      background: var(--white);
-      border-radius: 24px;
-      padding: 2rem 1.75rem;
-      box-shadow: 0 8px 40px rgba(37,99,235,0.13);
-      width: 100%;
-      max-width: 360px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .visual-card::before {
-      content: '';
-      position: absolute;
-      top: -20px; right: -20px;
-      width: 100px; height: 100px;
-      background: linear-gradient(135deg, #BFDBFE, #93C5FD);
-      border-radius: 50%;
-      z-index: -1;
-      opacity: 0.6;
-    }
-
-    .visual-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin: 0;
-    }
-
-    /* ── VIDEO (reemplaza .sign-grid) ── */
-    .video-wrapper {
-      width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #0F172A;
-      line-height: 0;
-    }
-
-    .video-wrapper video {
-      width: 100%;
-      display: block;
-      border-radius: 12px;
-      max-height: 220px;
-      object-fit: cover;
-    }
-
-    /* Caja de traducción sincronizada */
-    .translation-box {
-      background: var(--blue-light);
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .sign-translation-text {
-      font-size: 1.3rem;
-      font-weight: 700;
-      text-align: center;
-      color: var(--blue-primary);
-      margin: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    /* Indicador activo */
-    .visual-stat {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background: var(--blue-light);
-      border-radius: 12px;
-      padding: 0.85rem 1rem;
-    }
-
-    .stat-dot {
-      width: 10px; height: 10px;
-      background: #22C55E;
-      border-radius: 50%;
-      flex-shrink: 0;
-      animation: pulse-dot 1.4s ease-in-out infinite;
-    }
-
-    .visual-stat p {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--blue-primary);
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.45; transform: scale(1.4); }
-    }
-
-    /* ── FEATURES ── */
-    .features {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 5rem;
-    }
-
-    .features-title {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .features-title h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .features-title p {
-      color: var(--text-muted);
-      font-size: 1rem;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
-    .feature-card {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 2rem 1.75rem;
-      box-shadow: var(--shadow);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(37,99,235,0.14);
-    }
-
-    .feature-icon {
-      width: 52px; height: 52px;
-      background: var(--blue-light);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .feature-card h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-card p {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-
-    /* ── CTA ── */
-    .cta {
-      max-width: 700px;
-      margin: 0 auto 5rem;
-      text-align: center;
-      background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
-      border-radius: 24px;
-      padding: 3.5rem 2rem;
-      color: white;
-      box-shadow: 0 8px 32px rgba(37,99,235,0.30);
-    }
-
-    .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
-
-    .cta p {
-      color: rgba(255,255,255,0.85);
-      font-size: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .btn-white {
-      background: white;
-      color: var(--blue-primary);
-      text-decoration: none;
-      padding: 0.85rem 2.5rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 1rem;
-      display: inline-block;
-      transition: transform 0.15s, box-shadow 0.15s;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-    }
-
-    .btn-white:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      background: var(--white);
-      text-align: center;
-      padding: 1.25rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      border-top: 1px solid #E2E8F0;
-    }
-
-    @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; gap: 2.5rem; padding: 3rem 1.25rem; }
-      .hero-text h1 { font-size: 2.2rem; }
-      .features-grid { grid-template-columns: 1fr; }
-      .hero-visual { display: none; }
-    }
-  </style>
+<link rel="stylesheet" href="{% static 'css/usuarios/index.css' %}">
 </head>
 <body>
+
+  <!-- FONDO ANIMADO -->
+  <div class="bg"></div>
+  <div class="bg bg2"></div>
+  <div class="bg bg3"></div>
 
   <!-- NAVBAR -->
   <nav>
@@ -443,10 +46,6 @@
       </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════
-         CAMBIO: se reemplazó .sign-grid (emojis) por
-         video con traducción sincronizada
-    ════════════════════════════════════════════════ -->
     <div class="hero-visual">
       <div class="visual-card">
         <p class="visual-title">Señas del abecedario</p>
@@ -472,8 +71,6 @@
         </div>
       </div>
     </div>
-    <!-- ════════════════════ fin del bloque ════════════════════ -->
-
   </section>
 
   <!-- FEATURES -->
@@ -502,7 +99,7 @@
   </section>
 
   <!-- CTA -->
-  <div style="padding: 0 1.5rem;">
+  <div class="cta-wrapper">
     <div class="cta">
       <h2>¿Listo para empezar?</h2>
       <p>Crea tu cuenta gratis y accede a todas las herramientas de Signia hoy mismo.</p>
@@ -512,19 +109,13 @@
 
   <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
 
-  <!-- ════════════════════════════════════════════════════════
-       JAVASCRIPT — va aquí, justo antes de </body>
-       Archivo: index.html (este mismo archivo)
-  ════════════════════════════════════════════════════════ -->
   <script>
     const video = document.getElementById('sign-video');
     const translationEl = document.getElementById('sign-translation');
 
-    // ✏️ EDITA estos tiempos (en segundos) según las señas reales de tu video
     const signs = [
       { start: 0,  end: 3,  text: "Hola" },
       { start: 3,  end: 6,  text: "¿Cómo estás?" },
-      
     ];
 
     function updateTranslation() {
