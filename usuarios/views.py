@@ -189,14 +189,30 @@ def eliminar_cuenta(request):
 def contacto(request):
     form = ContactoForm()
     observacion_enviada = False
-
     if request.method == 'POST':
         form = ContactoForm(request.POST)
         if form.is_valid():
             form.save()
-
             if form.cleaned_data.get('observacion'):
                 observacion_enviada = True
+
+                # Enviar correo al administrador
+                nombre = form.cleaned_data.get('nombre')
+                correo = form.cleaned_data.get('correo')
+                observacion = form.cleaned_data.get('observacion')
+                mensaje = form.cleaned_data.get('mensaje')
+
+                try:
+                    send_mail(
+                        subject=f'Nueva queja/contacto de {nombre}',
+                        message=f'Nombre: {nombre}\nCorreo: {correo}\n\nObservación:\n{observacion}\n\nMensaje:\n{mensaje}',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=['osorioescobardavidfelipe@gmail.com'],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+
             else:
                 return redirect('contacto')
 
@@ -428,7 +444,7 @@ def enviar_otp(usuario):
     correo.attach_alternative(cuerpo_html, "text/html")
     correo.send()
 
-    
+
 # Vista 1: El usuario ingresa su correo y se le envía el OTP
 def solicitar_verificacion(request):
     if request.method == 'POST':
