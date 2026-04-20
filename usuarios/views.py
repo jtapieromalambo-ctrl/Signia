@@ -9,11 +9,17 @@ from .models import Usuario
 from reconocimientos.models import VideoSeña
 from traduccion.models import video as VideoTraductor
 import ssl
+
 ssl._create_default_https_context = ssl._create_unverified_context
 from django.utils import timezone
 from .forms import ContactoForm
 from .models import MensajeContacto
 from django.shortcuts import render, redirect, get_object_or_404
+#para verificacion del correo
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from .models import CodigoOTP
+from functools import wraps
 
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
 def es_admin(user):
@@ -80,22 +86,18 @@ def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            user = form.save(commit=False)  # ← cambiamos esto para no guardar aún
+            user.email_verificado = False
+            user.save()
 
-            try:
-                send_mail(
-                    subject='¡Bienvenido a Signia! 🤟',
-                    message=f'Hola {user.username},\n\n¡Gracias por registrarte en Signia!\n\n— El equipo de Signia',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=True,
-                )
-            except Exception:
-                pass
+            # Enviamos el OTP antes de hacer login
+            enviar_otp(user)
+            request.session['email_verificacion'] = user.email
+            request.session['show_disability_modal'] = True  # lo conservamos para después
 
-            request.session['show_disability_modal'] = True
-            return redirigir_por_discapacidad(user)
+            messages.success(request, 'Cuenta creada. Verifica tu correo para continuar.')
+            return redirect('verificar_otp')  # ← primero verificar
+
     else:
         form = RegistroForm()
 
@@ -351,3 +353,143 @@ def eliminar_mensaje_contacto(request, mensaje_id):
     if request.method == 'POST':
         mensaje.delete()
     return redirect('panel_admin_videos')
+
+#verificacion del corrreo
+def verificar_otp(request):
+    email = request.session.get('email_verificacion')
+    
+    if not email:
+        messages.error(request, 'Sesión expirada. Intenta de nuevo.')
+        return redirect('solicitar_verificacion')
+    
+    if request.method == 'POST':
+        codigo_ingresado = request.POST.get('codigo')
+        
+        try:
+            usuario = Usuario.objects.get(email=email)
+            otp = CodigoOTP.objects.filter(
+                usuario=usuario,
+                codigo=codigo_ingresado,
+                usado=False
+            ).last()
+            
+            if otp and otp.esta_vigente():
+                otp.usado = True
+                otp.save()
+                usuario.email_verificado = True
+                usuario.save()
+                del request.session['email_verificacion']
+
+                # Login después de verificar
+                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+
+                # Correo de bienvenida
+                try:
+                    send_mail(
+                        subject='¡Bienvenido a Signia! 🤟',
+                        message=f'Hola {usuario.username},\n\n¡Gracias por registrarte en Signia!\n\nEl equipo de Signia',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[usuario.email],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+
+                messages.success(request, '¡Correo verificado correctamente!')
+                return redirigir_por_discapacidad(usuario)
+            
+            else:
+                messages.error(request, 'Código incorrecto o expirado.')
+        
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuario no encontrado.')
+    
+    return render(request, 'usuarios/verificar_otp.html')
+
+
+def enviar_otp(usuario):
+    otp = CodigoOTP.generar(usuario)
+    
+    asunto = 'Tu código de verificación - Signia'
+    contexto = {
+        'usuario': usuario,
+        'codigo': otp.codigo,
+    }
+    
+    cuerpo_texto = f'Tu código de verificación es: {otp.codigo}. Válido por 10 minutos.'
+    cuerpo_html = render_to_string('usuarios/email_otp.html', contexto)
+    
+    correo = EmailMultiAlternatives(
+        subject=asunto,
+        body=cuerpo_texto,
+        from_email=None,
+        to=[usuario.email],
+    )
+    correo.attach_alternative(cuerpo_html, "text/html")
+    correo.send()
+
+    
+# Vista 1: El usuario ingresa su correo y se le envía el OTP
+def solicitar_verificacion(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        try:
+            usuario = Usuario.objects.get(email=email)
+            enviar_otp(usuario)
+            request.session['email_verificacion'] = email  # guardamos el email en sesión
+            messages.success(request, 'Código enviado a tu correo.')
+            return redirect('verificar_otp')
+        
+        except Usuario.DoesNotExist:
+            messages.error(request, 'No existe una cuenta con ese correo.')
+    
+    return render(request, 'usuarios/solicitar_verificacion.html')
+
+
+# Vista 2: El usuario ingresa el código OTP
+def verificar_otp(request):
+    email = request.session.get('email_verificacion')
+    
+    if not email:
+        messages.error(request, 'Sesión expirada. Intenta de nuevo.')
+        return redirect('solicitar_verificacion')
+    
+    if request.method == 'POST':
+        codigo_ingresado = request.POST.get('codigo')
+        
+        try:
+            usuario = Usuario.objects.get(email=email)
+            otp = CodigoOTP.objects.filter(
+                usuario=usuario,
+                codigo=codigo_ingresado,
+                usado=False
+            ).last()
+            
+            if otp and otp.esta_vigente():
+                otp.usado = True
+                otp.save()
+                usuario.email_verificado = True  # lo activamos (lo agregamos en el siguiente paso)
+                usuario.save()
+                del request.session['email_verificacion']
+                messages.success(request, '¡Correo verificado correctamente!')
+                return redirect('home')  # cambia esto por tu vista principal
+            else:
+                messages.error(request, 'Código incorrecto o expirado.')
+        
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuario no encontrado.')
+    
+    return render(request, 'usuarios/verificar_otp.html')
+
+
+def requiere_email_verificado(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if not request.user.email_verificado:
+            messages.warning(request, 'Debes verificar tu correo primero.')
+            return redirect('solicitar_verificacion')
+        return view_func(request, *args, **kwargs)
+    return wrapper
