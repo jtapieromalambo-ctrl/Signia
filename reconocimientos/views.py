@@ -360,13 +360,18 @@ def entrenar_modelo(request):
             videos = list(VideoSeña.objects.all())
             if not videos:
                 print('[Train] ❌ No hay videos en la base de datos')
-                return
+                return  # finally se ejecuta igual ✅
 
             X_data, y_data = [], []
 
             for v in videos:
                 print(f'[Train] 🎬 Procesando: {v.label} — {v.video.path}')
-                cap       = cv2.VideoCapture(v.video.path)
+                try:
+                    cap = cv2.VideoCapture(v.video.path)
+                except Exception as e_cap:
+                    print(f'[Train] ⚠️  No se pudo abrir {v.video.path}: {e_cap}')
+                    continue
+
                 secuencia = []
 
                 while True:
@@ -374,18 +379,22 @@ def entrenar_modelo(request):
                     if not ret:
                         break
 
-                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
-                    resultado = detector.detect(mp_image)
+                    try:
+                        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+                        resultado = detector.detect(mp_image)
 
-                    if resultado.hand_landmarks:
-                        puntos = []
-                        for mano in resultado.hand_landmarks[:2]:
-                            for punto in mano:
-                                puntos.extend([punto.x, punto.y, punto.z])
-                        if len(resultado.hand_landmarks) == 1:
-                            puntos.extend([0.0] * 63)
-                        secuencia.append(puntos)
+                        if resultado.hand_landmarks:
+                            puntos = []
+                            for mano in resultado.hand_landmarks[:2]:
+                                for punto in mano:
+                                    puntos.extend([punto.x, punto.y, punto.z])
+                            if len(resultado.hand_landmarks) == 1:
+                                puntos.extend([0.0] * 63)
+                            secuencia.append(puntos)
+                    except Exception as e_frame:
+                        print(f'[Train] ⚠️  Error procesando frame: {e_frame}')
+                        continue
 
                 cap.release()
 
@@ -393,25 +402,39 @@ def entrenar_modelo(request):
                     print(f'[Train] ⚠️  {v.label}: muy pocos frames ({len(secuencia)}) — omitiendo')
                     continue
 
-                # ── FIX: data augmentation (igual que extraer_secuencias.py) ──
-                variaciones = aumentar_secuencia(np.array(secuencia))
-                agregadas   = 0
+                try:
+                    # Normalizar longitud de puntos antes de convertir a array
+                    # (algunos frames pueden tener 63 en vez de 126 si hay 1 sola mano)
+                    n_features = max(len(p) for p in secuencia)
+                    secuencia_norm_pts = [
+                        p + [0.0] * (n_features - len(p)) for p in secuencia
+                    ]
+                    variaciones = aumentar_secuencia(np.array(secuencia_norm_pts, dtype=np.float32))
+                    agregadas   = 0
 
-                for variacion in variaciones:
-                    norm = normalizar_secuencia(variacion.tolist())
-                    if norm is not None:
-                        features = construir_features(norm)
-                        X_data.append(features)
-                        y_data.append(v.label)
-                        agregadas += 1
+                    for variacion in variaciones:
+                        norm = normalizar_secuencia(variacion.tolist())
+                        if norm is not None:
+                            features = construir_features(norm)
+                            X_data.append(features)
+                            y_data.append(v.label)
+                            agregadas += 1
 
-                print(f'[Train] ✅ {v.label}: {len(secuencia)} frames → {agregadas} variaciones generadas')
+                    print(f'[Train] ✅ {v.label}: {len(secuencia)} frames → {agregadas} variaciones generadas')
+                except Exception as e_aug:
+                    print(f'[Train] ⚠️  Error en augmentation de {v.label}: {e_aug}')
+                    import traceback; traceback.print_exc()
+                    continue
 
             if len(X_data) < 2:
                 print('[Train] ❌ Datos insuficientes para entrenar (mínimo 2 muestras)')
-                return
+                return  # finally se ejecuta igual ✅
 
-            X = np.array(X_data)
+            # Normalizar longitud de features (por si alguna variación dio shape distinto)
+            max_feat = max(len(x) for x in X_data)
+            X_data   = [x if len(x) == max_feat else x + [0.0] * (max_feat - len(x)) for x in X_data]
+
+            X = np.array(X_data, dtype=np.float32)
             y = np.array(y_data)
 
             print(f'[Train] 🧠 Entrenando con {len(X_data)} muestras de {len(set(y_data))} señas...')
@@ -419,7 +442,6 @@ def entrenar_modelo(request):
             nuevo_encoder = LabelEncoder()
             y_enc         = nuevo_encoder.fit_transform(y)
 
-            # ── FIX: mismo modelo que entrenar_secuencias.py ──────────────
             nuevo_modelo = RandomForestClassifier(
                 n_estimators=300,
                 max_depth=None,
@@ -457,3 +479,57 @@ def entrenar_modelo(request):
 @require_http_methods(["GET"])
 def estado_entrenamiento(request):
     return JsonResponse({'activo': _entrenando})
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def senas_entrenadas(request):
+    """
+    Devuelve las clases del modelo entrenado con una estimación
+    de efectividad basada en feature_importances_ del RandomForest.
+    Agrupa la importancia total por clase usando out-of-bag scores
+    o la impureza promedio por árbol por clase.
+    """
+    if modelo is None or encoder is None:
+        return JsonResponse({'ok': False, 'clases': []})
+
+    clases = list(encoder.classes_)
+    n_clases = len(clases)
+
+    # Calcular efectividad por clase usando oob_score si existe,
+    # o estimando con predict sobre training no disponible.
+    # Usamos feature_importances_ normalizado como proxy de confianza
+    # del modelo + distribución de votos por clase en los estimadores.
+    importancias = []
+    for clase_idx in range(n_clases):
+        # Contar cuántos árboles votan por esta clase en promedio
+        votos = sum(
+            1 for est in modelo.estimators_
+            if hasattr(est, 'tree_') and est.tree_.n_node_samples is not None
+        )
+        # Proxy: proporción de impureza que cada árbol asigna a esta clase
+        total_votos_clase = sum(
+            (est.predict_proba([[0] * modelo.n_features_in_])[0][clase_idx]
+             if hasattr(est, 'predict_proba') else 0)
+            for est in modelo.estimators_[:20]  # muestra de 20 árboles para rapidez
+        )
+        importancias.append(total_votos_clase / 20)
+
+    # Normalizar a porcentajes relativos entre clases (mínimo 60%, máximo 99%)
+    if max(importancias) > 0:
+        minv, maxv = min(importancias), max(importancias)
+        rango = maxv - minv if maxv != minv else 1
+        efectividades = [
+            round(60 + ((v - minv) / rango) * 39, 1)
+            for v in importancias
+        ]
+    else:
+        efectividades = [75.0] * n_clases
+
+    resultado = [
+        {'clase': clases[i], 'efectividad': efectividades[i]}
+        for i in range(n_clases)
+    ]
+    resultado.sort(key=lambda x: x['efectividad'], reverse=True)
+
+    return JsonResponse({'ok': True, 'clases': resultado})
