@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="min-height:100vh; background:#E8F3FC; display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:white; border-radius:20px; padding:36px 28px; max-width:420px; width:100%; box-shadow:0 8px 30px rgba(37,99,235,0.12);">
+    
+    <h2 style="color:#1E40AF; font-size:20px; font-weight:700; margin:0 0 8px;">¿Tienes alguna discapacidad?</h2>
+    <p style="color:#6B7280; font-size:14px; margin:0 0 28px;">Esto nos ayuda a mostrarte el módulo adecuado al ingresar.</p>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <!-- Opción: Ninguna -->
+      <label style="display:flex; align-items:center; gap:14px; border:2px solid #E5E7EB; border-radius:14px; padding:16px; margin-bottom:12px; cursor:pointer; transition:border-color .2s;" 
+             onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <input type="radio" name="discapacidad" value="ninguna" checked style="accent-color:#2563EB; width:20px; height:20px;">
+        <span style="font-size:22px;">😊</span>
+        <div>
+          <div style="color:#1E40AF; font-weight:700; font-size:15px;">No tengo discapacidad</div>
+          <div style="color:#9CA3AF; font-size:13px;">Acceso general a Signia</div>
+        </div>
+      </label>
+
+      <!-- Opción: Sordo -->
+      <label style="display:flex; align-items:center; gap:14px; border:2px solid #E5E7EB; border-radius:14px; padding:16px; margin-bottom:12px; cursor:pointer; transition:border-color .2s;"
+             onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <input type="radio" name="discapacidad" value="sordo" style="accent-color:#2563EB; width:20px; height:20px;">
+        <span style="font-size:22px;">👂</span>
+        <div>
+          <div style="color:#1E40AF; font-weight:700; font-size:15px;">Soy sordo</div>
+          <div style="color:#9CA3AF; font-size:13px;">Escribo texto → el avatar lo traduce a señas</div>
+        </div>
+      </label>
+
+      <!-- Opción: Mudo -->
+      <label style="display:flex; align-items:center; gap:14px; border:2px solid #E5E7EB; border-radius:14px; padding:16px; margin-bottom:20px; cursor:pointer; transition:border-color .2s;"
+             onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <input type="radio" name="discapacidad" value="mudo" style="accent-color:#2563EB; width:20px; height:20px;">
+        <span style="font-size:22px;">🤟</span>
+        <div>
+          <div style="color:#1E40AF; font-weight:700; font-size:15px;">Soy mudo</div>
+          <div style="color:#9CA3AF; font-size:13px;">Hago señas a la cámara → se traduce a texto</div>
+        </div>
+      </label>
+
+      <button type="submit" style="width:100%; background:linear-gradient(135deg,#2563EB,#3B82F6); color:white; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:600; cursor:pointer;">
+        Continuar →
+      </button>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}
