@@ -82,7 +82,6 @@
                 <path d="M12 17v4"/><path d="M8 21h8"/><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
             </span> Videos del Traductor
         </button>
-        <!-- ✅ TAB MENSAJES — dentro del tabs-bar -->
         <button class="tab-btn" onclick="switchTab('mensajes', this)">
             <span class="tab-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
@@ -113,7 +112,6 @@
             </div>
         </div>
 
-        <!-- Upload zone -->
         <div class="upload-zone" id="drop-reconocimiento"
              ondragover="event.preventDefault(); this.classList.add('dragging')"
              ondragleave="this.classList.remove('dragging')"
@@ -133,23 +131,19 @@
             </button>
         </div>
 
-        <!-- Preview lista antes de subir -->
         <div class="preview-list" id="preview-reconocimiento"></div>
 
-        <!-- Botón subir -->
         <div id="btn-subir-reconocimiento-wrap" style="display:none; text-align:center; margin-top:1rem;">
             <button class="btn-primary" onclick="subirReconocimiento()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
                 viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round" 
-                 class="lucide lucide-arrow-up-from-line-icon lucide-arrow-up-from-line">
+                 stroke-linecap="round" stroke-linejoin="round">
                  <path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/>
                 </svg> Subir todos los videos
             </button>
             <button class="btn-ghost" onclick="limpiarPreview('reconocimiento')">Cancelar</button>
         </div>
 
-        <!-- Progress -->
         <div class="progress-wrap" id="progress-reconocimiento" style="display:none;">
             <div class="progress-bar-outer">
                 <div class="progress-bar-inner" id="progress-bar-r"></div>
@@ -157,10 +151,8 @@
             <p class="progress-label" id="progress-label-r">Subiendo...</p>
         </div>
 
-        <!-- Toast -->
         <div class="toast" id="toast-reconocimiento"></div>
 
-        <!-- Historial de videos subidos -->
         <div class="section-title-row">
             <h2>Videos subidos</h2>
             <div class="search-wrap">
@@ -181,11 +173,10 @@
                 </thead>
                 <tbody>
                     {% for v in videos_reconocimiento %}
+                    {% with fecha_r=v.creado|date:"d/m/Y H:i" %}
                     <tr data-id="{{ v.id }}">
-                        <td>
-                            <span class="label-chip">{{ v.label }}</span>
-                        </td>
-                        <td class="date-cell">{{ v.creado|date:"d/m/Y H:i" }}</td>
+                        <td><span class="label-chip">{{ v.label }}</span></td>
+                        <td class="date-cell">{{ fecha_r }}</td>
                         <td>
                             {% if v.procesado %}
                                 <span class="badge badge-ok">Procesado</span>
@@ -197,16 +188,22 @@
                         </td>
                         <td>
                             <button class="btn-danger-sm"
-                                    onclick="eliminarVideoReconocimiento({{ v.id }}, this)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                 height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626"
-                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-                                  class="lucide lucide-trash-icon lucide-trash">
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
-                                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    onclick="abrirModalEliminar({
+                                        tipo: 'reconocimiento',
+                                        id: {{ v.id }},
+                                        nombre: '{{ v.label|escapejs }}',
+                                        sub: '{{ fecha_r }}',
+                                        btn: this
+                                    })">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
+                                viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" 
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             </button>
                         </td>
                     </tr>
+                    {% endwith %}
                     {% empty %}
                     <tr id="empty-reconocimiento">
                         <td colspan="4" class="empty-cell">No hay videos subidos aún</td>
@@ -225,8 +222,8 @@
         <div class="section-info">
             <div class="info-icon"><svg xmlns="http://www.w3.org/2000/svg"
                  width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" 
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-                 class="lucide lucide-info-icon lucide-info"><circle cx="12" cy="12" r="10"/>
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                 <circle cx="12" cy="12" r="10"/>
                  <path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
             <div>
                 <strong>Videos del traductor</strong> — Un video por seña.
@@ -234,13 +231,11 @@
             </div>
         </div>
 
-        <!-- Formulario crear/editar -->
         <div class="form-card" id="form-traductor">
             <h3 id="form-titulo"><svg xmlns="http://www.w3.org/2000/svg" 
                 width="26" height="26" viewBox="0 0 24 24" fill="none" 
                 stroke="#2563EB" stroke-width="2" stroke-linecap="round" 
-                stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus">
-                <path d="M5 12h14"/><path d="M12 5v14"/></svg> Nueva seña</h3>
+                stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Nueva seña</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label>Nombre de la seña</label>
@@ -249,24 +244,22 @@
                 <div class="form-group">
                     <label>Video</label>
                     <label for="video-traductor" class="btn-video">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/>
-      <rect x="3" y="6" width="12" height="12" rx="2"/>
-    </svg>
-    <span id="btn-label">Seleccionar video</span>
-  </label>
-
-  <input type="file" id="video-traductor" name="video" accept="video/*" hidden>
-  <span id="file-name" class="file-name"></span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/>
+                          <rect x="3" y="6" width="12" height="12" rx="2"/>
+                        </svg>
+                        <span id="btn-label">Seleccionar video</span>
+                    </label>
+                    <input type="file" id="video-traductor" name="video" accept="video/*" hidden>
+                    <span id="file-name" class="file-name"></span>
                 </div>
             </div>
             <div class="form-actions">
                 <button class="btn-primary" onclick="guardarTraductor()">
                     <span id="btn-guardar-label"><svg xmlns="http://www.w3.org/2000/svg" width="24" 
                         height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" 
-                        stroke-linecap="round" stroke-linejoin="round" 
-                        class="lucide lucide-folder-down-icon lucide-folder-down"><path 
-                        d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
                         <path d="M12 10v6"/><path d="m15 13-3 3-3-3"/></svg> Guardar</span>
                 </button>
                 <button class="btn-ghost" onclick="cancelarEdicion()">Cancelar</button>
@@ -279,10 +272,8 @@
             </div>
         </div>
 
-        <!-- Toast -->
         <div class="toast" id="toast-traductor"></div>
 
-        <!-- Tabla -->
         <div class="section-title-row">
             <h2>Señas del traductor</h2>
             <div class="search-wrap">
@@ -305,28 +296,30 @@
                     <tr data-id="{{ v.id }}">
                         <td><span class="label-chip">{{ v.nombre }}</span></td>
                         <td>
-                            <a href="{{ v.video.url }}" target="_blank" class="ver-link">
-                                ▶ Ver video
-                            </a>
+                            <a href="{{ v.video.url }}" target="_blank" class="ver-link">▶ Ver video</a>
                         </td>
                         <td class="acciones-cell">
                             <button class="btn-edit-sm"
                                     onclick="editarTraductor({{ v.id }}, '{{ v.nombre }}')">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
                                 viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"
-                                 stroke-linecap="round" stroke-linejoin="round"
-                                  class="lucide lucide-pencil-icon lucide-pencil">
+                                 stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
                                   <path d="m15 5 4 4"/></svg>
                             </button>
                             <button class="btn-danger-sm"
-                                    onclick="eliminarTraductor({{ v.id }}, this)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                 height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626"
-                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-                                  class="lucide lucide-trash-icon lucide-trash">
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
-                                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    onclick="abrirModalEliminar({
+                                        tipo: 'traductor',
+                                        id: {{ v.id }},
+                                        nombre: '{{ v.nombre|escapejs }}',
+                                        sub: 'Seña del traductor',
+                                        btn: this
+                                    })">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" 
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             </button>
                         </td>
                     </tr>
@@ -341,7 +334,7 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════
-         TAB: MENSAJES DE CONTACTO ✅
+         TAB: MENSAJES DE CONTACTO
     ═══════════════════════════════════════════════ -->
     <div class="tab-panel" id="panel-mensajes">
 
@@ -370,18 +363,22 @@
                         <td style="max-width:220px;">{{ msg.mensaje }}</td>
                         <td class="date-cell">{{ msg.fecha|date:"d/m/Y H:i" }}</td>
                         <td>
-                            <form method="post" action="{% url 'eliminar_mensaje_contacto' msg.id %}" 
-                                  onsubmit="return confirm('¿Eliminar este mensaje?')" style="margin:0;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-danger-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-                                    viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" 
-                                    stroke-linecap="round" stroke-linejoin="round" 
-                                    class="lucide lucide-trash-icon lucide-trash">
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
-                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>
-                            </form>
+                            <!-- ✅ Sin confirm() ni form POST — usa el modal -->
+                            <button class="btn-danger-sm"
+                                    data-delete-url="{% url 'eliminar_mensaje_contacto' msg.id %}"
+                                    onclick="abrirModalEliminar({
+                                        tipo: 'mensaje',
+                                        id: {{ msg.id }},
+                                        nombre: '{{ msg.nombre|escapejs }}',
+                                        sub: '{{ msg.correo|escapejs }}',
+                                        btn: this
+                                    })">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
+                                viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" 
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
                         </td>
                     </tr>
                     {% empty %}
@@ -396,11 +393,275 @@
 
 </div>
 
+<!-- ═══════════════════════════════════════════════════════
+     MODAL DE ELIMINACIÓN — Reutilizable para los 3 tipos
+═══════════════════════════════════════════════════════ -->
+<div class="del-overlay" id="delOverlay" role="dialog" aria-modal="true" aria-labelledby="delModalTitle">
+    <div class="del-modal" id="delModal">
+
+        <!-- Franja roja animada superior -->
+        <div class="del-modal-stripe"></div>
+
+        <div class="del-modal-body">
+
+            <!-- Ícono con anillo giratorio y pulso -->
+            <div class="del-modal-icon-wrap">
+                <div class="del-modal-icon-ring"></div>
+                <div class="del-modal-icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                        <path d="M3 6h18"/>
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Título y descripción -->
+            <h2 class="del-modal-title" id="delModalTitle">Eliminar registro</h2>
+            <p class="del-modal-desc" id="delModalDesc">
+                Esta acción es permanente y no se puede deshacer.
+            </p>
+
+            <!-- Tarjeta con info del registro a eliminar -->
+            <div class="del-modal-record">
+                <div class="del-modal-record-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                </div>
+                <div class="del-modal-record-text">
+                    <div class="del-modal-record-name" id="delRecordName">—</div>
+                    <div class="del-modal-record-sub" id="delRecordSub">—</div>
+                </div>
+            </div>
+
+            <!-- Advertencia irrecuperable -->
+            <div class="del-modal-warn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Esta acción no se puede revertir
+            </div>
+
+            <!-- Botones -->
+            <div class="del-modal-actions">
+                <button class="del-btn-cancel" id="delBtnCancel" onclick="cerrarModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Cancelar
+                </button>
+                <button class="del-btn-confirm" id="delBtnConfirm" onclick="confirmarEliminar()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                        <path d="M3 6h18"/>
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Sí, eliminar
+                </button>
+            </div>
+        </div>
+
+        <!-- Pie: hint de teclado -->
+        <div class="del-modal-footer">
+            <span class="del-modal-footer-key">Esc</span>
+            <span class="del-modal-footer-text">para cancelar</span>
+            <span style="margin: 0 0.35rem; color: var(--text-dim); font-size:0.7rem;">·</span>
+            <span class="del-modal-footer-key">Enter</span>
+            <span class="del-modal-footer-text">para confirmar</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── TOAST global ── -->
+<div class="toast" id="toast-global"></div>
+
 <script>
 const CSRF = '{{ csrf_token }}';
 let editandoId = null;
 
-// ── Tabs ─────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
+   MODAL DE ELIMINACIÓN
+═══════════════════════════════════════════════════════════ */
+let _delState = { tipo: null, id: null, btn: null };
+
+function abrirModalEliminar({ tipo, id, nombre, sub, btn }) {
+    _delState = { tipo, id, btn };
+
+    // Configurar textos según tipo
+    const titulos = {
+        reconocimiento: 'Eliminar video de entrenamiento',
+        traductor:      'Eliminar seña del traductor',
+        mensaje:        'Eliminar mensaje de contacto',
+    };
+    const descs = {
+        reconocimiento: 'El video y sus datos de entrenamiento serán eliminados permanentemente.',
+        traductor:      'La seña y su video asociado serán eliminados permanentemente.',
+        mensaje:        'El mensaje de contacto será eliminado permanentemente del sistema.',
+    };
+
+    document.getElementById('delModalTitle').textContent  = titulos[tipo] || 'Eliminar registro';
+    document.getElementById('delModalDesc').textContent   = descs[tipo]   || 'Esta acción es permanente.';
+    document.getElementById('delRecordName').textContent  = nombre;
+    document.getElementById('delRecordSub').textContent   = sub;
+
+    // Reset botón confirmar
+    const btnConfirm = document.getElementById('delBtnConfirm');
+    btnConfirm.classList.remove('loading');
+    btnConfirm.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;stroke:white;">
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+            <path d="M3 6h18"/>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Sí, eliminar
+    `;
+
+    document.getElementById('delOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('delBtnConfirm').focus(), 300);
+}
+
+function cerrarModal() {
+    document.getElementById('delOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    _delState = { tipo: null, id: null, btn: null };
+}
+
+async function confirmarEliminar() {
+    const { tipo, id, btn } = _delState;
+    if (!tipo || !id) return;
+
+    const btnConfirm = document.getElementById('delBtnConfirm');
+    btnConfirm.classList.add('loading');
+    btnConfirm.innerHTML = `<span class="del-spinner"></span> Eliminando...`;
+
+    try {
+        if (tipo === 'reconocimiento') {
+            await _eliminarFetch(
+                `/reconocimientos/admin-videos/reconocimiento/eliminar/${id}/`,
+                'DELETE',
+                () => {
+                    document.querySelector(`#tabla-reconocimiento tr[data-id="${id}"]`)?.remove();
+                    actualizarContador('count-reconocimiento', -1);
+                    mostrarToastGlobal('✓ Video eliminado correctamente');
+                }
+            );
+
+        } else if (tipo === 'traductor') {
+            await _eliminarFetch(
+                `/reconocimientos/admin-videos/traductor/eliminar/${id}/`,
+                'DELETE',
+                () => {
+                    document.querySelector(`#tabla-traductor tr[data-id="${id}"]`)?.remove();
+                    actualizarContador('count-traductor', -1);
+                    mostrarToastGlobal('✓ Seña eliminada correctamente');
+                }
+            );
+
+        } else if (tipo === 'mensaje') {
+            // Para mensajes usamos el form POST de Django con CSRF
+            const url = btn.closest('button')?.dataset?.deleteUrl
+                     || btn.dataset?.deleteUrl;
+            if (!url) {
+                // Fallback: construir URL desde data del botón
+                _eliminarMensajePost(id);
+                return;
+            }
+            await _eliminarFetch(url, 'POST', () => {
+                document.querySelector(`#tabla-mensajes tr[data-id="${id}"]`)?.remove();
+                mostrarToastGlobal('✓ Mensaje eliminado correctamente');
+            });
+        }
+    } catch(e) {
+        btnConfirm.classList.remove('loading');
+        btnConfirm.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;stroke:white;">
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                <path d="M3 6h18"/>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Sí, eliminar
+        `;
+        mostrarToastGlobal('✗ Error al eliminar', true);
+    }
+}
+
+async function _eliminarFetch(url, method, onSuccess) {
+    const res  = await fetch(url, {
+        method,
+        headers: { 'X-CSRFToken': CSRF }
+    });
+
+    // Si Django redirige (302) o responde JSON
+    let ok = false;
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        const data = await res.json();
+        ok = data.ok || data.success || res.ok;
+    } else {
+        ok = res.ok || res.redirected;
+    }
+
+    if (ok) {
+        cerrarModal();
+        onSuccess();
+    } else {
+        throw new Error('Server error');
+    }
+}
+
+function _eliminarMensajePost(id) {
+    // Fallback: enviar form silencioso si no hay URL en dataset
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/reconocimientos/admin-videos/mensajes/eliminar/${id}/`;
+    form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${CSRF}">`;
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Cerrar con overlay click (con shake si se hace clic en la caja)
+document.getElementById('delOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        const modal = document.getElementById('delModal');
+        modal.classList.remove('shaking');
+        void modal.offsetWidth; // reflow para reiniciar animación
+        modal.classList.add('shaking');
+        setTimeout(() => modal.classList.remove('shaking'), 400);
+    }
+});
+
+// Cerrar con Escape, confirmar con Enter
+document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('delOverlay').classList.contains('open')) return;
+    if (e.key === 'Escape') cerrarModal();
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmarEliminar();
+    }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST GLOBAL
+═══════════════════════════════════════════════════════════ */
+function mostrarToastGlobal(msg, esError = false) {
+    const t = document.getElementById('toast-global');
+    t.textContent = msg;
+    t.className = 'toast' + (esError ? ' error' : '');
+    void t.offsetWidth;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESTO DEL JS ORIGINAL (sin cambios)
+═══════════════════════════════════════════════════════════ */
 function switchTab(tab, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -408,30 +669,25 @@ function switchTab(tab, btn) {
     document.getElementById('panel-' + tab).classList.add('active');
 }
 
-// ── Filtrar tabla ────────────────────────────────────────────────────
 function filtrarTabla(tablaId, q) {
-    const filas = document.querySelectorAll(`#${tablaId} tbody tr`);
-    filas.forEach(tr => {
-        const texto = tr.textContent.toLowerCase();
-        tr.style.display = texto.includes(q.toLowerCase()) ? '' : 'none';
+    document.querySelectorAll(`#${tablaId} tbody tr`).forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
     });
 }
 
-// ── Preview archivos ─────────────────────────────────────────────────
 let archivosReconocimiento = [];
 
 function handleDrop(event, tipo) {
     event.preventDefault();
     document.getElementById('drop-' + tipo).classList.remove('dragging');
-    const files = event.dataTransfer.files;
-    previewFiles(files, tipo);
+    previewFiles(event.dataTransfer.files, tipo);
 }
 
 function previewFiles(files, tipo) {
     archivosReconocimiento = Array.from(files);
     const contenedor = document.getElementById('preview-' + tipo);
     contenedor.innerHTML = '';
-    if (archivosReconocimiento.length === 0) {
+    if (!archivosReconocimiento.length) {
         document.getElementById('btn-subir-' + tipo + '-wrap').style.display = 'none';
         return;
     }
@@ -441,22 +697,13 @@ function previewFiles(files, tipo) {
         item.className = 'preview-item';
         item.id = 'preview-item-' + i;
         item.innerHTML = `
-            <span class="preview-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-             height="24" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" 
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-             class="lucide lucide-film-icon lucide-film"><rect width="18" 
-             height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/>
-             <path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/>
-             <path d="M17 16.5h4"/></svg></span>
-            <input
-                type="text"
-                class="preview-label-input"
-                id="label-input-${i}"
-                value="${labelDefault}"
-                placeholder="Nombre de la seña..."
-                title="Edita el nombre de la seña antes de subir"
-            >
-            <span class="preview-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+            <span class="preview-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
+            </span>
+            <input type="text" class="preview-label-input" id="label-input-${i}"
+                   value="${labelDefault}" placeholder="Nombre de la seña..." title="Edita el nombre">
+            <span class="preview-size">${(file.size/1024/1024).toFixed(2)} MB</span>
             <span class="preview-status" id="status-${i}">Pendiente</span>
         `;
         contenedor.appendChild(item);
@@ -471,15 +718,12 @@ function limpiarPreview(tipo) {
     document.getElementById('input-' + tipo).value = '';
 }
 
-// ── Subir reconocimiento (lote) ───────────────────────────────────────
 async function subirReconocimiento() {
-    if (archivosReconocimiento.length === 0) return;
-
+    if (!archivosReconocimiento.length) return;
     for (let i = 0; i < archivosReconocimiento.length; i++) {
         const inputEl = document.getElementById('label-input-' + i);
         if (!inputEl.value.trim()) {
-            inputEl.focus();
-            inputEl.style.borderColor = '#DC2626';
+            inputEl.focus(); inputEl.style.borderColor = '#DC2626';
             mostrarToast('toast-reconocimiento', '⚠️ El nombre de la seña no puede estar vacío', true);
             return;
         }
@@ -494,9 +738,7 @@ async function subirReconocimiento() {
     progressLbl.textContent = 'Subiendo en paralelo...';
 
     const total = archivosReconocimiento.length;
-    let completados = 0;
-    let subidos = 0;
-    let errores = 0;
+    let completados = 0, subidos = 0, errores = 0;
 
     archivosReconocimiento.forEach((_, i) => {
         document.getElementById('status-' + i).textContent = 'Subiendo...';
@@ -508,105 +750,59 @@ async function subirReconocimiento() {
         const label    = document.getElementById('label-input-' + i).value.trim();
         const statusEl = document.getElementById('status-' + i);
         const inputEl  = document.getElementById('label-input-' + i);
-
         const fd = new FormData();
         fd.append('label', label);
         fd.append('video', file);
-
         return fetch('/reconocimientos/admin-videos/reconocimiento/subir/', {
             method: 'POST',
             headers: { 'X-CSRFToken': CSRF },
             body: fd
         })
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
-            if (data.ok) {
-                subidos++;
-                statusEl.textContent = '✅ Subido';
-                statusEl.className = 'preview-status ok';
-                agregarFilaReconocimiento(data.video);
-            } else {
-                errores++;
-                statusEl.textContent = '❌ Error';
-                statusEl.className = 'preview-status error';
-                inputEl.classList.remove('subiendo');
-            }
+            if (data.ok) { subidos++; statusEl.textContent = '✅ Subido'; statusEl.className = 'preview-status ok'; agregarFilaReconocimiento(data.video); }
+            else         { errores++; statusEl.textContent = '❌ Error'; statusEl.className = 'preview-status error'; inputEl.classList.remove('subiendo'); }
         })
-        .catch(() => {
-            errores++;
-            statusEl.textContent = '❌ Error de red';
-            statusEl.className = 'preview-status error';
-            inputEl.classList.remove('subiendo');
-        })
-        .finally(() => {
-            completados++;
-            progressBar.style.width = Math.round((completados / total) * 100) + '%';
-            progressLbl.textContent = `${completados} de ${total} completados...`;
-        });
+        .catch(() => { errores++; statusEl.textContent = '❌ Red'; statusEl.className = 'preview-status error'; inputEl.classList.remove('subiendo'); })
+        .finally(() => { completados++; progressBar.style.width = Math.round((completados/total)*100)+'%'; progressLbl.textContent = `${completados} de ${total} completados...`; });
     });
 
     await Promise.all(promesas);
-
     progressBar.style.width = '100%';
-    progressLbl.textContent = `Listo — ${subidos} subidos${errores ? ', ' + errores + ' errores' : ''}`;
+    progressLbl.textContent = `Listo — ${subidos} subidos${errores ? ', '+errores+' errores' : ''}`;
     actualizarContador('count-reconocimiento', subidos);
-    mostrarToast('toast-reconocimiento', `✅ ${subidos} video${subidos !== 1 ? 's' : ''} subido${subidos !== 1 ? 's' : ''} correctamente`);
-    setTimeout(() => {
-        limpiarPreview('reconocimiento');
-        progressWrap.style.display = 'none';
-        progressBar.style.width = '0%';
-    }, 3000);
+    mostrarToast('toast-reconocimiento', `✅ ${subidos} video${subidos!==1?'s':''} subido${subidos!==1?'s':''} correctamente`);
+    setTimeout(() => { limpiarPreview('reconocimiento'); progressWrap.style.display='none'; progressBar.style.width='0%'; }, 3000);
 }
 
-const input = document.getElementById('video-traductor');
-const label = document.getElementById('btn-label');
-const name = document.getElementById('file-name');
-
-input.addEventListener('change', () => {
-  if (input.files[0]) {
-    label.textContent = 'Cambiar video';
-    name.style.display = 'inline';
-    name.textContent = input.files[0].name;
-  }
+const inputVideo = document.getElementById('video-traductor');
+const btnLbl     = document.getElementById('btn-label');
+const fileName   = document.getElementById('file-name');
+inputVideo.addEventListener('change', () => {
+    if (inputVideo.files[0]) { btnLbl.textContent = 'Cambiar video'; fileName.style.display='inline'; fileName.textContent=inputVideo.files[0].name; }
 });
 
 function agregarFilaReconocimiento(v) {
     const tbody = document.querySelector('#tabla-reconocimiento tbody');
-    const empty = document.getElementById('empty-reconocimiento');
-    if (empty) empty.remove();
+    document.getElementById('empty-reconocimiento')?.remove();
     const tr = document.createElement('tr');
     tr.setAttribute('data-id', v.id);
     tr.innerHTML = `
         <td><span class="label-chip">${v.label}</span></td>
         <td class="date-cell">${v.creado}</td>
         <td><span class="badge badge-new">Nuevo</span></td>
-        <td><button class="btn-danger-sm" onclick="eliminarVideoReconocimiento(${v.id}, this)">🗑</button></td>
+        <td>
+            <button class="btn-danger-sm"
+                onclick='abrirModalEliminar({tipo:"reconocimiento",id:${v.id},nombre:"${v.label}",sub:"${v.creado}",btn:this})'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+        </td>
     `;
     tbody.prepend(tr);
 }
 
-// ── Eliminar reconocimiento ───────────────────────────────────────────
-async function eliminarVideoReconocimiento(id, btn) {
-    if (!confirm('¿Eliminar este video de entrenamiento?')) return;
-    btn.disabled = true;
-    btn.textContent = '...';
-    const res = await fetch(`/reconocimientos/admin-videos/reconocimiento/eliminar/${id}/`, {
-        method: 'DELETE',
-        headers: { 'X-CSRFToken': CSRF }
-    });
-    const data = await res.json();
-    if (data.ok) {
-        document.querySelector(`#tabla-reconocimiento tr[data-id="${id}"]`).remove();
-        actualizarContador('count-reconocimiento', -1);
-        mostrarToast('toast-reconocimiento', '🗑 Video eliminado');
-    } else {
-        btn.disabled = false;
-        btn.textContent = '🗑';
-        mostrarToast('toast-reconocimiento', '❌ No se pudo eliminar', true);
-    }
-}
-
-// ── Traductor CRUD ────────────────────────────────────────────────────
 function editarTraductor(id, nombre) {
     editandoId = id;
     document.getElementById('nombre-seña').value = nombre;
@@ -617,84 +813,48 @@ function editarTraductor(id, nombre) {
 
 function cancelarEdicion() {
     editandoId = null;
-
-    // Limpiar campos
     document.getElementById('nombre-seña').value = '';
     document.getElementById('video-traductor').value = '';
     document.getElementById('file-name').textContent = '';
     document.getElementById('btn-label').textContent = 'Seleccionar video';
-
-    // Restaurar título y botón
-    document.getElementById('form-titulo').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" 
-        width="26" height="26" viewBox="0 0 24 24" fill="none" 
-        stroke="#2563EB" stroke-width="2" stroke-linecap="round" 
-        stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Nueva seña`;
-    document.getElementById('btn-guardar-label').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" 
-        height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" 
-        stroke-linecap="round" stroke-linejoin="round"><path 
-        d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
-        <path d="M12 10v6"/><path d="m15 13-3 3-3-3"/></svg> Guardar`;
+    document.getElementById('form-titulo').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Nueva seña`;
+    document.getElementById('btn-guardar-label').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m15 13-3 3-3-3"/></svg> Guardar`;
 }
 
 async function guardarTraductor() {
     const nombre = document.getElementById('nombre-seña').value.trim();
     const file   = document.getElementById('video-traductor').files[0];
-
     if (!nombre) { mostrarToast('toast-traductor', '⚠️ Escribe el nombre de la seña', true); return; }
     if (!editandoId && !file) { mostrarToast('toast-traductor', '⚠️ Selecciona un video', true); return; }
 
     const progressWrap = document.getElementById('progress-traductor');
     const progressBar  = document.getElementById('progress-bar-t');
     const progressLbl  = document.getElementById('progress-label-t');
-    progressWrap.style.display = 'block';
-    progressBar.style.width = '40%';
-    progressLbl.textContent = 'Guardando...';
+    progressWrap.style.display = 'block'; progressBar.style.width = '40%'; progressLbl.textContent = 'Guardando...';
 
     const fd = new FormData();
     fd.append('nombre', nombre);
     if (file) fd.append('video', file);
 
-    const url    = editandoId
-        ? `/reconocimientos/admin-videos/traductor/editar/${editandoId}/`
-        : '/reconocimientos/admin-videos/traductor/crear/';
+    const url    = editandoId ? `/reconocimientos/admin-videos/traductor/editar/${editandoId}/` : '/reconocimientos/admin-videos/traductor/crear/';
     const method = editandoId ? 'PUT' : 'POST';
 
     try {
-        const res  = await fetch(url, {
-            method,
-            headers: { 'X-CSRFToken': CSRF },
-            body: fd
-        });
+        const res  = await fetch(url, { method, headers: { 'X-CSRFToken': CSRF }, body: fd });
         const data = await res.json();
         progressBar.style.width = '100%';
-
         if (data.ok) {
-            if (editandoId) {
-                actualizarFilaTraductor(data.video);
-                mostrarToast('toast-traductor', '✅ Seña actualizada');
-            } else {
-                agregarFilaTraductor(data.video);
-                actualizarContador('count-traductor', 1);
-                mostrarToast('toast-traductor', '✅ Seña creada');
-            }
+            if (editandoId) { actualizarFilaTraductor(data.video); mostrarToast('toast-traductor', '✅ Seña actualizada'); }
+            else            { agregarFilaTraductor(data.video); actualizarContador('count-traductor', 1); mostrarToast('toast-traductor', '✅ Seña creada'); }
             cancelarEdicion();
-        } else {
-            mostrarToast('toast-traductor', '❌ ' + (data.error || 'Error al guardar'), true);
-        }
-    } catch {
-        mostrarToast('toast-traductor', '❌ Error de red', true);
-    } finally {
-        setTimeout(() => {
-            progressWrap.style.display = 'none';
-            progressBar.style.width = '0%';
-        }, 1500);
-    }
+        } else { mostrarToast('toast-traductor', '❌ ' + (data.error || 'Error al guardar'), true); }
+    } catch { mostrarToast('toast-traductor', '❌ Error de red', true); }
+    finally  { setTimeout(() => { progressWrap.style.display='none'; progressBar.style.width='0%'; }, 1500); }
 }
 
 function agregarFilaTraductor(v) {
     const tbody = document.querySelector('#tabla-traductor tbody');
-    const empty = document.getElementById('empty-traductor');
-    if (empty) empty.remove();
+    document.getElementById('empty-traductor')?.remove();
     const tr = document.createElement('tr');
     tr.setAttribute('data-id', v.id);
     tr.innerHTML = filaTraductor(v);
@@ -711,108 +871,71 @@ function filaTraductor(v) {
         <td><span class="label-chip">${v.nombre}</span></td>
         <td><a href="${v.video_url}" target="_blank" class="ver-link">▶ Ver video</a></td>
         <td class="acciones-cell">
-            <button class="btn-edit-sm" onclick="editarTraductor(${v.id}, '${v.nombre}')">✏️</button>
-            <button class="btn-danger-sm" onclick="eliminarTraductor(${v.id}, this)">🗑</button>
+            <button class="btn-edit-sm" onclick="editarTraductor(${v.id},'${v.nombre}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+            </button>
+            <button class="btn-danger-sm"
+                onclick='abrirModalEliminar({tipo:"traductor",id:${v.id},nombre:"${v.nombre}",sub:"Seña del traductor",btn:this})'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
         </td>
     `;
 }
 
-async function eliminarTraductor(id, btn) {
-    if (!confirm('¿Eliminar esta seña del traductor?')) return;
-    btn.disabled = true;
-    btn.textContent = '...';
-    const res  = await fetch(`/reconocimientos/admin-videos/traductor/eliminar/${id}/`, {
-        method: 'DELETE',
-        headers: { 'X-CSRFToken': CSRF }
-    });
-    const data = await res.json();
-    if (data.ok) {
-        document.querySelector(`#tabla-traductor tr[data-id="${id}"]`).remove();
-        actualizarContador('count-traductor', -1);
-        mostrarToast('toast-traductor', '🗑 Seña eliminada');
-    } else {
-        btn.disabled = false;
-        btn.textContent = '🗑';
-        mostrarToast('toast-traductor', '❌ No se pudo eliminar', true);
-    }
+function actualizarContador(id, delta) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = Math.max(0, (parseInt(el.textContent) || 0) + delta);
 }
 
-// ── Entrenamiento ─────────────────────────────────────────────────────
+function mostrarToast(id, msg, esError = false) {
+    const t = document.getElementById(id);
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'toast' + (esError ? ' error' : '');
+    void t.offsetWidth;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ── Entrenamiento ── */
+let _pollingInterval;
+
 async function iniciarEntrenamiento() {
     const btn   = document.getElementById('btnTrain');
     const wrap  = document.getElementById('trainStatusWrap');
     const bar   = document.getElementById('trainProgressBar');
     const label = document.getElementById('trainStatusLabel');
-
-    console.log('[Train] 🚀 Iniciando solicitud de entrenamiento...');
-
-    btn.disabled = true;
-    wrap.style.display = 'block';
+    btn.disabled = true; wrap.style.display = 'block';
     bar.className = 'train-progress-inner indeterminate';
-    label.className = 'train-status-label';
-    label.textContent = 'Iniciando entrenamiento...';
-
+    label.className = 'train-status-label'; label.textContent = 'Iniciando entrenamiento...';
     try {
-        const res  = await fetch('/reconocimientos/admin-videos/entrenar/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF }
-        });
+        const res  = await fetch('/reconocimientos/admin-videos/entrenar/', { method: 'POST', headers: { 'X-CSRFToken': CSRF } });
         const data = await res.json();
-
-        console.log('[Train] 📦 Respuesta del servidor:', data);
-
-        if (!data.ok) {
-            console.warn('[Train] ⚠️ El servidor rechazó el entrenamiento:', data.error);
-            label.textContent = '⚠️ ' + (data.error || 'Error al iniciar');
-            label.className = 'train-status-label error';
-            btn.disabled = false;
-            return;
-        }
-
-        console.log('[Train] ✅ Entrenamiento iniciado en el servidor. Comenzando polling cada 3s...');
-        label.textContent = '⏳ Extrayendo landmarks y entrenando... (puede tardar varios minutos)';
+        if (!data.ok) { label.textContent = '⚠️ ' + (data.error || 'Error al iniciar'); label.className = 'train-status-label error'; btn.disabled = false; return; }
+        label.textContent = '⏳ Extrayendo landmarks y entrenando...';
         _pollingInterval = setInterval(verificarEstado, 3000);
-
-    } catch (err) {
-        console.error('[Train] ❌ Error de conexión al iniciar:', err);
-        label.textContent = '❌ Error de conexión';
-        label.className = 'train-status-label error';
-        btn.disabled = false;
-    }
+    } catch { label.textContent = '❌ Error de conexión'; label.className = 'train-status-label error'; btn.disabled = false; }
 }
 
 async function verificarEstado() {
     try {
         const res  = await fetch('/reconocimientos/admin-videos/entrenar/estado/');
         const data = await res.json();
-
-        console.log('[Train] 🔄 Estado actual:', data);
-
         if (!data.activo) {
-            clearInterval(_pollingInterval);
-            _pollingInterval = null;
-
-            console.log('[Train] 🎉 Entrenamiento FINALIZADO. El modelo fue cargado en memoria.');
-
+            clearInterval(_pollingInterval); _pollingInterval = null;
             const bar   = document.getElementById('trainProgressBar');
             const label = document.getElementById('trainStatusLabel');
             const btn   = document.getElementById('btnTrain');
-
-            bar.className = 'train-progress-inner';
-            bar.style.width = '100%';
-            label.textContent = '✅ Modelo entrenado y cargado en memoria';
-            label.className = 'train-status-label ok';
+            bar.className = 'train-progress-inner'; bar.style.width = '100%';
+            label.textContent = '✅ Modelo entrenado y cargado en memoria'; label.className = 'train-status-label ok';
             btn.disabled = false;
-
-            setTimeout(() => {
-                document.getElementById('trainStatusWrap').style.display = 'none';
-                bar.style.width = '0%';
-                label.className = 'train-status-label idle';
-            }, 5000);
+            setTimeout(() => { document.getElementById('trainStatusWrap').style.display='none'; bar.style.width='0%'; label.className='train-status-label idle'; }, 5000);
         }
-    } catch (err) {
-        console.warn('[Train] ⚠️ Error en polling (reintentando):', err);
-    }
+    } catch { /* reintentando... */ }
 }
 </script>
 {% endblock %}
