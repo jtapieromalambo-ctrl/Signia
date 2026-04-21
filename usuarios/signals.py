@@ -1,4 +1,4 @@
-from allauth.socialaccount.signals import social_account_updated, pre_social_login
+from allauth.socialaccount.signals import pre_social_login
 from django.dispatch import receiver
 
 @receiver(pre_social_login)
