@@ -23,6 +23,7 @@ urlpatterns = [
     # ... tus rutas existentes ...
     path('verificacion/solicitar/', views.solicitar_verificacion, name='solicitar_verificacion'),
     path('verificacion/codigo/', views.verificar_otp, name='verificar_otp'),
+    path('seleccionar-discapacidad/', views.seleccionar_discapacidad, name='seleccionar_discapacidad'),
 ]
 
 
