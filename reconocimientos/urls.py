@@ -29,4 +29,8 @@ urlpatterns = [
          views.entrenar_modelo, name='entrenar_modelo'),
     path('admin-videos/entrenar/estado/',
          views.estado_entrenamiento, name='estado_entrenamiento'),
+
+    # Señas entrenadas con efectividad
+    path('admin-videos/senas-entrenadas/',
+         views.senas_entrenadas, name='senas_entrenadas'),
 ]

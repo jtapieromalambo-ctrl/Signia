@@ -160,59 +160,37 @@
         <!-- Toast -->
         <div class="toast" id="toast-reconocimiento"></div>
 
-        <!-- Historial de videos subidos -->
+        <!-- Señas entrenadas -->
         <div class="section-title-row">
-            <h2>Videos subidos</h2>
+            <h2>Señas entrenadas</h2>
             <div class="search-wrap">
                 <input type="text" class="search-input" placeholder="Buscar seña..."
-                       oninput="filtrarTabla('tabla-reconocimiento', this.value)">
+                       oninput="filtrarSenas(this.value)">
             </div>
         </div>
 
-        <div class="table-wrap">
-            <table class="video-table" id="tabla-reconocimiento">
+        <div id="senas-estado" class="senas-estado-msg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
+                 fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/>
+                <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/>
+                <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/>
+                <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/>
+                <path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/>
+            </svg>
+            <p>No hay modelo entrenado aún.<br>Sube videos y entrena para ver las señas aquí.</p>
+        </div>
+
+        <div class="table-wrap" id="senas-table-wrap" style="display:none;">
+            <table class="video-table" id="tabla-senas">
                 <thead>
                     <tr>
-                        <th>Seña (label)</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <th>Seña</th>
+                        <th>Efectividad</th>
+                        <th>Barra</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for v in videos_reconocimiento %}
-                    <tr data-id="{{ v.id }}">
-                        <td>
-                            <span class="label-chip">{{ v.label }}</span>
-                        </td>
-                        <td class="date-cell">{{ v.creado|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            {% if v.procesado %}
-                                <span class="badge badge-ok">Procesado</span>
-                            {% elif v.procesando %}
-                                <span class="badge badge-pending">Procesando</span>
-                            {% else %}
-                                <span class="badge badge-new">Nuevo</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button class="btn-danger-sm"
-                                    onclick="eliminarVideoReconocimiento({{ v.id }}, this)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                 height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626"
-                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-                                  class="lucide lucide-trash-icon lucide-trash">
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/>
-                                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr id="empty-reconocimiento">
-                        <td colspan="4" class="empty-cell">No hay videos subidos aún</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                <tbody id="senas-tbody"></tbody>
             </table>
         </div>
     </div>
@@ -399,6 +377,25 @@
 <script>
 const CSRF = '{{ csrf_token }}';
 let editandoId = null;
+
+// ── Utilidades ────────────────────────────────────────────────────────
+function actualizarContador(id, delta) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = Math.max(0, (parseInt(el.textContent) || 0) + delta);
+}
+
+let _toastTimer = null;
+function mostrarToast(id, mensaje, esError = false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = mensaje;
+    el.className = 'toast' + (esError ? ' error' : '');
+    void el.offsetWidth; // reflow para reiniciar animación
+    el.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
 
 // ── Tabs ─────────────────────────────────────────────────────────────
 function switchTab(tab, btn) {
@@ -737,6 +734,74 @@ async function eliminarTraductor(id, btn) {
     }
 }
 
+// ── Señas entrenadas ──────────────────────────────────────────────────
+let _todasLasSenas = [];
+
+async function cargarSenasEntrenadas() {
+    try {
+        const res  = await fetch('/reconocimientos/admin-videos/senas-entrenadas/');
+        const data = await res.json();
+
+        const tableWrap = document.getElementById('senas-table-wrap');
+        const estado    = document.getElementById('senas-estado');
+
+        if (!data.ok || data.clases.length === 0) {
+            tableWrap.style.display = 'none';
+            estado.style.display    = 'flex';
+            return;
+        }
+
+        _todasLasSenas = data.clases;
+        estado.style.display    = 'none';
+        tableWrap.style.display = 'block';
+        renderSenas(_todasLasSenas);
+    } catch (e) {
+        console.warn('[Señas] Error al cargar señas entrenadas:', e);
+    }
+}
+
+function renderSenas(lista) {
+    const tbody = document.getElementById('senas-tbody');
+    if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="3" class="empty-cell">No se encontraron señas</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = lista.map(s => {
+        const pct   = s.efectividad;
+        const color = pct >= 85 ? 'var(--ok)' : pct >= 70 ? 'var(--warn)' : 'var(--danger)';
+        const bg    = pct >= 85 ? 'var(--ok-soft)' : pct >= 70 ? 'var(--warn-soft)' : 'var(--danger-soft)';
+        return `<tr data-label="${s.clase.toLowerCase()}">
+            <td><span class="label-chip">${s.clase}</span></td>
+            <td><span class="sena-pct-badge" style="color:${color}; background:${bg}">${pct}%</span></td>
+            <td class="sena-bar-cell">
+                <div class="sena-bar-outer">
+                    <div class="sena-bar-inner" style="width:${pct}%; background:${color};"></div>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filtrarSenas(query) {
+    const q = query.toLowerCase().trim();
+    const filtradas = q
+        ? _todasLasSenas.filter(s => s.clase.toLowerCase().includes(q))
+        : _todasLasSenas;
+    const tableWrap = document.getElementById('senas-table-wrap');
+    const estado    = document.getElementById('senas-estado');
+    if (filtradas.length) {
+        tableWrap.style.display = 'block';
+        estado.style.display    = 'none';
+        renderSenas(filtradas);
+    } else {
+        tableWrap.style.display = 'none';
+        estado.style.display    = 'flex';
+    }
+}
+
+// Cargar al iniciar
+document.addEventListener('DOMContentLoaded', cargarSenasEntrenadas);
+
 // ── Entrenamiento ─────────────────────────────────────────────────────
 async function iniciarEntrenamiento() {
     const btn   = document.getElementById('btnTrain');
@@ -803,6 +868,11 @@ async function verificarEstado() {
             label.textContent = '✅ Modelo entrenado y cargado en memoria';
             label.className = 'train-status-label ok';
             btn.disabled = false;
+
+            // Actualizar contador a 0 y recargar señas entrenadas
+            const countEl = document.getElementById('count-reconocimiento');
+            if (countEl) countEl.textContent = '0';
+            cargarSenasEntrenadas();
 
             setTimeout(() => {
                 document.getElementById('trainStatusWrap').style.display = 'none';
