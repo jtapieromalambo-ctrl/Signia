@@ -27,6 +27,8 @@
       min-height: 100vh;
       background: transparent;
       overflow-x: hidden;
+      margin: 0;
+      padding: 0;
     }
 
     /* ── FONDO ANIMADO ── */
@@ -75,6 +77,11 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      width: 100%;      
+      left: 0;             
+      right: 0;             
+      top: 0;               
+      box-sizing: border-box; 
     }
 
     .nav-logo {
@@ -463,142 +470,4 @@
       .features-grid { grid-template-columns: 1fr; }
       .hero-visual { display: none; }
     }
-  </style>
-</head>
-<body>
-
-  <!-- FONDO ANIMADO -->
-  <div class="bg"></div>
-  <div class="bg bg2"></div>
-  <div class="bg bg3"></div>
-
-  <!-- NAVBAR -->
-  <nav>
-    <a class="nav-logo" href="{% url 'index' %}">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-        </svg>
-      </div>
-      <span class="logo-text">Signia</span>
-    </a>
-    <ul class="nav-links">
-      <li class="active"><a href="{% url 'index' %}">Inicio</a></li>
-      <li><a href="{% url 'home' %}">Login</a></li>
-      <li><a href="{% url 'traduccion' %}">Traductor</a></li>
-      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
-      <li><a href="{% url 'contacto' %}">Contacto</a></li>
-    </ul>
-  </nav>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-text">
-      <div class="hero-badge">Lenguaje de señas colombiano</div>
-      <h1>Comunícate sin <span>barreras</span> con Signia</h1>
-      <p>Plataforma de traducción e interpretación de lenguaje de señas impulsada por inteligencia artificial. Conectamos a personas sordas y mudas con el mundo.</p>
-      <div class="hero-actions">
-        <a href="{% url 'registro' %}" class="btn-primary">Comenzar gratis</a>
-        <a href="{% url 'home' %}" class="btn-secondary">Iniciar sesión</a>
-      </div>
-    </div>
-
-    <div class="hero-visual">
-      <div class="visual-card">
-        <p class="visual-title">Señas del abecedario</p>
-
-        <div class="video-wrapper">
-          <video
-            id="sign-video"
-            src="{% static 'señas.mp4' %}"
-            autoplay
-            muted
-            loop
-            playsinline
-          ></video>
-        </div>
-
-        <div class="translation-box">
-          <p id="sign-translation" class="sign-translation-text">–</p>
-        </div>
-
-        <div class="visual-stat">
-          <div class="stat-dot"></div>
-          <p>Traducción en tiempo real activa</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section class="features">
-    <div class="features-title">
-      <h2>¿Qué puedes hacer con Signia?</h2>
-      <p>Herramientas diseñadas para facilitar la comunicación inclusiva</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🖐️</div>
-        <h3>Traductor de señas</h3>
-        <p>Escribe texto y nuestro avatar animado lo convierte automáticamente en lenguaje de señas colombiano en tiempo real.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📷</div>
-        <h3>Reconocimiento por cámara</h3>
-        <p>Usa tu cámara para hacer señas y Signia las interpreta y convierte a texto de forma instantánea con IA.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌐</div>
-        <h3>Acceso inclusivo</h3>
-        <p>Diseñado para personas sordas, mudas y cualquiera que quiera aprender o comunicarse en lenguaje de señas.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div class="cta-wrapper">
-    <div class="cta">
-      <h2>¿Listo para empezar?</h2>
-      <p>Crea tu cuenta gratis y accede a todas las herramientas de Signia hoy mismo.</p>
-      <a href="{% url 'registro' %}" class="btn-white">Crear cuenta gratis</a>
-    </div>
-  </div>
-
-  <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
-
-  <script>
-    const video = document.getElementById('sign-video');
-    const translationEl = document.getElementById('sign-translation');
-
-    const signs = [
-      { start: 0,  end: 3,  text: "Hola" },
-      { start: 3,  end: 6,  text: "¿Cómo estás?" },
-    ];
-
-    function updateTranslation() {
-      const t = video.currentTime;
-      const current = signs.find(s => t >= s.start && t < s.end);
-      const newText = current ? current.text : "–";
-
-      if (translationEl.textContent !== newText) {
-        translationEl.style.opacity = '0';
-        setTimeout(() => {
-          translationEl.textContent = newText;
-          translationEl.style.opacity = '1';
-        }, 150);
-      }
-
-      requestAnimationFrame(updateTranslation);
-    }
-
-    video.addEventListener('loadedmetadata', () => {
-      requestAnimationFrame(updateTranslation);
-    });
-
-    if (video.readyState >= 1) {
-      requestAnimationFrame(updateTranslation);
-    }
-  </script>
-
-</body>
-</html>
+ 

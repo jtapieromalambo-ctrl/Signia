@@ -167,3 +167,217 @@ body { background: var(--bg); }
 /* el icono activo (cubierto por el thumb) se hace más brillante */
 .pill-toggle:not(.voz) .pill-icon-left  { filter: brightness(10); }
 .pill-toggle.voz        .pill-icon-right { filter: brightness(10); }
+
+
+/* ================================================================
+   RESPONSIVE — solo layout, espaciado y tamaños
+   xs  : < 480px         Móviles pequeños
+   sm  : 480px – 767px   Móviles grandes
+   md  : 768px – 1023px  Tablets / laptops pequeñas
+   lg  : 1024px – 1279px Laptops estándar 13"–14"
+   xl  : 1280px – 1535px PC Windows / MacBook Pro 15–16"
+   2xl : ≥ 1536px        iMac / pantallas grandes
+================================================================ */
+
+/* ── Móviles pequeños (< 480px) ────────────────────────── */
+@media (max-width: 479px) {
+    .page {
+        padding: 0.75rem 0.75rem;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    .card-header {
+        padding: 0.85rem 1rem;
+        align-items: center;
+    }
+
+    .card-header svg {
+        width: 44px;
+        height: 44px;
+        padding: 8px;
+        flex-shrink: 0;
+    }
+
+    .tet h1 {
+        font-size: 1.1rem;
+    }
+
+    .card-header p {
+        font-size: 0.78rem;
+    }
+
+    .card-body {
+        padding: 0.85rem;
+        gap: 0.85rem;
+    }
+
+    #seña-actual {
+        font-size: 1.8rem;
+    }
+
+    .botones {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.65rem;
+    }
+
+    .btn {
+        flex: 1 1 calc(50% - 0.65rem);
+        min-width: 120px;
+        padding: 0.75rem 1rem;
+        font-size: 0.88rem;
+        text-align: center;
+    }
+
+    .pill-toggle {
+        order: -1;
+        width: 88px;
+        height: 40px;
+    }
+
+    .pill-thumb {
+        width: 36px;
+        height: 32px;
+    }
+
+    .pill-toggle.voz .pill-thumb {
+        transform: translateX(44px);
+    }
+}
+
+/* ── Móviles grandes (480px – 767px) ───────────────────── */
+@media (min-width: 480px) and (max-width: 767px) {
+    .page {
+        padding: 1rem 1rem;
+    }
+
+    .card {
+        border-radius: 20px;
+    }
+
+    .card-header {
+        padding: 1rem 1.25rem;
+        align-items: center;
+    }
+
+    .card-header svg {
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+    }
+
+    .tet h1 {
+        font-size: 1.35rem;
+    }
+
+    .card-body {
+        padding: 1rem 1.25rem;
+        gap: 1rem;
+    }
+
+    .botones {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        flex: 1 1 auto;
+        padding: 0.8rem 1.25rem;
+        font-size: 0.92rem;
+    }
+}
+
+/* ── Tablets y laptops pequeñas (768px – 1023px) ───────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .page {
+        padding: 1.25rem 1.25rem;
+    }
+
+    .card-header {
+        padding: 1rem 1.75rem;
+    }
+
+    .card-body {
+        padding: 1.25rem 1.75rem;
+    }
+
+    .tet h1 {
+        font-size: 1.55rem;
+    }
+}
+
+/* ── PC Windows / MacBook Pro 15–16" (1280px – 1535px) ─── */
+@media (min-width: 1280px) and (max-width: 1535px) {
+    .page {
+        max-width: 920px;
+        padding: 2.25rem 1.5rem;
+    }
+}
+
+/* ── iMac / pantallas grandes ≥ 1536px ─────────────────── */
+@media (min-width: 1536px) {
+    .page {
+        max-width: 1020px;
+        padding: 2.5rem 1.5rem;
+    }
+
+    .card-header {
+        padding: 1.25rem 3rem;
+    }
+
+    .card-header svg {
+        width: 68px;
+        height: 68px;
+    }
+
+    .tet h1 {
+        font-size: 2rem;
+    }
+
+    .card-body {
+        padding: 1.75rem 2rem;
+    }
+
+    .btn {
+        padding: 0.95rem 2.25rem;
+        font-size: 1.05rem;
+    }
+}
+
+/* ── Landscape móvil (altura < 500px) ──────────────────── */
+@media (max-height: 500px) and (max-width: 900px) {
+    .page {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .card-header {
+        padding: 0.65rem 1rem;
+    }
+
+    .card-header p {
+        display: none;
+    }
+
+    .card-header svg {
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+    }
+
+    .tet h1 {
+        font-size: 1rem;
+    }
+
+    .card-body {
+        padding: 0.65rem 1rem;
+        gap: 0.65rem;
+    }
+
+    #seña-actual {
+        font-size: 1.6rem;
+        min-height: 36px;
+    }
+}
