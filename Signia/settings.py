@@ -102,7 +102,7 @@ MEDIA_URL = '/media/'
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/perfil/'
+LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -126,10 +126,14 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'prompt': 'select_account',
+        },
     },
     'facebook': {
         'METHOD': 'oauth2',
@@ -140,7 +144,9 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
-ACCOUNT_SIGNUP_REDIRECT_URL = '/perfil/'
+ACCOUNT_SIGNUP_REDIRECT_URL = '/seleccionar-discapacidad/'
+LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'          # ← agregar
+ACCOUNT_LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/' 
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
