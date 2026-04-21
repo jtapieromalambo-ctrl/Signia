@@ -509,3 +509,20 @@ def requiere_email_verificado(view_func):
             return redirect('solicitar_verificacion')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+# ── SELECCIONAR DISCAPACIDAD (post-Google OAuth) ───────
+@login_required
+def seleccionar_discapacidad(request):
+    # Si ya tiene discapacidad definida, redirigir directo
+    if request.user.discapacidad != 'ninguna':
+        return redirigir_por_discapacidad(request.user)
+
+    if request.method == 'POST':
+        discapacidad = request.POST.get('discapacidad', 'ninguna')
+        if discapacidad in ['ninguna', 'sordo', 'mudo']:
+            request.user.discapacidad = discapacidad
+            request.user.save()
+            return redirigir_por_discapacidad(request.user)
+
+    return render(request, 'usuarios/seleccionar_discapacidad.html')
