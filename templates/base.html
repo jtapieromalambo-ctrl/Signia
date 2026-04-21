@@ -28,7 +28,7 @@
     </a>
 
     <ul class="nav-links">
-            {% if user.is_authenticated %}
+        {% if user.is_authenticated %}
             <li><a href="{% url 'traduccion' %}">Traductor</a></li>
             <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
             <li><a href="{% url 'historial' %}">Historial</a></li>
@@ -79,7 +79,71 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Botón hamburguesa (mobile) -->
+    <button class="nav-hamburger" id="navHamburger" onclick="toggleHamburger()" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
 </nav>
+
+<!-- Menú móvil -->
+<div class="nav-mobile-menu" id="navMobileMenu">
+    <ul>
+        {% if user.is_authenticated %}
+            <li><a href="{% url 'traduccion' %}">Traductor</a></li>
+            <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+            <li><a href="{% url 'historial' %}">Historial</a></li>
+            {% if not user.is_staff %}
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            {% endif %}
+        {% else %}
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'home' %}">Login</a></li>
+            <li><a href="{% url 'traduccion' %}">Traductor</a></li>
+            <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        {% endif %}
+    </ul>
+
+    {% if user.is_authenticated %}
+    <div class="nav-mobile-divider"></div>
+    <div class="user-menu" id="userMenuMobile">
+        <button class="user-menu-btn" onclick="toggleMenuMobile()" style="width:100%;border-radius:10px;">
+            <div class="user-avatar">
+                {% get_social_accounts user as social_accounts %}
+                {% if social_accounts.google %}
+                    <img src="{{ social_accounts.google.0.get_avatar_url }}" alt="avatar">
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+            <span class="user-name">{{ user.username }}</span>
+            <svg class="user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+            </svg>
+        </button>
+        <div class="user-dropdown" style="position:static;margin-top:0.5rem;display:none;" id="userDropdownMobile">
+            <div class="user-dropdown-header">
+                <p>Sesión activa</p>
+                <strong>{{ user.username }}</strong>
+            </div>
+            <a href="{% url 'perfil' %}" class="dropdown-item">👤 Mi perfil</a>
+            {% if user.discapacidad == 'ninguna' %}
+            <a href="{% url 'editar_perfil' %}" class="dropdown-item">✏️ Editar perfil</a>
+            {% endif %}
+            <a href="{% url 'cambiar_password' %}" class="dropdown-item">🔒 Cambiar contraseña</a>
+            {% if user.is_staff %}
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'admin_videos' %}" class="dropdown-item admin">🛡️ Panel Admin</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 Cerrar sesión</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
 
 <!-- ── MENSAJES ── -->
 {% if messages %}
@@ -144,7 +208,7 @@
 {% block extra_js %}{% endblock %}
 
 <script>
-    // ── Menú usuario ──
+    // ── Menú usuario (desktop) ──
     function toggleMenu() {
         document.getElementById('userMenu').classList.toggle('open');
     }
@@ -154,6 +218,33 @@
             menu.classList.remove('open');
         }
     });
+
+    // ── Hamburguesa móvil ──
+    function toggleHamburger() {
+        const btn = document.getElementById('navHamburger');
+        const menu = document.getElementById('navMobileMenu');
+        btn.classList.toggle('open');
+        menu.classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+        const btn = document.getElementById('navHamburger');
+        const menu = document.getElementById('navMobileMenu');
+        if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+            btn.classList.remove('open');
+            menu.classList.remove('open');
+        }
+    });
+
+    // ── Menú usuario dentro del móvil ──
+    function toggleMenuMobile() {
+        const menuMobile = document.getElementById('userMenuMobile');
+        const dropdown = document.getElementById('userDropdownMobile');
+        if (menuMobile && dropdown) {
+            menuMobile.classList.toggle('open');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    }
 
     // ── Auto-dismiss mensajes ──
     setTimeout(function() {
