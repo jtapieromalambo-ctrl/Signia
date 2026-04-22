@@ -21,6 +21,7 @@ from django.template.loader import render_to_string
 from .models import CodigoOTP
 from functools import wraps
 
+
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
 def es_admin(user):
     return user.is_authenticated and user.is_superuser
@@ -156,6 +157,7 @@ def editar_perfil(request):
 
 
 # ── CAMBIAR CONTRASEÑA ─────────────────────────────────
+
 @login_required
 def cambiar_password(request):
     if request.method == 'POST':
@@ -176,6 +178,54 @@ def cambiar_password(request):
             user.save()
             update_session_auth_hash(request, user)
             messages.success(request, 'Contraseña cambiada correctamente.')
+
+            # Correo de confirmación cambio de contraseña
+            try:
+                html_cambio = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F3FC;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#0F766E,#14B8A6);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:24px;">🔒 Contraseña Actualizada</h1>
+            <p style="color:#CCFBF1;margin:8px 0 0;">Signia - Comunicación sin barreras</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hola <strong>{user.username}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
+              Tu contraseña ha sido <strong>cambiada exitosamente</strong> en Signia.
+            </p>
+            <div style="background:#F0FDFA;border:2px solid #99F6E4;border-radius:16px;padding:20px;margin:0 0 24px;text-align:center;">
+              <p style="color:#0F766E;font-size:14px;margin:0;font-weight:700;">✅ Cambio realizado el {timezone.now().strftime('%d/%m/%Y a las %H:%M')}</p>
+            </div>
+            <p style="color:#6B7280;font-size:14px;margin:0 0 8px;">⚠️ Si <strong>no realizaste este cambio</strong>, contacta con nosotros de inmediato.</p>
+            <p style="color:#6B7280;font-size:13px;margin:0;">Por seguridad, cierra sesión en todos los dispositivos donde hayas iniciado sesión previamente.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#F0FDFA;padding:20px;text-align:center;">
+            <p style="color:#5EEAD4;font-size:12px;margin:0;">© 2026 Signia · Comunicación sin barreras 🤟</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+                correo = EmailMultiAlternatives(
+                    subject='Tu contraseña fue actualizada - Signia 🔒',
+                    body=f'Hola {user.username}, tu contraseña en Signia ha sido cambiada exitosamente.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user.email],
+                )
+                correo.attach_alternative(html_cambio, "text/html")
+                correo.send(fail_silently=True)
+            except Exception:
+                pass
+
             return redirect('perfil')
 
     return render(request, 'usuarios/cambiar_password.html')
@@ -205,20 +255,114 @@ def contacto(request):
             if form.cleaned_data.get('observacion'):
                 observacion_enviada = True
 
-                # Enviar correo al administrador
-                nombre = form.cleaned_data.get('nombre')
-                correo = form.cleaned_data.get('correo')
+                nombre     = form.cleaned_data.get('nombre')
+                correo     = form.cleaned_data.get('correo')
                 observacion = form.cleaned_data.get('observacion')
-                mensaje = form.cleaned_data.get('mensaje')
+                mensaje    = form.cleaned_data.get('mensaje')
 
                 try:
-                    send_mail(
-                        subject=f'Nueva queja/contacto de {nombre}',
-                        message=f'Nombre: {nombre}\nCorreo: {correo}\n\nObservación:\n{observacion}\n\nMensaje:\n{mensaje}',
+                    html_contacto = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:40px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#DC2626,#EF4444);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:22px;">🚨 Nueva Queja / Contacto</h1>
+            <p style="color:#FECACA;margin:8px 0 0;font-size:14px;">Signia - Panel de administración</p>
+          </td>
+        </tr>
+
+        <!-- Info del usuario -->
+        <tr>
+          <td style="padding:28px 32px 0;">
+            <p style="color:#6B7280;font-size:13px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Información del remitente</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding:10px 14px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;">
+                  <table width="100%">
+                    <tr>
+                      <td width="20" style="color:#2563EB;font-size:16px;">👤</td>
+                      <td>
+                        <p style="margin:0;font-size:12px;color:#9CA3AF;">Nombre</p>
+                        <p style="margin:0;font-size:15px;color:#1E293B;font-weight:700;">{nombre}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr><td style="height:8px;"></td></tr>
+              <tr>
+                <td style="padding:10px 14px;background:#F8FAFC;border-radius:10px;">
+                  <table width="100%">
+                    <tr>
+                      <td width="20" style="color:#2563EB;font-size:16px;">📧</td>
+                      <td>
+                        <p style="margin:0;font-size:12px;color:#9CA3AF;">Correo electrónico</p>
+                        <p style="margin:0;font-size:15px;color:#2563EB;font-weight:700;">{correo}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Observación -->
+        <tr>
+          <td style="padding:20px 32px 0;">
+            <p style="color:#6B7280;font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">⚠️ Observación / Queja</p>
+            <div style="background:#FEF2F2;border-left:4px solid #EF4444;border-radius:0 12px 12px 0;padding:16px 20px;">
+              <p style="color:#991B1B;font-size:14px;margin:0;line-height:1.7;">{observacion}</p>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Mensaje -->
+        <tr>
+          <td style="padding:20px 32px 28px;">
+            <p style="color:#6B7280;font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">💬 Mensaje</p>
+            <div style="background:#F0F7FF;border-left:4px solid #2563EB;border-radius:0 12px 12px 0;padding:16px 20px;">
+              <p style="color:#1E40AF;font-size:14px;margin:0;line-height:1.7;">{mensaje}</p>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#F8FAFC;padding:16px 32px;border-top:1px solid #E2E8F0;">
+            <table width="100%">
+              <tr>
+                <td>
+                  <p style="color:#9CA3AF;font-size:12px;margin:0;">
+                    📅 Recibido: {timezone.now().strftime('%d/%m/%Y a las %H:%M')}
+                  </p>
+                </td>
+                <td align="right">
+                  <p style="color:#9CA3AF;font-size:12px;margin:0;">© 2026 Signia 🤟</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+
+                    email_msg = EmailMultiAlternatives(
+                        subject=f'🚨 Nueva queja/contacto de {nombre} - Signia',
+                        body=f'Nombre: {nombre}\nCorreo: {correo}\n\nObservación:\n{observacion}\n\nMensaje:\n{mensaje}',
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=['osorioescobardavidfelipe@gmail.com'],
-                        fail_silently=True,
                     )
+                    email_msg.attach_alternative(html_contacto, "text/html")
+                    email_msg.send(fail_silently=True)
                 except Exception:
                     pass
 
@@ -337,7 +481,7 @@ def verificar_codigo(request):
 
     return render(request, 'registration/verificar_codigo.html')
 
-
+# ── NUEVA CONTRASEÑA DESPUÉS DE VERIFICAR CÓDIGO ──
 def nueva_password(request):
     if not request.session.get('reset_verificado'):
         messages.error(request, 'Debes verificar tu código primero.')
@@ -361,15 +505,61 @@ def nueva_password(request):
             del request.session['reset_email']
             del request.session['reset_verificado']
 
-            messages.success(request, '¡Contraseña cambiada exitosamente! Ya puedes iniciar sesión.')
+            messages.success(request, '¡Contraseña recuperada exitosamente! Ya puedes iniciar sesión.')
+
+            # Correo de confirmación recuperación de contraseña
+            try:
+                html_recuperacion = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F3FC;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#7C3AED,#A855F7);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:24px;">🔑 Contraseña Recuperada</h1>
+            <p style="color:#EDE9FE;margin:8px 0 0;">Signia - Comunicación sin barreras</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hola <strong>{usuario.username}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
+              Tu contraseña ha sido <strong>recuperada y actualizada exitosamente</strong>. Ya puedes iniciar sesión con tu nueva contraseña.
+            </p>
+            <div style="background:#F5F3FF;border:2px solid #DDD6FE;border-radius:16px;padding:20px;margin:0 0 24px;text-align:center;">
+              <p style="color:#7C3AED;font-size:14px;margin:0;font-weight:700;">✅ Recuperación realizada el {timezone.now().strftime('%d/%m/%Y a las %H:%M')}</p>
+            </div>
+            <p style="color:#6B7280;font-size:14px;margin:0 0 8px;">⚠️ Si <strong>no solicitaste este cambio</strong>, contacta con nosotros de inmediato.</p>
+            <p style="color:#6B7280;font-size:13px;margin:0;">Recuerda mantener tu contraseña segura y no compartirla con nadie.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#F5F3FF;padding:20px;text-align:center;">
+            <p style="color:#C4B5FD;font-size:12px;margin:0;">© 2026 Signia · Comunicación sin barreras 🤟</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+                correo = EmailMultiAlternatives(
+                    subject='Tu contraseña fue recuperada - Signia 🔑',
+                    body=f'Hola {usuario.username}, tu contraseña en Signia ha sido recuperada exitosamente.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[usuario.email],
+                )
+                correo.attach_alternative(html_recuperacion, "text/html")
+                correo.send(fail_silently=True)
+            except Exception:
+                pass
+
             return redirect('home')
 
     return render(request, 'registration/nueva_password.html')
 
 
 
-
-from django.contrib.auth.decorators import user_passes_test
 
 @user_passes_test(es_admin)
 def eliminar_mensaje_contacto(request, mensaje_id):
@@ -494,11 +684,67 @@ def verificar_otp(request):
             if otp and otp.esta_vigente():
                 otp.usado = True
                 otp.save()
-                usuario.email_verificado = True  # lo activamos (lo agregamos en el siguiente paso)
+                usuario.email_verificado = True
                 usuario.save()
                 del request.session['email_verificacion']
+
+                # Login después de verificar
+                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+
+                # Correo de bienvenida HTML
+                try:
+                    html_bienvenida = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F3FC;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#2563EB,#3B82F6);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:26px;">🤟 ¡Bienvenido a Signia!</h1>
+            <p style="color:#BFDBFE;margin:8px 0 0;">Comunicación sin barreras</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hola <strong>{usuario.username}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
+              ¡Tu cuenta en <strong>Signia</strong> ha sido creada exitosamente! 🎉<br>
+              Ahora puedes acceder a todas las herramientas de comunicación que tenemos para ti.
+            </p>
+            <div style="background:#EFF6FF;border-radius:16px;padding:20px;margin:0 0 24px;">
+              <p style="color:#1E40AF;font-size:14px;margin:0 0 10px;font-weight:700;">¿Qué puedes hacer en Signia?</p>
+              <p style="color:#374151;font-size:14px;margin:0 0 6px;">👂 <strong>Traductor:</strong> Escribe texto y el avatar lo traduce a señas</p>
+              <p style="color:#374151;font-size:14px;margin:0 0 6px;">🤟 <strong>Reconocimiento:</strong> Haz señas a la cámara y se traducen a texto</p>
+              <p style="color:#374151;font-size:14px;margin:0;">📋 <strong>Historial:</strong> Revisa tus traducciones anteriores</p>
+            </div>
+            <p style="color:#6B7280;font-size:13px;margin:0;">Si no creaste esta cuenta, ignora este correo.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#F0F7FF;padding:20px;text-align:center;">
+            <p style="color:#93C5FD;font-size:12px;margin:0;">© 2026 Signia · Comunicación sin barreras 🤟</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+                    correo = EmailMultiAlternatives(
+                        subject='¡Bienvenido a Signia! 🤟',
+                        body=f'Hola {usuario.username}, ¡tu cuenta en Signia ha sido creada exitosamente!',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[usuario.email],
+                    )
+                    correo.attach_alternative(html_bienvenida, "text/html")
+                    correo.send(fail_silently=True)
+                except Exception:
+                    pass
+
                 messages.success(request, '¡Correo verificado correctamente!')
-                return redirect('home')  # cambia esto por tu vista principal
+                request.session['show_disability_modal'] = True
+                return redirigir_por_discapacidad(usuario)
+
             else:
                 messages.error(request, 'Código incorrecto o expirado.')
         
@@ -518,6 +764,8 @@ def requiere_email_verificado(view_func):
             return redirect('solicitar_verificacion')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
 
 
 # ── SELECCIONAR DISCAPACIDAD (post-Google OAuth) ───────
