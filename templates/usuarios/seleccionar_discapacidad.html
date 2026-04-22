@@ -1,11 +1,96 @@
 {% extends 'base.html' %}
-{% block content %}
 
-<div style="min-height:100vh; background:#E8F3FC; display:flex; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:white; border-radius:20px; padding:36px 28px; max-width:420px; width:100%; box-shadow:0 8px 30px rgba(37,99,235,0.12);">
-    
-    <h2 style="color:#1E40AF; font-size:20px; font-weight:700; margin:0 0 8px;">¿Tienes alguna discapacidad?</h2>
-    <p style="color:#6B7280; font-size:14px; margin:0 0 28px;">Esto nos ayuda a mostrarte el módulo adecuado al ingresar.</p>
+{% block extra_css %}
+<style>
+  /* Ocultar navbar y footer completamente en esta página */
+  nav.main-nav,
+  .nav-mobile-menu,
+  footer.main-footer {
+    display: none !important;
+  }
+
+  /* Cubrir toda la pantalla */
+  body {
+    overflow: hidden;
+  }
+
+  .disc-page {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 99999;
+  }
+
+  .disc-card {
+    background: white;
+    border-radius: 20px;
+    padding: 36px 28px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(37,99,235,0.2);
+    animation: popIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .disc-opcion {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 2px solid #E5E7EB;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+
+  .disc-opcion:hover { border-color: #3B82F6; background: #EFF6FF; }
+  .disc-opcion:has(input:checked) { border-color: #2563EB; background: #EFF6FF; }
+
+  .disc-opcion input { accent-color: #2563EB; width: 20px; height: 20px; flex-shrink: 0; }
+  .disc-opcion .emoji { font-size: 22px; }
+  .disc-opcion .titulo { color: #1E40AF; font-weight: 700; font-size: 15px; }
+  .disc-opcion .desc   { color: #9CA3AF; font-size: 13px; }
+
+  .disc-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #2563EB, #3B82F6);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    font-family: 'Poppins', sans-serif;
+    transition: opacity 0.2s;
+  }
+
+  .disc-btn:hover { opacity: 0.9; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="disc-page">
+  <div class="disc-card">
+
+    <h2 style="color:#1E40AF; font-size:20px; font-weight:700; margin:0 0 8px; font-family:'Poppins',sans-serif;">
+      ¿Tienes alguna discapacidad?
+    </h2>
+    <p style="color:#6B7280; font-size:14px; margin:0 0 24px;">
+      Esto nos ayuda a mostrarte el módulo adecuado al ingresar.
+    </p>
 
     <form method="POST">
       {% csrf_token %}
@@ -17,9 +102,12 @@
         <span style="font-size:22px;"><svg xmlns="http://www.w3.org/2000/svg" 
                     width="24" height="24" viewBox="0 0 24 24" fill="none" 
                     stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally1-icon lucide-tally-1"><path d="M4 4v16"/></svg></span>
+      <label class="disc-opcion">
+        <input type="radio" name="discapacidad" value="ninguna" checked>
+        <span class="emoji">😊</span>
         <div>
-          <div style="color:#1E40AF; font-weight:700; font-size:15px;">No tengo discapacidad</div>
-          <div style="color:#9CA3AF; font-size:13px;">Acceso general a Signia</div>
+          <div class="titulo">No tengo discapacidad</div>
+          <div class="desc">Acceso general a Signia</div>
         </div>
       </label>
 
@@ -28,9 +116,12 @@
              onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
         <input type="radio" name="discapacidad" value="sordo" style="accent-color:#2563EB; width:20px; height:20px;">
         <span style="font-size:22px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally2-icon lucide-tally-2"><path d="M4 4v16"/><path d="M9 4v16"/></svg></span>
+      <label class="disc-opcion">
+        <input type="radio" name="discapacidad" value="sordo">
+        <span class="emoji">👂</span>
         <div>
-          <div style="color:#1E40AF; font-weight:700; font-size:15px;">Soy sordo</div>
-          <div style="color:#9CA3AF; font-size:13px;">Escribo texto → el avatar lo traduce a señas</div>
+          <div class="titulo">Soy sordo</div>
+          <div class="desc">Escribo texto → el avatar lo traduce a señas</div>
         </div>
       </label>
 
@@ -39,18 +130,34 @@
              onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
         <input type="radio" name="discapacidad" value="mudo" style="accent-color:#2563EB; width:20px; height:20px;">
         <span style="font-size:22px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally3-icon lucide-tally-3"><path d="M4 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/></svg></span>
+      <label class="disc-opcion">
+        <input type="radio" name="discapacidad" value="mudo">
+        <span class="emoji">🤟</span>
         <div>
-          <div style="color:#1E40AF; font-weight:700; font-size:15px;">Soy mudo</div>
-          <div style="color:#9CA3AF; font-size:13px;">Hago señas a la cámara → se traduce a texto</div>
+          <div class="titulo">Soy mudo</div>
+          <div class="desc">Hago señas a la cámara → se traduce a texto</div>
         </div>
       </label>
 
       <button type="submit" style="display:flex; align-items:center; justify-content:center; width:100%; background:linear-gradient(135deg,#2563EB,#3B82F6); color:white; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:600; cursor:pointer;">
         Continuar
       </button>
+      <button type="submit" class="disc-btn">Continuar →</button>
     </form>
 
   </div>
 </div>
 
+<script>
+  // Bloquear navegación con teclado fuera del formulario
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') e.preventDefault();
+  }, true);
+
+  // Bloquear botón atrás
+  history.pushState(null, null, location.href);
+  window.addEventListener('popstate', function() {
+    history.pushState(null, null, location.href);
+  });
+</script>
 {% endblock %}

@@ -55,7 +55,7 @@ def index(request):
 def home(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            return redirect('panel_admin_videos')  
+            return redirect('panel_admin_videos')
         return redirigir_por_discapacidad(request.user)
 
     if request.method == 'POST':
@@ -66,11 +66,14 @@ def home(request):
         if user is not None:
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-            # 🔥 CAMBIO AQUÍ
             if user.is_superuser:
                 return redirect('panel_admin_videos')
 
-            request.session['show_disability_modal'] = True
+            # Solo mostrar modal la primera vez que inicia sesión
+            if not request.session.get(f'modal_shown_{user.pk}'):
+                request.session['show_disability_modal'] = True
+                request.session[f'modal_shown_{user.pk}'] = True
+
             return redirigir_por_discapacidad(user)
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')
