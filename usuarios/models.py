@@ -11,14 +11,15 @@ class Usuario(AbstractUser):
         ('sordo',   'Sordo'),
         ('mudo',    'Mudo'),
     ]
-
     email = models.EmailField(unique=True)
     discapacidad = models.CharField(
         max_length=10,
         choices=DISCAPACIDAD_CHOICES,
         default='ninguna'
     )
-    email_verificado = models.BooleanField(default=False)  # ← nuevo
+    email_verificado = models.BooleanField(default=False)
+    acepto_terminos = models.BooleanField(default=False)
+    fecha_aceptacion_terminos = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.username

@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Cookies - Signia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue-primary: #2563EB; --blue-light: #DBEAFE;
+      --bg: #E8F3FC; --white: #FFFFFF;
+      --text-dark: #1E293B; --text-muted: #64748B;
+    }
+    body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text-dark); min-height: 100vh; }
+    nav { background: var(--white); display: flex; align-items: center; padding: 0 2.5rem; height: 64px; box-shadow: 0 2px 12px rgba(37,99,235,0.08); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; }
+    .logo-icon { width: 38px; height: 38px; background: var(--blue-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 22px; height: 22px; fill: white; }
+    .logo-text { font-size: 1.35rem; font-weight: 700; color: var(--blue-primary); }
+    .container { max-width: 780px; margin: 3rem auto; padding: 0 1.5rem 4rem; }
+    .header-doc { background: linear-gradient(135deg, #F59E0B, #FBBF24); border-radius: 20px; padding: 2.5rem; color: white; margin-bottom: 2rem; text-align: center; }
+    .header-doc h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .header-doc p { opacity: 0.9; font-size: 0.92rem; }
+    .card-doc { background: white; border-radius: 16px; padding: 2rem 2.5rem; margin-bottom: 1.25rem; box-shadow: 0 2px 12px rgba(37,99,235,0.07); }
+    .card-doc h2 { color: var(--text-dark); font-size: 1.05rem; margin-bottom: 0.75rem; }
+    .card-doc p { color: var(--text-muted); line-height: 1.75; font-size: 0.93rem; }
+    .cookie-tipo { border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+    .cookie-tipo strong { display: block; margin-bottom: 0.3rem; font-size: 0.95rem; }
+    .cookie-tipo p { font-size: 0.88rem; margin: 0; }
+    .back-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--blue-primary); text-decoration: none; font-weight: 600; font-size: 0.92rem; margin-bottom: 1.5rem; }
+    .back-link:hover { text-decoration: underline; }
+    footer { background: white; text-align: center; padding: 1.25rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid #E2E8F0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="{% url 'index' %}">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+      </div>
+      <span class="logo-text">Signia</span>
+    </a>
+  </nav>
+
+  <div class="container">
+    <a href="javascript:history.back()" class="back-link">← Volver</a>
+
+    <div class="header-doc">
+      <h1>🍪 Política de Cookies</h1>
+      <p>Última actualización: enero de 2026 · Signia - Comunicación sin barreras</p>
+    </div>
+
+    <div class="card-doc">
+      <h2>¿Qué son las cookies?</h2>
+      <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas Signia. Nos permiten recordar tus preferencias y mantener tu sesión activa.</p>
+    </div>
+
+    <div class="card-doc">
+      <h2>Tipos de cookies que usamos</h2>
+
+      <div class="cookie-tipo" style="background:#EFF6FF;">
+        <strong style="color:#2563EB;">🔐 Cookies de sesión</strong>
+        <p style="color:#374151;">Necesarias para que puedas navegar en Signia y usar sus funciones. Se eliminan automáticamente al cerrar el navegador. Sin estas cookies, la plataforma no funciona.</p>
+      </div>
+
+      <div class="cookie-tipo" style="background:#F0FFF4;">
+        <strong style="color:#16A34A;">⚙️ Cookies funcionales</strong>
+        <p style="color:#374151;">Recuerdan tus preferencias como el tipo de discapacidad seleccionado, para personalizar tu experiencia en cada visita.</p>
+      </div>
+
+      <div class="cookie-tipo" style="background:#FFFBEB;">
+        <strong style="color:#D97706;">🔒 Cookies de autenticación</strong>
+        <p style="color:#374151;">Gestionadas por Django y django-allauth para mantener tu sesión segura, incluyendo cuando inicias sesión con Google.</p>
+      </div>
+
+      <div class="cookie-tipo" style="background:#FFF1F2;">
+        <strong style="color:#E11D48;">🚫 Cookies de terceros</strong>
+        <p style="color:#374151;">Signia no instala cookies de publicidad ni de rastreo de terceros. Las únicas cookies externas provienen de Google OAuth, solo si inicias sesión con esa opción.</p>
+      </div>
+    </div>
+
+    <div class="card-doc">
+      <h2>¿Cómo controlar las cookies?</h2>
+      <p>Puedes configurar tu navegador para bloquear o eliminar cookies. Ten en cuenta que deshabilitar las cookies esenciales puede impedir el funcionamiento correcto de Signia. Consulta la ayuda de tu navegador para más detalles.</p>
+    </div>
+
+    <div class="card-doc">
+      <h2>Base legal</h2>
+      <p>El uso de cookies esenciales se basa en el interés legítimo para el funcionamiento del servicio. Para las demás, contamos con tu consentimiento al aceptar estos términos al registrarte.</p>
+    </div>
+
+    <div class="card-doc">
+      <h2>Contacto</h2>
+      <p>Si tienes preguntas sobre nuestra política de cookies, escríbenos desde la sección de <a href="{% url 'contacto' %}" style="color:#2563EB; font-weight:600;">Contacto</a>.</p>
+    </div>
+  </div>
+
+  <footer>© 2026 Signia · Sistema de traducción de lenguaje de señas 🤟</footer>
+</body>
+</html>

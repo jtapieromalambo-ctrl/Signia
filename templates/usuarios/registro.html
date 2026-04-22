@@ -290,7 +290,35 @@
               {% endif %}
             </div>
 
-            <button type="submit" class="btn-registro">Crear cuenta</button>
+            <!-- Términos y Condiciones -->
+            <div class="field" style="margin-top: 1rem;">
+              <label class="opcion-label" style="align-items:flex-start; gap: 0.75rem; cursor:pointer;">
+                <input type="checkbox" id="acepto_terminos" name="acepto_terminos"
+                       style="margin-top:3px; width:17px; height:17px; accent-color: var(--blue-primary); cursor:pointer; flex-shrink:0;">
+                <span style="font-size:0.9rem; color: var(--text-muted); line-height:1.5;">
+                  He leído y acepto los
+                  <a href="#" onclick="abrirModal('terminos'); return false;"
+                     style="color: var(--blue-primary); font-weight:600; text-decoration:underline;">Términos y Condiciones</a>
+                  y la
+                  <a href="#" onclick="abrirModal('cookies'); return false;"
+                     style="color: var(--blue-primary); font-weight:600; text-decoration:underline;">Política de Cookies</a>
+                  de Signia.
+                </span>
+              </label>
+            </div>
+
+            {% if messages %}
+              {% for message in messages %}
+                {% if 'acepto' in message.message or 'Términos' in message.message %}
+                  <div class="error-msg">{{ message }}</div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+            <button type="submit" id="btn-registro" class="btn-registro" disabled
+                    style="opacity:0.5; cursor:not-allowed; transition: opacity 0.3s;">
+              Crear cuenta
+            </button>
 
           </form>
 
@@ -303,6 +331,156 @@
   </main>
 
   <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
+<!-- MODAL TÉRMINOS / COOKIES -->
+  <div id="modal-overlay" onclick="cerrarModal()"
+       style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+              z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+    <div onclick="event.stopPropagation()"
+         style="background:white; border-radius:20px; max-width:600px; width:100%;
+                max-height:80vh; display:flex; flex-direction:column;
+                box-shadow: 0 20px 60px rgba(37,99,235,0.2);">
 
+      <!-- Header modal -->
+      <div style="background:linear-gradient(135deg,#2563EB,#3B82F6); padding:1.5rem 2rem;
+                  border-radius:20px 20px 0 0; display:flex; justify-content:space-between; align-items:center;">
+        <h2 id="modal-titulo" style="color:white; font-size:1.15rem; margin:0;"></h2>
+        <button onclick="cerrarModal()"
+                style="background:rgba(255,255,255,0.2); border:none; color:white;
+                       width:32px; height:32px; border-radius:50%; font-size:1.1rem;
+                       cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+      </div>
+
+      <!-- Cuerpo modal -->
+      <div id="modal-contenido"
+           style="padding:1.75rem 2rem; overflow-y:auto; font-size:0.92rem;
+                  color:#374151; line-height:1.7; flex:1;"></div>
+
+      <!-- Footer modal -->
+      <div style="padding:1rem 2rem; border-top:1px solid #E2E8F0; display:flex; justify-content:flex-end; gap:0.75rem;">
+        <a id="modal-ver-completo" href="#" target="_blank"
+           style="color:var(--blue-primary); font-size:0.88rem; text-decoration:underline;
+                  display:flex; align-items:center; gap:0.3rem; margin-right:auto;">
+          Ver página completa ↗
+        </a>
+        <button onclick="cerrarModal()"
+                style="background:#F1F5F9; border:none; padding:0.6rem 1.5rem;
+                       border-radius:999px; cursor:pointer; font-weight:500; color:#374151;">
+          Cerrar
+        </button>
+        <button onclick="aceptarDesdeModal()"
+                style="background:var(--blue-primary); border:none; color:white;
+                       padding:0.6rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:600;">
+          Entendido ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Habilitar/deshabilitar botón según checkbox
+    const checkbox = document.getElementById('acepto_terminos');
+    const btnRegistro = document.getElementById('btn-registro');
+
+    checkbox.addEventListener('change', function() {
+      if (this.checked) {
+        btnRegistro.disabled = false;
+        btnRegistro.style.opacity = '1';
+        btnRegistro.style.cursor = 'pointer';
+      } else {
+        btnRegistro.disabled = true;
+        btnRegistro.style.opacity = '0.5';
+        btnRegistro.style.cursor = 'not-allowed';
+      }
+    });
+
+    // Contenido del modal
+    const contenidos = {
+      terminos: {
+        titulo: '📋 Términos y Condiciones',
+        url: "{% url 'terminos' %}",
+        html: `
+          <h3 style="color:#1E293B; margin-bottom:0.5rem;">1. Aceptación de los términos</h3>
+          <p>Al registrarte en Signia, aceptas cumplir con estos Términos y Condiciones. Si no estás de acuerdo, no debes usar la plataforma.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">2. Uso del servicio</h3>
+          <p>Signia es una plataforma de comunicación para personas con discapacidad auditiva o de habla. El servicio es para uso personal y no comercial.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">3. Cuenta de usuario</h3>
+          <p>Eres responsable de mantener la confidencialidad de tu contraseña y de todas las actividades realizadas con tu cuenta.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">4. Conducta del usuario</h3>
+          <p>Está prohibido usar Signia para transmitir contenido ilegal, ofensivo o que viole derechos de terceros.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">5. Privacidad</h3>
+          <p>Tratamos tus datos personales según nuestra Política de Privacidad y la legislación colombiana vigente (Ley 1581 de 2012).</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">6. Modificaciones</h3>
+          <p>Signia se reserva el derecho de modificar estos términos. Te notificaremos por correo ante cambios importantes.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">7. Contacto</h3>
+          <p>Para dudas sobre estos términos, escríbenos desde la sección de <a href="{% url 'contacto' %}" style="color:#2563EB;">Contacto</a>.</p>
+        `
+      },
+      cookies: {
+        titulo: '🍪 Política de Cookies',
+        url: "{% url 'politica_cookies' %}",
+        html: `
+          <h3 style="color:#1E293B; margin-bottom:0.5rem;">¿Qué son las cookies?</h3>
+          <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas Signia. Nos ayudan a mejorar tu experiencia.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">Cookies que usamos</h3>
+
+          <div style="background:#F0F7FF; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+            <strong style="color:#2563EB;">🔐 Cookies de sesión</strong>
+            <p style="margin:0.3rem 0 0;">Necesarias para mantener tu sesión activa mientras navegas. Se eliminan al cerrar el navegador.</p>
+          </div>
+
+          <div style="background:#F0FFF4; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+            <strong style="color:#16A34A;">⚙️ Cookies funcionales</strong>
+            <p style="margin:0.3rem 0 0;">Recuerdan tus preferencias como idioma y tipo de discapacidad para personalizar tu experiencia.</p>
+          </div>
+
+          <div style="background:#FFFBEB; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+            <strong style="color:#D97706;">🔒 Cookies de autenticación</strong>
+            <p style="margin:0.3rem 0 0;">Usadas por Django y django-allauth para gestionar el inicio de sesión de forma segura, incluyendo Google OAuth.</p>
+          </div>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">¿Cómo controlar las cookies?</h3>
+          <p>Puedes configurar tu navegador para rechazar cookies, aunque esto puede afectar el funcionamiento de Signia. Consulta la ayuda de tu navegador para más información.</p>
+
+          <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">Actualizaciones</h3>
+          <p>Esta política puede actualizarse. La fecha de última modificación siempre estará visible en la página completa.</p>
+        `
+      }
+    };
+
+    function abrirModal(tipo) {
+      const data = contenidos[tipo];
+      document.getElementById('modal-titulo').textContent = data.titulo;
+      document.getElementById('modal-contenido').innerHTML = data.html;
+      document.getElementById('modal-ver-completo').href = data.url;
+      const overlay = document.getElementById('modal-overlay');
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-overlay').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    function aceptarDesdeModal() {
+      cerrarModal();
+      checkbox.checked = true;
+      btnRegistro.disabled = false;
+      btnRegistro.style.opacity = '1';
+      btnRegistro.style.cursor = 'pointer';
+    }
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') cerrarModal();
+    });
+  </script>
 </body>
 </html>
