@@ -159,7 +159,7 @@
 </div>
 {% endif %}
 
-<!-- ── MODAL DISCAPACIDAD (solo al iniciar sesión) ── -->
+ <!-- ── MODAL DISCAPACIDAD ── -->
 {% if user.is_authenticated and show_disability_modal %}
 <div class="modal-overlay" id="discModal">
     <div class="modal-box">
@@ -168,23 +168,37 @@
             <h2>¡Bienvenido, {{ user.username }}!</h2>
             <p>Hemos detectado que eres <strong>sordo</strong>. Te redirigiremos al <strong>Traductor de Señas</strong> donde podrás escribir texto y el avatar lo traducirá a señas.</p>
             <div class="modal-disc-badge modal-disc-sordo">👂 Sordo — Texto → Señas</div>
-            <a href="{% url 'traduccion' %}" class="modal-btn" onclick="closeModal()">Ir al Traductor →</a>
+            <a href="{% url 'traduccion' %}" class="modal-btn">Ir al Traductor →</a>
         {% elif user.discapacidad == 'mudo' %}
             <div class="modal-icon">🤟</div>
             <h2>¡Bienvenido, {{ user.username }}!</h2>
             <p>Hemos detectado que eres <strong>mudo</strong>. Te redirigiremos al <strong>Reconocimiento de Señas</strong> donde podrás hacer señas a la cámara y se traducirán a texto.</p>
             <div class="modal-disc-badge modal-disc-mudo">🤟 Mudo — Señas → Texto</div>
-            <a href="{% url 'reconocimiento' %}" class="modal-btn" onclick="closeModal()">Ir al Reconocimiento →</a>
+            <a href="{% url 'reconocimiento' %}" class="modal-btn">Ir al Reconocimiento →</a>
         {% else %}
             <div class="modal-icon">🙂</div>
             <h2>¡Bienvenido, {{ user.username }}!</h2>
-            <p>Tienes <strong>acceso general</strong> a todas las herramientas de Signia. Puedes usar el traductor, el reconocimiento y el historial.</p>
+            <p>Tienes <strong>acceso general</strong> a todas las herramientas de Signia.</p>
             <div class="modal-disc-badge modal-disc-ninguna">🙂 Acceso general</div>
-            <a href="{% url 'perfil' %}" class="modal-btn" onclick="closeModal()">Ver mi perfil →</a>
+            <a href="{% url 'perfil' %}" class="modal-btn">Ver mi perfil →</a>
         {% endif %}
     </div>
 </div>
+
+<script>
+  // Bloquear TODO el body excepto el modal
+  document.body.classList.add('disc-modal-activo');
+  document.body.style.overflow = 'hidden';
+  document.body.style.pointerEvents = 'none';
+  document.getElementById('discModal').style.pointerEvents = 'auto';
+
+  // Bloquear Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') e.preventDefault();
+  }, true);
+</script>
 {% endif %}
+
 
 <!-- ── AVISO INACTIVIDAD ── -->
 {% if user.is_authenticated %}
