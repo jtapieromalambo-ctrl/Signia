@@ -376,11 +376,13 @@ footer.main-footer {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 999999;
   padding: 1rem;
 }
 
@@ -543,4 +545,10 @@ footer.main-footer {
   nav.main-nav .logo-text {
     font-size: 1.15rem;
   }
+}
+
+/* ── Bloqueo navbar modal discapacidad ── */
+body.disc-modal-activo nav.main-nav {
+  z-index: 1 !important;
+  pointer-events: none !important;
 }
