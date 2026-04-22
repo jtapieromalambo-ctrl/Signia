@@ -567,7 +567,8 @@ def eliminar_mensaje_contacto(request, mensaje_id):
     mensaje = get_object_or_404(MensajeContacto, id=mensaje_id)
     if request.method == 'POST':
         mensaje.delete()
-    return redirect('panel_admin_videos')
+        return JsonResponse({'ok': True})
+    return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
 
 #verificacion del corrreo
 def verificar_otp(request):
