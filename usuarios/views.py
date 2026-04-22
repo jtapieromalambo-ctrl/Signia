@@ -360,7 +360,7 @@ def nueva_password(request):
 
 
 
-from django.contrib.auth.decorators import user_passes_test
+from django.http import JsonResponse
 
 @user_passes_test(es_admin)
 def eliminar_mensaje_contacto(request, mensaje_id):
@@ -368,7 +368,8 @@ def eliminar_mensaje_contacto(request, mensaje_id):
     mensaje = get_object_or_404(MensajeContacto, id=mensaje_id)
     if request.method == 'POST':
         mensaje.delete()
-    return redirect('panel_admin_videos')
+        return JsonResponse({'ok': True})
+    return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
 
 #verificacion del corrreo
 def verificar_otp(request):

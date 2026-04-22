@@ -786,3 +786,386 @@ body {
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     min-width: 4px;
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL DE ELIMINACIÓN — Signia Admin
+   Agregar al final de admin_video.css
+═══════════════════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.del-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.del-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ── Caja del modal ──────────────────────────────────────── */
+.del-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 420px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.7) inset,
+        0 25px 60px rgba(15,23,42,0.18),
+        0 8px 20px rgba(220,38,38,0.08);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.25s ease;
+    opacity: 0;
+}
+
+.del-overlay.open .del-modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* ── Franja superior ─────────────────────────────────────── */
+.del-modal-stripe {
+    height: 5px;
+    background: linear-gradient(90deg, var(--accent) 0%, #60a5fa 50%, var(--accent) 100%);
+    background-size: 200% 100%;
+    animation: stripeShimmer 2.5s linear infinite;
+}
+
+@keyframes stripeShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Cuerpo del modal ────────────────────────────────────── */
+.del-modal-body {
+    padding: 2rem 2rem 1.75rem;
+}
+
+/* ── Ícono ───────────────────────────────────────────────── */
+.del-modal-icon-wrap {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 1.5rem;
+}
+
+.del-modal-icon-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(37,99,235,0.25);
+    animation: ringRotate 8s linear infinite;
+}
+
+@keyframes ringRotate {
+    to { transform: rotate(360deg); }
+}
+
+.del-modal-icon-ring::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    opacity: 0.6;
+}
+
+.del-modal-icon-bg {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    border: 1.5px solid rgba(37,99,235,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.del-modal-icon-bg svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent);
+    stroke: var(--accent);
+}
+
+/* ── Pulse dot ───────────────────────────────────────────── */
+.del-modal-icon-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(37,99,235,0.35);
+    animation: iconPulse 2s ease-out infinite;
+}
+
+@keyframes iconPulse {
+    0%   { transform: scale(1);   opacity: 0.7; }
+    70%  { transform: scale(1.4); opacity: 0;   }
+    100% { transform: scale(1.4); opacity: 0;   }
+}
+
+/* ── Títulos ─────────────────────────────────────────────── */
+.del-modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text);
+    text-align: center;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.del-modal-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+    margin: 0 0 1.25rem;
+}
+
+/* ── Tarjeta del registro ────────────────────────────────── */
+.del-modal-record {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 52px;
+}
+
+.del-modal-record-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.del-modal-record-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--accent);
+}
+
+.del-modal-record-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.del-modal-record-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.del-modal-record-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Advertencia ─────────────────────────────────────────── */
+.del-modal-warn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-soft);
+    border: 1px solid rgba(37,99,235,0.2);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+}
+
+.del-modal-warn svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--accent);
+    flex-shrink: 0;
+}
+
+/* ── Botones ─────────────────────────────────────────────── */
+.del-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 0.75rem;
+}
+
+.del-btn-cancel {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.del-btn-cancel:hover {
+    background: var(--surface2);
+    border-color: var(--text-dim);
+    color: var(--text);
+    transform: translateY(-1px);
+}
+
+.del-btn-cancel:active {
+    transform: translateY(0);
+}
+
+.del-btn-confirm {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: none;
+    background: linear-gradient(135deg, var(--purple-deep), #6d28d9);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 14px rgba(91,33,182,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.del-btn-confirm::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.del-btn-confirm:hover {
+    background: linear-gradient(135deg, #4c1d95, var(--purple-deep));
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(91,33,182,0.42);
+}
+
+.del-btn-confirm:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(91,33,182,0.3);
+}
+
+.del-btn-confirm svg {
+    width: 16px;
+    height: 16px;
+    stroke: white;
+    flex-shrink: 0;
+}
+
+/* Estado loading del botón confirmar */
+.del-btn-confirm.loading {
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.del-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Pie del modal (hint de teclado) ─────────────────────── */
+.del-modal-footer {
+    padding: 0.75rem 2rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.del-modal-footer-key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.1rem 0.45rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+.del-modal-footer-text {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+}
+
+/* ── Shake cuando se hace clic fuera ─────────────────────── */
+@keyframes delShake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-7px); }
+    40%      { transform: translateX(7px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+}
+
+.del-modal.shaking {
+    animation: delShake 0.38s ease;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .del-modal-actions {
+        grid-template-columns: 1fr;
+    }
+    .del-btn-confirm {
+        order: -1;
+    }
+}
