@@ -205,6 +205,95 @@
     © 2025 Signia · Sistema de traducción de lenguaje de señas
 </footer>
 
+<!-- ── BANNER COOKIES ── -->
+<div id="cookie-banner" style="
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #1E293B;
+  color: #E2E8F0;
+  padding: 1rem 2rem;
+  z-index: 9999;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
+  font-family: 'Poppins', sans-serif;
+">
+  <div style="max-width: 1100px; margin: 0 auto; display: flex; align-items: center;
+              justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+
+    <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:260px;">
+      <span style="font-size:1.5rem;">🍪</span>
+      <p style="margin:0; font-size:0.88rem; line-height:1.6; color:#CBD5E1;">
+        Usamos cookies para mejorar tu experiencia en Signia. Al continuar navegando, aceptas nuestra
+        <a href="{% url 'politica_cookies' %}" target="_blank"
+           style="color:#60A5FA; text-decoration:underline; font-weight:600;">Política de Cookies</a>
+        y nuestros
+        <a href="{% url 'terminos' %}" target="_blank"
+           style="color:#60A5FA; text-decoration:underline; font-weight:600;">Términos y Condiciones</a>.
+      </p>
+    </div>
+
+    <div style="display:flex; gap:0.75rem; flex-shrink:0; align-items:center;">
+      <a href="{% url 'politica_cookies' %}" target="_blank"
+         style="font-size:0.83rem; color:#94A3B8; text-decoration:underline; white-space:nowrap;">
+        Más información
+      </a>
+      <button onclick="rechazarCookies()" style="
+        background: transparent;
+        border: 1px solid #475569;
+        color: #94A3B8;
+        padding: 0.5rem 1.25rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        white-space: nowrap;
+        transition: all 0.2s;
+      ">Solo esenciales</button>
+      <button onclick="aceptarCookies()" style="
+        background: #2563EB;
+        border: none;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        white-space: nowrap;
+        transition: all 0.2s;
+      ">Aceptar todo ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mostrar banner solo si el usuario no ha decidido aún
+  (function() {
+    const decision = localStorage.getItem('signia_cookies');
+    if (!decision) {
+      document.getElementById('cookie-banner').style.display = 'block';
+    }
+  })();
+
+  function aceptarCookies() {
+    localStorage.setItem('signia_cookies', 'aceptado');
+    ocultarBanner();
+  }
+
+  function rechazarCookies() {
+    localStorage.setItem('signia_cookies', 'esencial');
+    ocultarBanner();
+  }
+
+  function ocultarBanner() {
+    const banner = document.getElementById('cookie-banner');
+    banner.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+    banner.style.opacity = '0';
+    banner.style.transform = 'translateY(100%)';
+    setTimeout(() => banner.style.display = 'none', 400);
+  }
+</script>
+
 {% block extra_js %}{% endblock %}
 
 <script>
