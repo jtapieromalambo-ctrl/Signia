@@ -8,107 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/usuarios/login.css' %}">
   <link rel="stylesheet" href="{% static 'css/usuarios/registro.css' %}">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --blue-primary: #2563EB;
-      --blue-light: #DBEAFE;
-      --blue-mid: #3B82F6;
-      --bg: #E8F3FC;
-      --white: #FFFFFF;
-      --text-dark: #1E293B;
-      --text-muted: #64748B;
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: var(--text-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    nav {
-      background: var(--white);
-      display: flex;
-      align-items: center;
-      padding: 0 2.5rem;
-      height: 64px;
-      box-shadow: 0 2px 12px rgba(37,99,235,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      text-decoration: none;
-      margin-right: auto;
-    }
-
-    .logo-icon {
-      width: 38px; height: 38px;
-      background: var(--blue-primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .logo-icon svg { width: 22px; height: 22px; fill: white; }
-
-    .logo-text {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--blue-primary);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      padding: 0.45rem 1rem;
-      border-radius: 999px;
-      transition: color 0.2s, background 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--blue-primary); background: var(--blue-light); }
-
-    .nav-links .active a {
-      background: var(--blue-light);
-      color: var(--blue-primary);
-      font-weight: 600;
-    }
-
-    .page {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1.5rem;
-    }
-
-    footer {
-      background: var(--white);
-      text-align: center;
-      padding: 1.25rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      border-top: 1px solid #E2E8F0;
-    }
-  </style>
 </head>
 <body>
 
@@ -254,7 +153,9 @@
                 <label class="opcion-label">
                   <input type="radio" name="discapacidad" value="ninguna"
                     {% if not form.discapacidad.value or form.discapacidad.value == 'ninguna' %}checked{% endif %}>
-                  <span class="opcion-icon">🙂</span>
+                  <span class="opcion-icon"><svg xmlns="http://www.w3.org/2000/svg" 
+                    width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                    stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally1-icon lucide-tally-1"><path d="M4 4v16"/></svg></span>
                   <span class="opcion-texto">
                     <strong>No tengo discapacidad</strong>
                     <span>Acceso general a Signia</span>
@@ -264,7 +165,7 @@
                 <label class="opcion-label">
                   <input type="radio" name="discapacidad" value="sordo"
                     {% if form.discapacidad.value == 'sordo' %}checked{% endif %}>
-                  <span class="opcion-icon">👂</span>
+                  <span class="opcion-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally2-icon lucide-tally-2"><path d="M4 4v16"/><path d="M9 4v16"/></svg></span>
                   <span class="opcion-texto">
                     <strong>Soy sordo</strong>
                     <span>Escribo texto → el avatar lo traduce a señas</span>
@@ -274,7 +175,7 @@
                 <label class="opcion-label">
                   <input type="radio" name="discapacidad" value="mudo"
                     {% if form.discapacidad.value == 'mudo' %}checked{% endif %}>
-                  <span class="opcion-icon">🤟</span>
+                  <span class="opcion-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally3-icon lucide-tally-3"><path d="M4 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/></svg></span>
                   <span class="opcion-texto">
                     <strong>Soy mudo</strong>
                     <span>Hago señas a la cámara → se traduce a texto</span>
