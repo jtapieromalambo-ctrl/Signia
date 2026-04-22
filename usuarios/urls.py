@@ -24,6 +24,9 @@ urlpatterns = [
     path('verificacion/solicitar/', views.solicitar_verificacion, name='solicitar_verificacion'),
     path('verificacion/codigo/', views.verificar_otp, name='verificar_otp'),
     path('seleccionar-discapacidad/', views.seleccionar_discapacidad, name='seleccionar_discapacidad'),
+    #TERMINOS Y CONDICIONES Y COOKIES
+    path('terminos/', views.terminos_condiciones, name='terminos'),
+    path('cookies/', views.politica_cookies, name='politica_cookies'),
 ]
 
 
