@@ -3,8 +3,6 @@
 
 {% block extra_css %}
 <style>
-body { background: #E8F3FC; }
-
 .page { max-width: 480px; margin: auto; padding: 4rem 1rem; }
 
 .card {
@@ -18,7 +16,11 @@ body { background: #E8F3FC; }
   background: linear-gradient(135deg,#2563EB,#3B82F6);
   padding: 2rem;
   color: white;
+  text-align: center;
 }
+
+.header h1 { font-size: 1.6rem; margin-bottom: 0.4rem; }
+.header p  { opacity: 0.88; font-size: 0.95rem; margin: 0; }
 
 .body {
   padding: 2rem;
@@ -27,31 +29,67 @@ body { background: #E8F3FC; }
   gap: 1rem;
 }
 
-input {
+.codigo-input {
   width: 100%;
   padding: 1rem;
   text-align: center;
-  font-size: 1.5rem;
-  letter-spacing: 6px;
-  border-radius: 12px;
-  border: 1.5px solid #DBEAFE;
+  font-size: 2rem;
+  letter-spacing: 14px;
+  border-radius: 14px;
+  border: 2px solid #DBEAFE;
   background: #F0F7FF;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: 'Poppins', monospace;
+  color: #1E293B;
 }
 
-.btn {
-  margin-top: 1rem;
+.codigo-input:focus {
+  border-color: #2563EB;
+  background: #EFF6FF;
+}
+
+.btn-verificar {
+  width: 100%;
   padding: 0.9rem;
   border-radius: 12px;
   border: none;
   background: linear-gradient(135deg,#2563EB,#3B82F6);
   color: white;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: opacity 0.2s;
 }
+
+.btn-verificar:hover { opacity: 0.9; }
+
+.btn-volver {
+  display: block;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+  transition: background 0.2s;
+}
+
+.btn-volver:hover { background: #E2E8F0; }
 
 .error {
   background: #FEE2E2;
-  padding: 0.7rem;
+  color: #991B1B;
+  padding: 0.7rem 1rem;
   border-radius: 8px;
+  font-size: 0.9rem;
 }
 </style>
 {% endblock %}
@@ -73,12 +111,34 @@ input {
 
       <form method="POST">
         {% csrf_token %}
-        <input type="text" name="codigo" placeholder="123456" required>
+        <input type="text" id="codigo-input" name="codigo"
+               class="codigo-input"
+               placeholder="1 2 3 4 5 6"
+               maxlength="6" minlength="6"
+               inputmode="numeric" pattern="[0-9]{6}"
+               autocomplete="one-time-code"
+               required autofocus>
 
-        <button class="btn">Verificar código →</button>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1.25rem;">
+          <button type="submit" class="btn-verificar">Verificar código →</button>
+          <a href="{% url 'home' %}" class="btn-volver">← Volver al login</a>
+        </div>
       </form>
 
     </div>
   </div>
 </div>
+
+<script>
+  const input = document.getElementById('codigo-input');
+
+  // Solo números
+  input.addEventListener('input', function () {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+
+  input.addEventListener('keypress', function (e) {
+    if (!/[0-9]/.test(e.key)) e.preventDefault();
+  });
+</script>
 {% endblock %}
