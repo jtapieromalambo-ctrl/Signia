@@ -95,6 +95,13 @@
     <form method="POST">
       {% csrf_token %}
 
+      <!-- Opción: Ninguna -->
+      <label style="display:flex; align-items:center; gap:14px; border:2px solid #E5E7EB; border-radius:14px; padding:16px; margin-bottom:12px; cursor:pointer; transition:border-color .2s;" 
+             onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <input type="radio" name="discapacidad" value="ninguna" checked style="accent-color:#2563EB; width:20px; height:20px;">
+        <span style="font-size:22px;"><svg xmlns="http://www.w3.org/2000/svg" 
+                    width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                    stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally1-icon lucide-tally-1"><path d="M4 4v16"/></svg></span>
       <label class="disc-opcion">
         <input type="radio" name="discapacidad" value="ninguna" checked>
         <span class="emoji">😊</span>
@@ -104,6 +111,11 @@
         </div>
       </label>
 
+      <!-- Opción: Sordo -->
+      <label style="display:flex; align-items:center; gap:14px; border:2px solid #E5E7EB; border-radius:14px; padding:16px; margin-bottom:12px; cursor:pointer; transition:border-color .2s;"
+             onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <input type="radio" name="discapacidad" value="sordo" style="accent-color:#2563EB; width:20px; height:20px;">
+        <span style="font-size:22px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally2-icon lucide-tally-2"><path d="M4 4v16"/><path d="M9 4v16"/></svg></span>
       <label class="disc-opcion">
         <input type="radio" name="discapacidad" value="sordo">
         <span class="emoji">👂</span>
@@ -113,6 +125,11 @@
         </div>
       </label>
 
+      <!-- Opción: Mudo -->
+      <label style="display:flex; align-items:center; gap:14px; border:2px solid #E5E7EB; border-radius:14px; padding:16px; margin-bottom:20px; cursor:pointer; transition:border-color .2s;"
+             onmouseover="this.style.borderColor='#3B82F6'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <input type="radio" name="discapacidad" value="mudo" style="accent-color:#2563EB; width:20px; height:20px;">
+        <span style="font-size:22px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tally3-icon lucide-tally-3"><path d="M4 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/></svg></span>
       <label class="disc-opcion">
         <input type="radio" name="discapacidad" value="mudo">
         <span class="emoji">🤟</span>
@@ -122,6 +139,9 @@
         </div>
       </label>
 
+      <button type="submit" style="display:flex; align-items:center; justify-content:center; width:100%; background:linear-gradient(135deg,#2563EB,#3B82F6); color:white; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:600; cursor:pointer;">
+        Continuar
+      </button>
       <button type="submit" class="disc-btn">Continuar →</button>
     </form>
 
