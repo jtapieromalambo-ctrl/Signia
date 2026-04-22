@@ -86,18 +86,24 @@ def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)  # ← cambiamos esto para no guardar aún
+            # Verificar que aceptó los términos ANTES de guardar
+            acepto = request.POST.get('acepto_terminos')
+            if not acepto:
+                messages.error(request, 'Debes aceptar los Términos y Condiciones para registrarte.')
+                return render(request, 'usuarios/registro.html', {'form': form})
+
+            user = form.save(commit=False)
             user.email_verificado = False
+            user.acepto_terminos = True
+            user.fecha_aceptacion_terminos = timezone.now()
             user.save()
 
-            # Enviamos el OTP antes de hacer login
             enviar_otp(user)
             request.session['email_verificacion'] = user.email
-            request.session['show_disability_modal'] = True  # lo conservamos para después
+            request.session['show_disability_modal'] = True
 
             messages.success(request, 'Cuenta creada. Verifica tu correo para continuar.')
-            return redirect('verificar_otp')  # ← primero verificar
-
+            return redirect('verificar_otp')
     else:
         form = RegistroForm()
 
@@ -526,3 +532,11 @@ def seleccionar_discapacidad(request):
             return redirigir_por_discapacidad(request.user)
 
     return render(request, 'usuarios/seleccionar_discapacidad.html')
+
+# --TERMINOS Y CONDICIONES Y COOKIES
+
+def terminos_condiciones(request):
+    return render(request, 'usuarios/terminos.html')
+
+def politica_cookies(request):
+    return render(request, 'usuarios/cookies.html')
