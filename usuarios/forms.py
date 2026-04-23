@@ -30,12 +30,24 @@ class RegistroForm(UserCreationForm):
 
 
 class EditarPerfilForm(forms.ModelForm):
+    # Sobreescribimos el campo para quitar el validador de caracteres de Django
+    username = forms.CharField(
+        max_length=150,
+        label='Nombre de usuario',
+    )
+
     class Meta:
         model  = Usuario
         fields = ['username']
-    
 
-
+    def clean_username(self):
+        username = self.cleaned_data.get('username').strip()
+        if not username:
+            raise forms.ValidationError('El nombre de usuario no puede estar vacío.')
+        qs = Usuario.objects.filter(username=username).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('Este nombre de usuario ya está en uso.')
+        return username
 
 
 class ContactoForm(forms.ModelForm):
