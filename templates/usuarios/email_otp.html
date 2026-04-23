@@ -3,23 +3,48 @@
 <head>
   <meta charset="UTF-8">
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;">
-  <div style="max-width: 480px; margin: auto; background: white; border-radius: 8px; padding: 30px;">
-    
-    <h2 style="color: #333;">Verificación de correo</h2>
-    <p>Hola <strong>{{ usuario.first_name }}</strong>,</p>
-    <p>Tu código de verificación es:</p>
+<body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F3FC;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+        
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#2563EB,#3B82F6);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:24px;">✉️ Verificación de Correo</h1>
+            <p style="color:#BFDBFE;margin:8px 0 0;">Signia - Comunicación sin barreras</p>
+          </td>
+        </tr>
 
-    <div style="font-size: 36px; font-weight: bold; letter-spacing: 10px; 
-                color: #4A90D9; text-align: center; padding: 20px 0;">
-      {{ codigo }}
-    </div>
+        <!-- Body -->
+        <tr>
+          <td style="padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 8px;">Hola <strong>{{ usuario.username }}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
+              Recibimos una solicitud para verificar tu cuenta en Signia.<br>
+              Usa el siguiente código:
+            </p>
 
-    <p style="color: #888; font-size: 13px;">
-      Este código es válido por <strong>10 minutos</strong>. 
-      Si no solicitaste esto, ignora este correo.
-    </p>
+            <!-- Código -->
+            <div style="background:#EFF6FF;border:2px dashed #2563EB;border-radius:16px;padding:24px;text-align:center;margin:0 0 24px;">
+              <p style="color:#1E40AF;font-size:13px;margin:0 0 8px;letter-spacing:2px;text-transform:uppercase;">Tu código de verificación</p>
+              <span style="color:#2563EB;font-size:42px;font-weight:bold;letter-spacing:12px;">{{ codigo }}</span>
+            </div>
 
-  </div>
+            <p style="color:#6B7280;font-size:14px;margin:0 0 8px;">⏱ Este código es válido por <strong>10 minutos</strong>.</p>
+            <p style="color:#6B7280;font-size:14px;margin:0;">Si no solicitaste esto, ignora este correo.</p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#F0F7FF;padding:20px;text-align:center;">
+            <p style="color:#93C5FD;font-size:12px;margin:0;">© 2026 Signia · Comunicación sin barreras 🤟</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
 </body>
 </html>
