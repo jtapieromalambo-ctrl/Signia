@@ -6,6 +6,13 @@ from django.utils import timezone
 from datetime import timedelta
 
 class Usuario(AbstractUser):
+    # Sobreescribimos username para permitir espacios y caracteres especiales
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[],  # quitamos UnicodeUsernameValidator
+    )
+
     DISCAPACIDAD_CHOICES = [
         ('ninguna', 'Ninguna'),
         ('sordo',   'Sordo'),
