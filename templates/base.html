@@ -5,10 +5,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Signia{% endblock %}</title>
+    <title>{% block title %}{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
+    <link rel="icon" type="image/png" href="{% static 'css/img/signia_favicon.png' %}">
 </head>
 <body>
 
@@ -18,14 +19,9 @@
 <div class="bg bg3" aria-hidden="true"></div>
 
 <nav class="main-nav">
-    <a class="nav-logo" href="{% url 'index' %}">
-        <div class="logo-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-            </svg>
-        </div>
-        <span class="logo-text">Signia</span>
-    </a>
+   <a class="nav-logo" href="{% url 'index' %}">
+    <img src="{% static 'css/img/signia_icono.png' %}" alt="Signia" style="height: 60px; width: auto;">
+</a>
 
     <ul class="nav-links">
         {% if user.is_authenticated %}
