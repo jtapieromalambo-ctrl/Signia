@@ -3,6 +3,8 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
+import os 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,7 +14,11 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('reconocimientos/', include('reconocimientos.urls')),
 
-    # Recuperar contraseña
+    path('favicon.ico', serve, {
+        'path': 'favicon.ico',
+        'document_root': os.path.join(settings.BASE_DIR, 'static'),
+    }),
+
     path('password-reset/',
          auth_views.PasswordResetView.as_view(template_name='registration/password_reset.html'),
          name='password_reset'),
@@ -25,4 +31,4 @@ urlpatterns = [
     path('password-reset/complete/',
          auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
          name='password_reset_complete'),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
