@@ -685,15 +685,17 @@ def verificar_otp(request):
             if otp and otp.esta_vigente():
                 otp.usado = True
                 otp.save()
-                usuario.email_verificado = True
-                usuario.save()
-                del request.session['email_verificacion']
 
-                # Login después de verificar
-                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
-
-                # Correo de bienvenida HTML
+                print(f"🔍 email_verificado = {usuario.email_verificado}")
+    
+            if not usuario.email_verificado:
+                print(f"📧 Intentando enviar correo a {usuario.email}")
                 try:
+                    # ... el html_bienvenida y el envío
+                    correo.send(fail_silently=False)
+                    print(f"✅ Correo enviado exitosamente a {usuario.email}")
+                except Exception as e:
+                    print(f"❌ Error al enviar correo: {e}")
                     html_bienvenida = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
@@ -711,7 +713,7 @@ def verificar_otp(request):
             <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hola <strong>{usuario.username}</strong>,</p>
             <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
               ¡Tu cuenta en <strong>Signia</strong> ha sido creada exitosamente! 🎉<br>
-              Ahora puedes acceder a todas las herramientas de comunicación que tenemos para ti.
+              Ahora puedes acceder a todas las herramientas de comunicación.
             </p>
             <div style="background:#EFF6FF;border-radius:16px;padding:20px;margin:0 0 24px;">
               <p style="color:#1E40AF;font-size:14px;margin:0 0 10px;font-weight:700;">¿Qué puedes hacer en Signia?</p>
@@ -738,9 +740,13 @@ def verificar_otp(request):
                         to=[usuario.email],
                     )
                     correo.attach_alternative(html_bienvenida, "text/html")
-                    correo.send(fail_silently=True)
-                except Exception:
-                    pass
+                    correo.send(fail_silently=False)
+
+                usuario.email_verificado = True
+                usuario.save()
+                del request.session['email_verificacion']
+
+                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
 
                 messages.success(request, '¡Correo verificado correctamente!')
                 request.session['show_disability_modal'] = True
@@ -772,7 +778,6 @@ def requiere_email_verificado(view_func):
 # ── SELECCIONAR DISCAPACIDAD (post-Google OAuth) ───────
 @login_required
 def seleccionar_discapacidad(request):
-    # Si ya tiene discapacidad definida, redirigir directo
     if request.user.discapacidad != 'ninguna':
         return redirigir_por_discapacidad(request.user)
 
@@ -781,6 +786,62 @@ def seleccionar_discapacidad(request):
         if discapacidad in ['ninguna', 'sordo', 'mudo']:
             request.user.discapacidad = discapacidad
             request.user.save()
+
+            # Correo de bienvenida para usuarios de Google (solo primera vez)
+            if not request.user.email_verificado:
+                try:
+                    html_bienvenida = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F3FC;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.15);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#2563EB,#3B82F6);padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:26px;">🤟 ¡Bienvenido a Signia!</h1>
+            <p style="color:#BFDBFE;margin:8px 0 0;">Comunicación sin barreras</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hola <strong>{request.user.username}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
+              ¡Tu cuenta en <strong>Signia</strong> ha sido creada exitosamente! 🎉<br>
+              Ahora puedes acceder a todas las herramientas de comunicación.
+            </p>
+            <div style="background:#EFF6FF;border-radius:16px;padding:20px;margin:0 0 24px;">
+              <p style="color:#1E40AF;font-size:14px;margin:0 0 10px;font-weight:700;">¿Qué puedes hacer en Signia?</p>
+              <p style="color:#374151;font-size:14px;margin:0 0 6px;">👂 <strong>Traductor:</strong> Escribe texto y el avatar lo traduce a señas</p>
+              <p style="color:#374151;font-size:14px;margin:0 0 6px;">🤟 <strong>Reconocimiento:</strong> Haz señas a la cámara y se traducen a texto</p>
+              <p style="color:#374151;font-size:14px;margin:0;">📋 <strong>Historial:</strong> Revisa tus traducciones anteriores</p>
+            </div>
+            <p style="color:#6B7280;font-size:13px;margin:0;">Si no creaste esta cuenta, ignora este correo.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#F0F7FF;padding:20px;text-align:center;">
+            <p style="color:#93C5FD;font-size:12px;margin:0;">© 2026 Signia · Comunicación sin barreras 🤟</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+                    correo = EmailMultiAlternatives(
+                        subject='¡Bienvenido a Signia! 🤟',
+                        body=f'Hola {request.user.username}, ¡tu cuenta en Signia ha sido creada exitosamente!',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[request.user.email],
+                    )
+                    correo.attach_alternative(html_bienvenida, "text/html")
+                    correo.send(fail_silently=False)
+                    print(f"✅ Correo de bienvenida enviado a {request.user.email}")
+                    
+                    request.user.email_verificado = True
+                    request.user.save()
+                except Exception as e:
+                    print(f"❌ Error al enviar correo: {e}")
+
             return redirigir_por_discapacidad(request.user)
 
     return render(request, 'usuarios/seleccionar_discapacidad.html')
