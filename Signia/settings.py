@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'traduccion',
     'avatar',
     'historial',
+    
 ]
 
 MIDDLEWARE = [
@@ -40,7 +41,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'usuarios.middleware.AdminLoginRedirectMiddleware',
-    'usuarios.middleware.NoCacheMiddleware',  # ajusta la ruta según tu app
+    'usuarios.middleware.NoCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'Signia.urls'
@@ -107,8 +108,6 @@ LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── EMAIL ──────────────────────────────────────────────
-
-
 EMAIL_BACKEND = 'usuarios.email_backend.SSLEmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
@@ -125,7 +124,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -145,7 +143,7 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_SIGNUP_REDIRECT_URL = '/seleccionar-discapacidad/'
-LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'          # ← agregar
+LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 ACCOUNT_LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/' 
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
@@ -156,7 +154,6 @@ SOCIALACCOUNT_ADAPTER = 'usuarios.adapters.SocialAccountAdapter'
 
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
-
 
 # Solución SSL para macOS sin certificados
 import ssl
@@ -172,3 +169,7 @@ SESSION_COOKIE_AGE = 1200  # 1200 segundos = 20 minutos
 
 # Cada request renueva el tiempo de sesión
 SESSION_SAVE_EVERY_REQUEST = True
+
+# ── GROQ (capa gramatical LSC) ─────────────────────────
+import os
+os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
