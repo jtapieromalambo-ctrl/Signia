@@ -1,6 +1,4 @@
-
-
-    // ─── REFERENCIAS AL DOM ───────────────────────────────────────────
+// ─── REFERENCIAS AL DOM ───────────────────────────────────────────
     const videoBase = document.getElementById('videoBase');
     const videoA    = document.getElementById('videoA');
     const videoB    = document.getElementById('videoB');
@@ -118,6 +116,26 @@
             }
         });
 
+        // ── Refrescar toast LSC si viene en la respuesta ─────────────
+        const toastViejo = document.getElementById('lscToast');
+        if (toastViejo) toastViejo.remove();
+
+        const toastNuevo = doc.getElementById('lscToast');
+        if (toastNuevo) {
+            document.body.appendChild(toastNuevo);
+            const DURATION_TOAST = 7000;
+            toastNuevo.style.setProperty('--lsc-duration', (DURATION_TOAST / 1000) + 's');
+            const closeBtn = toastNuevo.querySelector('#lscClose');
+            function dismissToast() {
+                toastNuevo.classList.add('lsc-panel--hiding');
+                toastNuevo.addEventListener('animationend', () => toastNuevo.remove(), { once: true });
+            }
+            let toastTimer = setTimeout(dismissToast, DURATION_TOAST);
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => { clearTimeout(toastTimer); dismissToast(); });
+            }
+        }
+
         if (nuevasColas.length > 0) {
             indiceActual = 0;
             colaVideos.length = 0;
@@ -136,7 +154,7 @@
             mostrarNoEncontrado();
         }
 
-        btnMic.textContent = '🎤 Hablar';
+        btnMic.textContent = '\u{1F3A4} Hablar';
         btnMic.disabled    = false;
         procesando         = false;
     })
@@ -175,3 +193,18 @@ function mostrarNoEncontrado() {
         }, { once: true }); 
     }, 2700);
 }
+// ── Integración groserías ─────────────────────────────────────────────
+
+    GroseriasModal.onLimpiar(() => {
+        const input = document.getElementById("palabra");
+        if (input) input.value = "";
+    });
+
+    document.getElementById("formulario").addEventListener("submit", function(e) {
+        const texto = document.getElementById("palabra")?.value || "";
+        if (GroseriasModal.verificarTexto(texto)) {
+            e.preventDefault();
+            const detectada = GroseriasModal.obtenerPalabraDetectada(texto);
+            GroseriasModal.mostrar(detectada, "texto");
+        }
+    });
