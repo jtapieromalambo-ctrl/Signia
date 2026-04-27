@@ -31,11 +31,25 @@
     </div>
 
     <div class="inner">
-        <div id="notificacionNoEncontrado">
+
+        {# ── Aviso fallback IA (solo si Groq no estaba disponible) ─────────── #}
+        {% if aviso_lsc %}
+        <div class="lsc-aviso">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            {{ aviso_lsc }}
+        </div>
+        {% endif %}
+
+        {# ── Notificación: palabra no encontrada ──────────────────────────── #}
+        <div id="notificacionNoEncontrado" {% if urls_videos or not request.method == "POST" %}style="display:none"{% endif %}>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                 class="lucide lucide-x">
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 6 6 18"/>
                 <path d="m6 6 12 12"/>
             </svg>
@@ -81,8 +95,103 @@
             </svg>
             Hablar
         </button>
+
     </div>
 </form>
+
+{# ── Panel LSC: toast flotante inferior derecha ───────────────────────── #}
+{% if tokens_lsc %}
+<div class="lsc-panel" id="lscToast">
+
+    <button class="lsc-panel__close" id="lscClose" aria-label="Cerrar">&#x2715;</button>
+
+    <div class="lsc-panel__meta">
+        <span class="lsc-badge lsc-badge--{{ lsc_metadata.sentence_type }}">
+            {% if lsc_metadata.sentence_type == "declarative" %}Declarativa
+            {% elif lsc_metadata.sentence_type == "negative" %}Negativa
+            {% elif lsc_metadata.sentence_type == "question_yn" %}Pregunta sí/no
+            {% elif lsc_metadata.sentence_type == "question_wh" %}Pregunta QU
+            {% elif lsc_metadata.sentence_type == "exclamative" %}Exclamativa
+            {% else %}{{ lsc_metadata.sentence_type }}{% endif %}
+        </span>
+        {% if lsc_metadata.facial_expression != "neutral" %}
+        <span class="lsc-badge lsc-badge--facial">
+            {% if lsc_metadata.facial_expression == "cejas_arriba" %}Cejas arriba
+            {% elif lsc_metadata.facial_expression == "cejas_fruncidas" %}Cejas fruncidas
+            {% elif lsc_metadata.facial_expression == "intensidad" %}Intensidad
+            {% else %}{{ lsc_metadata.facial_expression }}{% endif %}
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="lsc-tokens">
+        {% for t in info_tokens %}
+        <div class="lsc-token-wrap">
+            <span class="lsc-token
+                {% if not t.found %}lsc-token--missing{% endif %}
+                {% if t.strategy == 'synonym' %}lsc-token--synonym{% endif %}">
+                {{ t.original }}
+            </span>
+            {% if not t.found %}
+                {% if t.strategy == 'spell' %}
+                    <span class="lsc-token__label lsc-token__label--spell">deletrear</span>
+                {% elif t.strategy == 'record' %}
+                    <span class="lsc-token__label lsc-token__label--record">grabar</span>
+                {% endif %}
+            {% elif t.strategy == 'synonym' %}
+                <span class="lsc-token__label lsc-token__label--syn">&#x2192; {{ t.used }}</span>
+            {% endif %}
+            {% if not forloop.last %}
+            <span class="lsc-arrow" aria-hidden="true">&#x203a;</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if lsc_metadata.notes %}
+    <p class="lsc-panel__note">{{ lsc_metadata.notes }}</p>
+    {% endif %}
+
+    {% if faltantes %}
+    <div class="lsc-faltantes">
+        <span class="lsc-faltantes__titulo">Señas no disponibles en BD:</span>
+        {% for t in info_tokens %}{% if not t.found %}
+        <span class="lsc-faltante-chip
+            {% if t.strategy == 'spell' %}lsc-faltante-chip--spell
+            {% else %}lsc-faltante-chip--record{% endif %}">
+            {{ t.original }}
+            <span class="lsc-faltante-chip__est">
+                {% if t.strategy == 'spell' %}dactilológico{% else %}pendiente{% endif %}
+            </span>
+        </span>
+        {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="lsc-panel__progress" id="lscProgress"></div>
+</div>
+
+<script>
+(function () {
+    var DURATION = 3000;
+    var toast    = document.getElementById('lscToast');
+    var closeBtn = document.getElementById('lscClose');
+    if (!toast) return;
+    toast.style.setProperty('--lsc-duration', (DURATION / 1000) + 's');
+    function dismiss() {
+        toast.classList.add('lsc-panel--hiding');
+        toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
+    }
+    var timer = setTimeout(dismiss, DURATION);
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () { clearTimeout(timer); dismiss(); });
+    }
+})();
+</script>
+{% endif %}
+
+
+
 
 <script>
     const colaVideos = [
@@ -99,24 +208,5 @@
 <script src="{% static 'js/modal_groserias/groserias.js' %}"></script>
 <script src="{% static 'js/traductor/traductor.js' %}"></script>
 
-<script>
-    // ── Integración groserías ─────────────────────────────────────────────
-
-    // Al limpiar desde el modal, borra el input
-    GroseriasModal.onLimpiar(() => {
-        const input = document.getElementById("palabra");
-        if (input) input.value = "";
-    });
-
-    // Interceptar submit: bloquear si hay grosería
-    document.getElementById("formulario").addEventListener("submit", function(e) {
-        const texto = document.getElementById("palabra")?.value || "";
-        if (GroseriasModal.verificarTexto(texto)) {
-            e.preventDefault();
-            const detectada = GroseriasModal.obtenerPalabraDetectada(texto);
-            GroseriasModal.mostrar(detectada, "texto");
-        }
-    });
-</script>
 
 {% endblock %}
