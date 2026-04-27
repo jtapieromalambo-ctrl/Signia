@@ -1,123 +1,90 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}Signia — Editar Perfil{% endblock %}
 
 {% block extra_css %}
-<style>
-  :root {
-    --blue-primary: #2563EB; --blue-light: #DBEAFE; --blue-mid: #3B82F6;
-    --bg: #E8F3FC; --white: #FFFFFF; --text-dark: #1E293B; --text-muted: #64748B;
-    --shadow: 0 4px 24px rgba(37,99,235,0.10);
-  }
-  body { background: var(--bg); }
-  .page { max-width: 560px; margin: 0 auto; padding: 4rem 1.5rem; }
-  .card { background: var(--white); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
-  .card-header { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); padding: 2rem 2.5rem; position: relative; overflow: hidden; }
-  .card-header::before { content: ''; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.1); }
-  .card-header h1 { font-size: 1.6rem; font-weight: 700; color: white; position: relative; }
-  .card-header p { color: rgba(255,255,255,0.82); font-size: 0.9rem; margin-top: 0.3rem; position: relative; }
-  .card-body { padding: 2rem 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-  .field { display: flex; flex-direction: column; gap: 0.4rem; }
-  .field label { font-size: 0.82rem; font-weight: 600; color: var(--text-dark); }
-  .field input { background: #F0F7FF; border: 1.5px solid var(--blue-light); border-radius: 10px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
-  .field input:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
-  .field input[readonly] { background: #f3f4f6; color: var(--text-muted); cursor: not-allowed; border-color: #e5e7eb; }
-
-  /* Campo de correo solo lectura */
-  .field-readonly label { color: var(--text-muted); }
-  .field-readonly .readonly-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
-
-  /* Opciones discapacidad */
-  .discapacidad-opciones { display: flex; flex-direction: column; gap: 0.6rem; }
-  .disc-opcion { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #F0F7FF; border: 1.5px solid var(--blue-light); border-radius: 10px; cursor: pointer; transition: border-color 0.2s; }
-  .disc-opcion:hover { border-color: var(--blue-primary); }
-  .disc-opcion input[type="radio"] { width: 16px; height: 16px; accent-color: var(--blue-primary); }
-  .disc-opcion-texto strong { display: block; font-size: 0.88rem; color: var(--text-dark); font-weight: 600; }
-  .disc-opcion-texto span { font-size: 0.78rem; color: var(--text-muted); }
-  .disc-icon { font-size: 1.2rem; }
-
-  .btn-guardar { background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid)); color: white; border: none; border-radius: 10px; padding: 0.85rem; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.35); transition: transform 0.15s, box-shadow 0.15s; width: 100%; }
-  .btn-guardar:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
-  .btn-cancelar { display: block; text-align: center; margin-top: 0.75rem; font-size: 0.88rem; color: var(--text-muted); text-decoration: none; }
-  .btn-cancelar:hover { color: var(--blue-primary); }
-  .error-msg { background: #FEE2E2; border: 1px solid #FCA5A5; color: #DC2626; font-size: 0.82rem; padding: 0.6rem 0.9rem; border-radius: 8px; }
-</style>
+<link rel="stylesheet" href="{% static 'css/usuarios/editar_perfil.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="page">
-  <div class="card">
-    <div class="card-header">
-      <h1>✏️ Editar Perfil</h1>
-      <p>Actualiza tu información personal</p>
+
+
+
+  <div class="perfil-card">
+    <div class="perfil-header">
+      <div class="perfil-badge">Editar perfil</div>
+      <div class="perfil-avatar">
+        {% get_social_accounts usuario as social_accounts %}
+        {% if social_accounts.google %}
+          <img src="{{ social_accounts.google.0.get_avatar_url }}" alt="Foto de perfil">
+        {% else %}
+          <span class="perfil-avatar-inicial">{{ usuario.username|first }}</span>
+        {% endif %}
+      </div>
+      <h1>{{ usuario.username }}</h1>
+      <p>{{ usuario.email }}</p>
     </div>
-    <div class="card-body">
 
-      {% if form.errors %}
-        <div class="error-msg">Por favor corrige los errores del formulario.</div>
-      {% endif %}
-
-      <form method="post">
+    <div class="perfil-body">
+      <form method="post" action="{% url 'editar_perfil' %}">
         {% csrf_token %}
 
-        <!-- Nombre de usuario -->
-        <div class="field">
-          <label for="id_username">Nombre de usuario</label>
-          <input type="text" id="id_username" name="username"
-                 value="{{ form.username.value|default:usuario.username }}" required>
-          {% if form.username.errors %}
-            <span style="color:#DC2626;font-size:0.8rem;">{{ form.username.errors|join:", " }}</span>
-          {% endif %}
+        <div class="info-grid">
+
+          <!-- Nombre de usuario -->
+          <div class="info-item">
+            <label for="id_username">Nombre de usuario</label>
+            <input type="text" name="username" id="id_username"
+                   value="{{ form.username.value }}" class="info-input">
+            {% if form.username.errors %}
+              <p style="color:#DC2626;font-size:0.82rem;margin-top:0.3rem;font-weight:600;">
+                {{ form.username.errors.0 }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Correo (solo lectura) -->
+          <div class="info-item">
+            <label>Correo electrónico</label>
+            <p>{{ usuario.email|default:"No registrado" }}</p>
+          </div>
+
+          <!-- Cambiar contraseña -->
+          <div class="info-item info-item-pass">
+            <label>Contraseña</label>
+            <a href="{% url 'cambiar_password' %}" class="btn-accion btn-accion-primary btn-cambiar_password">
+              🔒 Cambiar contraseña
+            </a>
+          </div>
+
+          <!-- Tipo de discapacidad (solo lectura) -->
+          <div class="info-item">
+            <label>Tipo de discapacidad</label>
+            <p>
+              {% if usuario.discapacidad == 'sordo' %}
+                <span class="discapacidad-badge disc-sordo">👂 Sordo</span>
+              {% elif usuario.discapacidad == 'mudo' %}
+                <span class="discapacidad-badge disc-mudo">🤟 Mudo</span>
+              {% else %}
+                <span class="discapacidad-badge disc-ninguna">🙂 Sin discapacidad</span>
+              {% endif %}
+            </p>
+          </div>
+
         </div>
 
-        <!-- Correo solo lectura -->
-        <div class="field field-readonly">
-          <label>Correo electrónico</label>
-          <input type="email" value="{{ usuario.email|default:'No registrado' }}" readonly>
-          <span class="readonly-note">🔒 El correo no se puede modificar</span>
+        <div class="perfil-acciones">
+          <button type="submit" class="btn-accion btn-accion-primary">💾 Guardar</button>
+          <a href="{% url 'perfil' %}" class="btn-accion btn-accion-outline">← Atrás</a>
         </div>
 
-        <!-- Discapacidad -->
-        
-<div class="field">
-  <label>Tipo de acceso</label>
-  <div class="discapacidad-opciones">
-    <label class="disc-opcion" style="{% if usuario.discapacidad == 'ninguna' %}border-color:#2563EB;background:#EFF6FF;{% else %}opacity:0.45;cursor:not-allowed;{% endif %}">
-      <input type="radio" name="discapacidad" value="ninguna" disabled
-        {% if usuario.discapacidad == 'ninguna' %}checked{% endif %}>
-      <span class="disc-icon">🙂</span>
-      <span class="disc-opcion-texto">
-        <strong>No tengo discapacidad</strong>
-        <span>Acceso general a Signia</span>
-      </span>
-    </label>
-    <label class="disc-opcion" style="{% if usuario.discapacidad == 'sordo' %}border-color:#2563EB;background:#EFF6FF;{% else %}opacity:0.45;cursor:not-allowed;{% endif %}">
-      <input type="radio" name="discapacidad" value="sordo" disabled
-        {% if usuario.discapacidad == 'sordo' %}checked{% endif %}>
-      <span class="disc-icon">👂</span>
-      <span class="disc-opcion-texto">
-        <strong>Soy sordo</strong>
-        <span>Texto → el avatar lo traduce a señas</span>
-      </span>
-    </label>
-    <label class="disc-opcion" style="{% if usuario.discapacidad == 'mudo' %}border-color:#2563EB;background:#EFF6FF;{% else %}opacity:0.45;cursor:not-allowed;{% endif %}">
-      <input type="radio" name="discapacidad" value="mudo" disabled
-        {% if usuario.discapacidad == 'mudo' %}checked{% endif %}>
-      <span class="disc-icon">🤟</span>
-      <span class="disc-opcion-texto">
-        <strong>Soy mudo</strong>
-        <span>Hago señas a la cámara → se traduce a texto</span>
-      </span>
-    </label>
-  </div>
-  <span class="readonly-note">🔒 El tipo de acceso no se puede modificar</span>
-</div>
-
-        <button type="submit" class="btn-guardar">Guardar cambios</button>
       </form>
-      <a href="{% url 'perfil' %}" class="btn-cancelar">← Volver al perfil</a>
-    </div>
-  </div>
+    </div><!-- /perfil-body -->
+  </div><!-- /perfil-card -->
+
 </div>
+
 {% endblock %}
