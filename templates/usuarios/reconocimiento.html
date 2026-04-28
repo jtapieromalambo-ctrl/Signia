@@ -35,7 +35,6 @@
                         </svg>
                     </span>
                     <p>Haz clic en "Iniciar cámara" para comenzar</p>
-
                 </div>
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas" width="320" height="240"></canvas>
@@ -51,7 +50,6 @@
             <div class="botones">
                 <button class="btn" id="btn-camara" onclick="iniciar()">Iniciar cámara</button>
 
-                <!-- Toggle pill -->
                 <div class="pill-toggle" id="pill-toggle" onclick="cambiarModo()">
                     <div class="pill-thumb" id="pill-thumb"></div>
                     <span class="pill-icon pill-icon-left" id="icon-texto"><svg xmlns="http://www.w3.org/2000/svg" 
@@ -80,5 +78,12 @@
     </div>
 </div>
 
-<script src="{% static "js/usuario/reconocimiento.js" %}"></script>
+<script>
+    // Rutas locales — sin CDN, sin CORS
+    window.MP_WASM_PATH   = "{% static 'js/vendor/mediapipe/wasm/' %}";
+    window.MP_MODEL_PATH  = "{% url 'hand_landmarker' %}";
+    window.MP_BUNDLE_PATH = "{% static 'js/vendor/mediapipe/vision_bundle.mjs' %}";
+</script>
+<!-- reconocimiento.js como módulo ES — hace import() dinámico del bundle -->
+<script type="module" src="{% static 'js/usuario/reconocimiento.js' %}"></script>
 {% endblock %}
