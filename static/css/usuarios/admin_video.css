@@ -1169,3 +1169,557 @@ body {
         order: -1;
     }
 }
+/* ═══════════════════════════════════════════════════════════
+   SECCIÓN GRABACIÓN CON CÁMARA
+═══════════════════════════════════════════════════════════ */
+
+/* -- Contenedor principal --------------------------------- */
+.cam-section {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.cam-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.cam-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.cam-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--purple-soft);
+    color: var(--purple);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s;
+}
+
+.cam-toggle-btn:hover {
+    background: rgba(124,58,237,0.15);
+    transform: translateY(-1px);
+}
+
+/* -- Cuerpo: layout vertical ----------------------------- */
+.cam-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* -- Fila superior: cámara full-width -------------------- */
+.cam-live-row {
+    width: 100%;
+    background: #0f172a;
+    position: relative;
+}
+
+.cam-preview-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #0f172a;
+    overflow: hidden;
+}
+
+.cam-video-el {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transform: scaleX(-1);
+}
+
+/* -- Indicador REC (esquina superior izquierda) ---------- */
+.cam-overlay-top {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    border-radius: 6px;
+    padding: 0.25rem 0.65rem;
+    z-index: 2;
+}
+
+.cam-rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+    transition: background 0.3s;
+}
+
+.cam-rec-dot.recording {
+    background: #ef4444;
+    animation: camBlink 0.8s steps(1) infinite;
+}
+
+@keyframes camBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+.cam-rec-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: #fff;
+}
+
+/* -- Controles flotantes centrados en la parte inferior -- */
+.cam-controls-overlay {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 50px;
+    padding: 0.5rem 1.25rem;
+    z-index: 2;
+    white-space: nowrap;
+}
+
+.cam-countdown {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 5rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.35);
+    z-index: 3;
+}
+
+.cam-no-cam {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: #0f172a;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem;
+    z-index: 2;
+}
+
+/* -- Controles de grabación (dentro del overlay) --------- */
+.cam-btn-rec {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s, opacity 0.18s;
+}
+
+.cam-btn-rec:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.cam-btn-rec:not(:disabled):hover { background: #b91c1c; transform: translateY(-1px); }
+
+.cam-btn-rec-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.cam-btn-stop {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s;
+}
+
+.cam-btn-stop:not(:disabled):hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+}
+
+.cam-timer {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ef4444;
+    letter-spacing: 0.06em;
+    min-width: 3.5ch;
+}
+
+/* -- Fila inferior: grabaciones guardadas ---------------- */
+.cam-saved-row {
+    padding: 1.1rem 1.25rem 1.25rem;
+    border-top: 1.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.cam-saved-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.cam-saved-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.cam-saved-header h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.cam-saved-count {
+    background: var(--purple-soft);
+    color: var(--purple);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    min-width: 1.6rem;
+    text-align: center;
+}
+
+.cam-saved-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1rem;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 1.5px dashed var(--border);
+    text-align: center;
+}
+
+.cam-saved-empty strong { color: var(--purple); }
+
+/* -- Lista horizontal de grabaciones -------------------- */
+.cam-saved-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+/* -- Item guardado (tarjeta compacta horizontal) --------- */
+.cam-saved-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.55rem 0.75rem;
+    min-width: 220px;
+    max-width: 280px;
+    transition: border-color 0.18s, background 0.18s;
+}
+
+.cam-saved-item:hover {
+    border-color: rgba(124,58,237,0.3);
+    background: var(--purple-soft);
+}
+
+.cam-saved-item-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.cam-saved-item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.cam-saved-name-input {
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 0.28rem 0.55rem;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    width: 100%;
+    min-width: 0;
+    outline: none;
+    transition: border-color 0.18s;
+}
+
+.cam-saved-name-input:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+
+.cam-saved-size {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+}
+
+.cam-saved-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+.cam-saved-btn-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: 1.5px solid rgba(124,58,237,0.25);
+    background: var(--purple-soft);
+    color: var(--purple);
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s;
+}
+
+.cam-saved-btn-preview:hover {
+    background: rgba(124,58,237,0.18);
+    transform: scale(1.08);
+}
+
+.cam-saved-btn-del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: 1.5px solid rgba(220,38,38,0.2);
+    background: var(--danger-soft);
+    color: var(--danger);
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s;
+}
+
+.cam-saved-btn-del:hover {
+    background: rgba(220,38,38,0.14);
+    transform: scale(1.08);
+}
+
+.cam-saved-status {
+    font-size: 0.85rem;
+    min-width: 1.4rem;
+    text-align: center;
+}
+
+.cam-saved-status.uploading { animation: camBlink 0.7s steps(1) infinite; }
+
+/* -- Botón subir ----------------------------------------- */
+.cam-btn-subir-all {
+    font-size: 0.84rem;
+    padding: 0.55rem 1rem;
+    white-space: nowrap;
+}
+
+.cam-upload-progress { margin-top: 0; }
+
+/* -- Modal previsualización ------------------------------ */
+.cam-preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.72);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.cam-preview-modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 640px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+.cam-preview-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1.5px solid var(--border);
+}
+
+.cam-preview-modal-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.cam-preview-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+
+.cam-preview-close:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: rgba(220,38,38,0.3);
+}
+
+.cam-preview-video-el {
+    width: 100%;
+    display: block;
+    max-height: 400px;
+    background: #0f172a;
+}
+
+.cam-preview-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.85rem 1.25rem;
+    border-top: 1.5px solid var(--border);
+}
+
+/* -- Responsive ------------------------------------------ */
+@media (max-width: 640px) {
+    .cam-preview-wrap { aspect-ratio: 4/3; }
+    .cam-saved-item { min-width: 100%; max-width: 100%; }
+}
+/* ── Tabla señas entrenadas ─────────────────────────────── */
+.efectividad-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.efectividad-bar-wrap {
+    flex: 1;
+    height: 7px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+    min-width: 80px;
+    border: 1px solid var(--border);
+}
+
+.efectividad-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s ease;
+}
+
+.efectividad-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 3.2ch;
+    text-align: right;
+}
+
+.senas-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+    animation: spin 0.9s linear infinite;
+    flex-shrink: 0;
+}
