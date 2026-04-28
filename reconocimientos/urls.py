@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.views.static import serve
+import os
 
 urlpatterns = [
     # ── Reconocimiento ────────────────────────────────────────────
@@ -37,4 +39,9 @@ urlpatterns = [
     # Eliminar seña del modelo entrenado
     path('admin-videos/sena/eliminar/<str:nombre>/',
          views.sena_eliminar, name='sena_eliminar'),
+         
+     path('datos/hand_landmarker.task',
+     serve,
+     {'document_root': 'reconocimientos/datos', 'path': 'hand_landmarker.task'},
+     name='hand_landmarker'),
 ]
