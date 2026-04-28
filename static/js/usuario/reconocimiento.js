@@ -21,10 +21,10 @@ let secuenciaFrames = [];
 let framesSinMano   = 0;
 
 // ── Parámetros optimizados ───────────────────────────────
-const FRAMES_SIN_MANO_MAX = 8;   // era 15 → corta antes
-const MIN_FRAMES_SEÑA     = 8;   // era 15 → procesa antes
-const INTERVALO_MS        = 60;  // era 100ms → más rápido
-const JPEG_QUALITY        = 0.4; // era 0.5 → menos peso = menos latencia de red
+const FRAMES_SIN_MANO_MAX = 8;
+const MIN_FRAMES_SEÑA     = 8;
+const INTERVALO_MS        = 60;
+const JPEG_QUALITY        = 0.4;
 
 // ── Voz ──────────────────────────────────────────────────
 let vozEspanol = null;
@@ -40,7 +40,6 @@ function cargarVoz() {
 speechSynthesis.onvoiceschanged = cargarVoz;
 cargarVoz();
 
-// Keepalive para Chrome
 setInterval(() => {
     if (speechSynthesis.speaking) {
         speechSynthesis.pause();
@@ -48,12 +47,10 @@ setInterval(() => {
     }
 }, 5000);
 
-// ── Voz sin delay ────────────────────────────────────────
-// Se eliminó el setTimeout de 100ms — cancel() es síncrono suficiente
 function hablar(texto) {
     speechSynthesis.cancel();
     const u  = new SpeechSynthesisUtterance(texto);
-    u.rate   = 1.1;   // un poco más rápido para respuesta más ágil
+    u.rate   = 1.1;
     u.pitch  = 1.0;
     u.volume = 1.0;
     if (vozEspanol) {
@@ -87,7 +84,7 @@ async function iniciar() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                width:  { ideal: 320 },  // fuerza resolución baja desde origen
+                width:  { ideal: 320 },
                 height: { ideal: 240 },
                 frameRate: { ideal: 30 }
             }
@@ -102,9 +99,6 @@ async function iniciar() {
         btnCamara.textContent   = 'Detener cámara';
         btnCamara.classList.add('rojo');
         btnCamara.onclick = detener;
-
-        // Usar requestAnimationFrame en vez de setInterval para capturar
-        // en sincronía con el render del video — menos frames perdidos
         programarCaptura();
     } catch (err) {
         estadoTexto.textContent = 'Error al acceder a la cámara: ' + err.message;
@@ -176,13 +170,14 @@ function procesarDeteccion(hayMano, frameBase64) {
             estadoTexto.textContent = 'Procesando...';
             if (framesSinMano >= FRAMES_SIN_MANO_MAX) {
                 grabando = false;
-                if (secuenciaFrames.length >= MIN_FRAMES_SEÑA) {
-                    procesarSecuencia();
+                const framesToProcess = secuenciaFrames.slice();
+                secuenciaFrames = [];
+                framesSinMano   = 0;
+                if (framesToProcess.length >= MIN_FRAMES_SEÑA) {
+                    procesarSecuencia(framesToProcess);
                 } else {
                     estadoTexto.textContent = 'Seña muy corta — intenta de nuevo';
                 }
-                secuenciaFrames = [];
-                framesSinMano   = 0;
             }
         } else {
             badgeSeña.textContent   = 'Esperando mano...';
@@ -191,14 +186,13 @@ function procesarDeteccion(hayMano, frameBase64) {
     }
 }
 
-async function procesarSecuencia() {
+async function procesarSecuencia(frames) {
     try {
-        estadoTexto.textContent = `Analizando ${secuenciaFrames.length} frames...`;
+        estadoTexto.textContent = `Analizando ${frames.length} frames...`;
         badgeSeña.textContent   = 'Analizando...';
 
-        // Submuestreo: si hay muchos frames, tomar solo los necesarios
-        // Esto reduce el payload sin perder información relevante
-        const framesAEnviar = submuestrear(secuenciaFrames, 12);
+        const framesAEnviar = submuestrear(frames, 12);
+        console.log('[DEBUG] Enviando', framesAEnviar.length, 'frames al servidor...');
 
         const response = await fetch('/reconocimientos/predecir/', {
             method: 'POST',
@@ -206,21 +200,25 @@ async function procesarSecuencia() {
             body: JSON.stringify({ frames: framesAEnviar })
         });
         const data = await response.json();
-        if (GroseriasModal.verificarSena(sena)) {
-        GroseriasModal.mostrar(sena, "sena");
-        return;
-}
+        console.log('[DEBUG] Respuesta predecir:', data);
 
-        if (data.seña && data.confianza >= 70) {
-            señaActual.textContent     = data.seña.toUpperCase();
+        const sena = data.seña || '';
+
+        if (sena && typeof GroseriasModal !== 'undefined' && GroseriasModal.verificarSena(sena)) {
+            GroseriasModal.mostrar(sena, 'sena');
+            return;
+        }
+
+        if (sena && data.confianza >= 70) {
+            señaActual.textContent     = sena.toUpperCase();
             confianzaTexto.textContent = `Confianza: ${data.confianza}%`;
-            estadoTexto.textContent    = `Seña detectada: ${data.seña}`;
-            badgeSeña.textContent      = data.seña.toUpperCase();
+            estadoTexto.textContent    = `Seña detectada: ${sena}`;
+            badgeSeña.textContent      = sena.toUpperCase();
 
             if (modoVoz) {
-                hablar(data.seña); // sin delay ahora
+                hablar(sena);
             } else {
-                textoAcumulado += (textoAcumulado ? ' ' : '') + data.seña;
+                textoAcumulado += (textoAcumulado ? ' ' : '') + sena;
                 resultado.classList.add('activo');
                 resultado.innerHTML = `<div id="historial">${textoAcumulado}</div>`;
             }
@@ -233,12 +231,11 @@ async function procesarSecuencia() {
             badgeSeña.textContent = 'Esperando mano...';
         }
     } catch (err) {
+        console.error('[DEBUG] Error en procesarSecuencia:', err);
         estadoTexto.textContent = 'Error al procesar: ' + err.message;
     }
 }
 
-// Toma N frames distribuidos uniformemente de la secuencia
-// Evita enviar 40+ frames cuando el modelo solo necesita ~12
 function submuestrear(frames, max) {
     if (frames.length <= max) return frames;
     const resultado = [];

@@ -33,4 +33,8 @@ urlpatterns = [
     # Señas entrenadas con efectividad
     path('admin-videos/senas-entrenadas/',
          views.senas_entrenadas, name='senas_entrenadas'),
+
+    # Eliminar seña del modelo entrenado
+    path('admin-videos/sena/eliminar/<str:nombre>/',
+         views.sena_eliminar, name='sena_eliminar'),
 ]

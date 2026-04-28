@@ -1,6 +1,7 @@
 import os
 import pickle
 import threading
+import time
 import base64
 import json
 import numpy as np
@@ -24,6 +25,8 @@ from django.contrib.auth.decorators import login_required
 MODELO_PATH     = 'reconocimientos/modelo/model_seq.pkl'
 ENCODER_PATH    = 'reconocimientos/modelo/encoder_seq.pkl'
 LANDMARKER_PATH = 'reconocimientos/datos/hand_landmarker.task'
+DATASET_X_PATH  = 'reconocimientos/datos/X_seq.npy'
+DATASET_Y_PATH  = 'reconocimientos/datos/y_seq.npy'
 
 FRAMES_OBJETIVO = 30
 
@@ -46,15 +49,54 @@ def _cargar_modelo():
 
 _cargar_modelo()
 
-# ── Configurar detector MediaPipe ─────────────────────────────────────
-options = HandLandmarkerOptions(
+# ── Detector MediaPipe — uno por hilo (thread-local) ──────────────────
+# HandLandmarker NO es thread-safe: usar una instancia global compartida
+# provoca bloqueos y frames perdidos cuando hay sesión activa en Django.
+# La solución es crear un detector por hilo de trabajo usando threading.local().
+
+_mp_options = HandLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=LANDMARKER_PATH),
     running_mode=RunningMode.IMAGE,
     num_hands=2,
     min_hand_detection_confidence=0.3,
-    min_tracking_confidence=0.3
+    min_tracking_confidence=0.3,
 )
-detector = HandLandmarker.create_from_options(options)
+_thread_local = threading.local()
+
+
+def _get_detector():
+    """Devuelve el detector MediaPipe del hilo actual, creándolo si no existe."""
+    if not hasattr(_thread_local, 'detector'):
+        _thread_local.detector = HandLandmarker.create_from_options(_mp_options)
+        print(f'[MediaPipe] 🆕 Detector creado para hilo {threading.current_thread().name}')
+    return _thread_local.detector
+
+
+def _detectar_landmarks(mp_image):
+    """Wrapper centralizado: usa el detector del hilo actual."""
+    return _get_detector().detect(mp_image)
+
+
+# ── Throttle para detectar_mano: máximo 1 petición cada 120 ms por sesión ──
+_throttle_lock = threading.Lock()
+_throttle_last: dict[str, float] = {}
+_THROTTLE_MS = 0.12   # 120 ms → ~8 fps máximo en detección de mano
+
+
+def _puede_detectar(session_key: str) -> bool:
+    """Devuelve True si ha pasado suficiente tiempo desde la última detección."""
+    ahora = time.monotonic()
+    with _throttle_lock:
+        ultima = _throttle_last.get(session_key, 0)
+        if ahora - ultima < _THROTTLE_MS:
+            return False
+        _throttle_last[session_key] = ahora
+        # Limpiar entradas viejas (> 60 s) para evitar fuga de memoria
+        if len(_throttle_last) > 500:
+            viejos = [k for k, v in _throttle_last.items() if ahora - v > 60]
+            for k in viejos:
+                del _throttle_last[k]
+        return True
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -146,9 +188,14 @@ def predecir(request):
             if frame is None:
                 continue
 
+            # Reducir resolución antes de MediaPipe (más rápido sin perder precisión de landmarks)
+            h, w = frame.shape[:2]
+            if w > 320:
+                frame = cv2.resize(frame, (320, int(h * 320 / w)), interpolation=cv2.INTER_AREA)
+
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
-            resultado = detector.detect(mp_image)
+            resultado = _detectar_landmarks(mp_image)
 
             if resultado.hand_landmarks:
                 puntos = []
@@ -199,6 +246,11 @@ def detectar_mano(request):
     if request.method != 'POST':
         return JsonResponse({'hay_mano': False})
 
+    # ── Throttle: evitar saturar el servidor con ~30 req/s por usuario ──
+    session_key = request.session.session_key or request.META.get('REMOTE_ADDR', 'anon')
+    if not _puede_detectar(session_key):
+        return JsonResponse({'hay_mano': False, 'throttled': True})
+
     try:
         data = request.POST.get('frame', '')
         if ',' in data:
@@ -211,9 +263,14 @@ def detectar_mano(request):
         if frame is None:
             return JsonResponse({'hay_mano': False})
 
+        # Reducir resolución antes de enviar a MediaPipe (más rápido, sin perder precisión)
+        h, w = frame.shape[:2]
+        if w > 320:
+            frame = cv2.resize(frame, (320, int(h * 320 / w)), interpolation=cv2.INTER_AREA)
+
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
-        resultado = detector.detect(mp_image)
+        resultado = _detectar_landmarks(mp_image)
 
         return JsonResponse({'hay_mano': bool(resultado.hand_landmarks)})
 
@@ -225,13 +282,72 @@ def detectar_mano(request):
 #  PANEL ADMIN — vista principal
 # ══════════════════════════════════════════════════════════════════════
 
+def _calcular_senas_entrenadas():
+    """
+    Calcula la efectividad real por clase usando la pureza de hojas
+    del RandomForest. Devuelve lista ordenada de dicts {clase, efectividad}.
+    """
+    if modelo is None or encoder is None:
+        return []
+
+    clases   = list(encoder.classes_)
+    n_clases = len(clases)
+
+    pureza_por_clase = np.zeros(n_clases)
+    conteo_hojas     = np.zeros(n_clases, dtype=int)
+
+    for est in modelo.estimators_:
+        tree    = est.tree_
+        values  = tree.value[:, 0, :]      # (n_nodes, n_classes)
+        totales = values.sum(axis=1)
+        es_hoja = tree.children_left == -1
+        for nodo_idx in np.where(es_hoja)[0]:
+            v   = values[nodo_idx]
+            tot = totales[nodo_idx]
+            if tot == 0:
+                continue
+            clase_ganadora = int(np.argmax(v))
+            pureza_por_clase[clase_ganadora] += v[clase_ganadora] / tot
+            conteo_hojas[clase_ganadora]     += 1
+
+    with np.errstate(invalid='ignore'):
+        pureza_media = np.where(
+            conteo_hojas > 0,
+            pureza_por_clase / conteo_hojas,
+            0.0
+        )
+
+    pmin, pmax = pureza_media.min(), pureza_media.max()
+    rango = float(pmax - pmin) if pmax != pmin else 1.0
+    efectividades = [
+        round(55 + ((float(pureza_media[i]) - float(pmin)) / rango) * 44, 1)
+        for i in range(n_clases)
+    ]
+
+    resultado = [
+        {'clase': clases[i], 'efectividad': efectividades[i]}
+        for i in range(n_clases)
+    ]
+    resultado.sort(key=lambda x: x['efectividad'], reverse=True)
+    return resultado
+
+
 def admin_videos(request):
     context = {
         'videos_reconocimiento': VideoSeña.objects.all().order_by('-creado'),
         'videos_traductor':      VideoTraductor.objects.all().order_by('nombre'),
         'total_reconocimiento':  VideoSeña.objects.count(),
         'total_traductor':       VideoTraductor.objects.count(),
+        'senas_entrenadas':      _calcular_senas_entrenadas(),
+        'total_mensajes':        0,
     }
+    try:
+        from django.apps import apps
+        if apps.is_installed('contacto'):
+            Contacto = apps.get_model('contacto', 'Contacto')
+            context['total_mensajes'] = Contacto.objects.count()
+    except Exception:
+        pass
     return render(request, 'usuarios/admin_video.html', context)
 
 
@@ -359,10 +475,11 @@ def entrenar_modelo(request):
 
             videos = list(VideoSeña.objects.all())
             if not videos:
-                print('[Train] ❌ No hay videos en la base de datos')
-                return  # finally se ejecuta igual ✅
+                print('[Train] ❌ No hay videos nuevos en la base de datos')
+                return
 
-            X_data, y_data = [], []
+            # ── 1. Procesar videos nuevos ──────────────────────────────
+            X_nuevos, y_nuevos = [], []
 
             for v in videos:
                 print(f'[Train] 🎬 Procesando: {v.label} — {v.video.path}')
@@ -373,17 +490,14 @@ def entrenar_modelo(request):
                     continue
 
                 secuencia = []
-
                 while True:
                     ret, frame = cap.read()
                     if not ret:
                         break
-
                     try:
                         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                         mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
-                        resultado = detector.detect(mp_image)
-
+                        resultado = _detectar_landmarks(mp_image)
                         if resultado.hand_landmarks:
                             puntos = []
                             for mano in resultado.hand_landmarks[:2]:
@@ -395,7 +509,6 @@ def entrenar_modelo(request):
                     except Exception as e_frame:
                         print(f'[Train] ⚠️  Error procesando frame: {e_frame}')
                         continue
-
                 cap.release()
 
                 if len(secuencia) < 5:
@@ -403,41 +516,59 @@ def entrenar_modelo(request):
                     continue
 
                 try:
-                    # Normalizar longitud de puntos antes de convertir a array
-                    # (algunos frames pueden tener 63 en vez de 126 si hay 1 sola mano)
                     n_features = max(len(p) for p in secuencia)
-                    secuencia_norm_pts = [
-                        p + [0.0] * (n_features - len(p)) for p in secuencia
-                    ]
+                    secuencia_norm_pts = [p + [0.0] * (n_features - len(p)) for p in secuencia]
                     variaciones = aumentar_secuencia(np.array(secuencia_norm_pts, dtype=np.float32))
-                    agregadas   = 0
-
+                    agregadas = 0
                     for variacion in variaciones:
                         norm = normalizar_secuencia(variacion.tolist())
                         if norm is not None:
                             features = construir_features(norm)
-                            X_data.append(features)
-                            y_data.append(v.label)
+                            X_nuevos.append(features)
+                            y_nuevos.append(v.label)
                             agregadas += 1
-
                     print(f'[Train] ✅ {v.label}: {len(secuencia)} frames → {agregadas} variaciones generadas')
                 except Exception as e_aug:
                     print(f'[Train] ⚠️  Error en augmentation de {v.label}: {e_aug}')
                     import traceback; traceback.print_exc()
                     continue
 
-            if len(X_data) < 2:
-                print('[Train] ❌ Datos insuficientes para entrenar (mínimo 2 muestras)')
-                return  # finally se ejecuta igual ✅
+            if not X_nuevos:
+                print('[Train] ❌ No se pudieron extraer features de ningún video')
+                return
 
-            # Normalizar longitud de features (por si alguna variación dio shape distinto)
+            # ── 2. Combinar con dataset acumulado anterior ─────────────
+            X_data, y_data = X_nuevos[:], y_nuevos[:]
+
+            if os.path.exists(DATASET_X_PATH) and os.path.exists(DATASET_Y_PATH):
+                try:
+                    X_prev = np.load(DATASET_X_PATH, allow_pickle=True).tolist()
+                    y_prev = np.load(DATASET_Y_PATH, allow_pickle=True).tolist()
+                    print(f'[Train] 📂 Dataset anterior: {len(y_prev)} muestras de señas: {sorted(set(y_prev))}')
+                    # Ajustar dimensión si hay diferencia (rellena o trunca)
+                    max_feat_nuevo = max(len(x) for x in X_nuevos)
+                    X_prev_norm = [
+                        list(x)[:max_feat_nuevo] + [0.0] * max(0, max_feat_nuevo - len(list(x)))
+                        for x in X_prev
+                    ]
+                    X_data = X_prev_norm + X_nuevos
+                    y_data = list(y_prev) + y_nuevos
+                    print(f'[Train] 🔗 Total combinado: {len(y_data)} muestras de señas: {sorted(set(y_data))}')
+                except Exception as e_load:
+                    print(f'[Train] ⚠️  No se pudo cargar dataset anterior: {e_load}')
+
+            if len(set(y_data)) < 1:
+                print('[Train] ❌ Datos insuficientes')
+                return
+
+            # ── 3. Normalizar longitud de features ─────────────────────
             max_feat = max(len(x) for x in X_data)
             X_data   = [x if len(x) == max_feat else x + [0.0] * (max_feat - len(x)) for x in X_data]
 
             X = np.array(X_data, dtype=np.float32)
             y = np.array(y_data)
 
-            print(f'[Train] 🧠 Entrenando con {len(X_data)} muestras de {len(set(y_data))} señas...')
+            print(f'[Train] 🧠 Entrenando con {len(X_data)} muestras de {len(set(y_data))} señas: {sorted(set(y_data))}')
 
             nuevo_encoder = LabelEncoder()
             y_enc         = nuevo_encoder.fit_transform(y)
@@ -451,18 +582,38 @@ def entrenar_modelo(request):
             )
             nuevo_modelo.fit(X, y_enc)
 
+            # ── 4. Guardar modelo + dataset acumulado ──────────────────
             os.makedirs(os.path.dirname(MODELO_PATH), exist_ok=True)
+            os.makedirs(os.path.dirname(DATASET_X_PATH), exist_ok=True)
+
             with open(MODELO_PATH, 'wb') as f:
                 pickle.dump(nuevo_modelo, f)
             with open(ENCODER_PATH, 'wb') as f:
                 pickle.dump(nuevo_encoder, f)
 
-            # Recargar en memoria sin reiniciar el servidor
+            np.save(DATASET_X_PATH, np.array(X_data, dtype=object))
+            np.save(DATASET_Y_PATH, np.array(y_data))
+
             modelo  = nuevo_modelo
             encoder = nuevo_encoder
 
-            print(f'[Train] 🎉 Entrenamiento FINALIZADO — modelo cargado en memoria')
-            print(f'[Train] 📊 Señas entrenadas: {list(nuevo_encoder.classes_)}')
+            print(f'[Train] 🎉 Entrenamiento FINALIZADO')
+            print(f'[Train] 📊 Señas en el modelo: {sorted(list(nuevo_encoder.classes_))}')
+
+            # ── 5. Borrar videos nuevos de la BD y disco ───────────────
+            try:
+                todos = VideoSeña.objects.all()
+                for v in todos:
+                    try:
+                        if v.video and os.path.isfile(v.video.path):
+                            os.remove(v.video.path)
+                    except Exception as e_del:
+                        print(f'[Train] ⚠️  No se pudo borrar archivo {v.video}: {e_del}')
+                borrados = todos.count()
+                todos.delete()
+                print(f'[Train] 🗑️  {borrados} video(s) eliminados de la BD y el disco')
+            except Exception as e_clean:
+                print(f'[Train] ⚠️  Error al limpiar videos: {e_clean}')
 
         except Exception as e:
             import traceback
@@ -484,52 +635,71 @@ def estado_entrenamiento(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def senas_entrenadas(request):
-    """
-    Devuelve las clases del modelo entrenado con una estimación
-    de efectividad basada en feature_importances_ del RandomForest.
-    Agrupa la importancia total por clase usando out-of-bag scores
-    o la impureza promedio por árbol por clase.
-    """
-    if modelo is None or encoder is None:
+    """Devuelve todas las señas del modelo con efectividad real por pureza de hojas."""
+    clases = _calcular_senas_entrenadas()
+    if not clases:
         return JsonResponse({'ok': False, 'clases': []})
+    return JsonResponse({'ok': True, 'clases': clases})
 
-    clases = list(encoder.classes_)
-    n_clases = len(clases)
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def sena_eliminar(request, nombre):
+    """
+    Elimina una seña del dataset acumulado y re-entrena el modelo sin ella.
+    """
+    global modelo, encoder
+    if not os.path.exists(DATASET_X_PATH) or not os.path.exists(DATASET_Y_PATH):
+        return JsonResponse({'ok': False, 'error': 'No hay dataset guardado'}, status=404)
 
-    # Calcular efectividad por clase usando oob_score si existe,
-    # o estimando con predict sobre training no disponible.
-    # Usamos feature_importances_ normalizado como proxy de confianza
-    # del modelo + distribución de votos por clase en los estimadores.
-    importancias = []
-    for clase_idx in range(n_clases):
-        # Contar cuántos árboles votan por esta clase en promedio
-        votos = sum(
-            1 for est in modelo.estimators_
-            if hasattr(est, 'tree_') and est.tree_.n_node_samples is not None
-        )
-        # Proxy: proporción de impureza que cada árbol asigna a esta clase
-        total_votos_clase = sum(
-            (est.predict_proba([[0] * modelo.n_features_in_])[0][clase_idx]
-             if hasattr(est, 'predict_proba') else 0)
-            for est in modelo.estimators_[:20]  # muestra de 20 árboles para rapidez
-        )
-        importancias.append(total_votos_clase / 20)
+    try:
+        X_all = np.load(DATASET_X_PATH, allow_pickle=True).tolist()
+        y_all = np.load(DATASET_Y_PATH, allow_pickle=True).tolist()
 
-    # Normalizar a porcentajes relativos entre clases (mínimo 60%, máximo 99%)
-    if max(importancias) > 0:
-        minv, maxv = min(importancias), max(importancias)
-        rango = maxv - minv if maxv != minv else 1
-        efectividades = [
-            round(60 + ((v - minv) / rango) * 39, 1)
-            for v in importancias
-        ]
-    else:
-        efectividades = [75.0] * n_clases
+        indices = [i for i, label in enumerate(y_all) if label != nombre]
+        if len(indices) == len(y_all):
+            return JsonResponse({'ok': False, 'error': f'Seña "{nombre}" no encontrada en el dataset'}, status=404)
 
-    resultado = [
-        {'clase': clases[i], 'efectividad': efectividades[i]}
-        for i in range(n_clases)
-    ]
-    resultado.sort(key=lambda x: x['efectividad'], reverse=True)
+        X_filtrado = [X_all[i] for i in indices]
+        y_filtrado = [y_all[i] for i in indices]
 
-    return JsonResponse({'ok': True, 'clases': resultado})
+        if len(set(y_filtrado)) < 1:
+            for path in [MODELO_PATH, ENCODER_PATH, DATASET_X_PATH, DATASET_Y_PATH]:
+                if os.path.exists(path):
+                    os.remove(path)
+            modelo  = None
+            encoder = None
+            return JsonResponse({'ok': True, 'mensaje': f'Seña "{nombre}" eliminada. Modelo reseteado.'})
+
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.preprocessing import LabelEncoder
+
+        max_feat   = max(len(x) for x in X_filtrado)
+        X_filtrado = [x if len(x) == max_feat else x + [0.0] * (max_feat - len(x)) for x in X_filtrado]
+
+        X = np.array(X_filtrado, dtype=np.float32)
+        y = np.array(y_filtrado)
+
+        nuevo_encoder = LabelEncoder()
+        y_enc = nuevo_encoder.fit_transform(y)
+
+        nuevo_modelo = RandomForestClassifier(n_estimators=300, max_depth=None,
+                                              min_samples_leaf=2, random_state=42, n_jobs=-1)
+        nuevo_modelo.fit(X, y_enc)
+
+        with open(MODELO_PATH, 'wb') as f:
+            pickle.dump(nuevo_modelo, f)
+        with open(ENCODER_PATH, 'wb') as f:
+            pickle.dump(nuevo_encoder, f)
+
+        np.save(DATASET_X_PATH, np.array(X_filtrado, dtype=object))
+        np.save(DATASET_Y_PATH, np.array(y_filtrado))
+
+        modelo  = nuevo_modelo
+        encoder = nuevo_encoder
+
+        print(f'[Dataset] 🗑️  Seña "{nombre}" eliminada. Señas restantes: {sorted(list(nuevo_encoder.classes_))}')
+        return JsonResponse({'ok': True, 'clases': sorted(list(nuevo_encoder.classes_))})
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
