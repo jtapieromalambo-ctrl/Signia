@@ -62,17 +62,41 @@
                 <p>Sesión activa</p>
                 <strong>{{ user.username }}</strong>
             </div>
-            <a href="{% url 'perfil' %}" class="dropdown-item">👤 Mi perfil</a>
+            <a href="{% url 'perfil' %}" class="dropdown-item"><svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" 
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                class="lucide lucide-user-round-icon lucide-user-round"><circle cx="12" cy="8" r="5"/>
+                <path d="M20 21a8 8 0 0 0-16 0"/></svg>Mi perfil</a>
             {% if user.discapacidad == 'ninguna' %}
-            <a href="{% url 'editar_perfil' %}" class="dropdown-item">✏️ Editar perfil</a>
+            <a href="{% url 'editar_perfil' %}" class="dropdown-item"><svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1f479f" stroke-width="2" 
+                stroke-linecap="round" stroke-linejoin="round"
+                 class="lucide lucide-user-round-pen-icon lucide-user-round-pen">
+                <path d="M2 21a8 8 0 0 1 10.821-7.487"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+                <circle cx="10" cy="8" r="5"/></svg> Editar perfil</a>
             {% endif %}
-            <a href="{% url 'cambiar_password' %}" class="dropdown-item">🔒 Cambiar contraseña</a>
+            <a href="{% url 'cambiar_password' %}" class="dropdown-item"><svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" 
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/>
+                <rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/>
+            </svg> Cambiar contraseña</a>
             {% if user.is_staff %}
             <div class="dropdown-divider"></div>
-            <a href="{% url 'admin_videos' %}" class="dropdown-item admin">🛡️ Panel Admin</a>
+            <a href="{% url 'admin_videos' %}" class="dropdown-item admin"><svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" 
+                 stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-icon lucide-shield">
+                 <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                </svg> Panel Admin</a>
             {% endif %}
             <div class="dropdown-divider"></div>
-            <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 Cerrar sesión</a>
+            <a href="{% url 'logout' %}" class="dropdown-item danger"><svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                 class="lucide lucide-square-arrow-right-exit-icon lucide-square-arrow-right-exit">
+                 <path d="M10 12h11"/><path d="m17 16 4-4-4-4"/>
+                 <path d="M21 6.344V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1.344"/>
+                </svg> Cerrar sesión</a>
         </div>
     </div>
     {% endif %}
