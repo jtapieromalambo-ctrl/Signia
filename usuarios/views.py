@@ -20,6 +20,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .models import CodigoOTP
 from functools import wraps
+from django.http import JsonResponse
 
 
 # ── FUNCIÓN PARA VALIDAR ADMIN ─────────────────────────
@@ -570,7 +571,7 @@ def eliminar_mensaje_contacto(request, mensaje_id):
     if request.method == 'POST':
         mensaje.delete()
         return JsonResponse({'ok': True})
-    return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
+        return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
 
 #verificacion del corrreo
 def verificar_otp(request):
