@@ -470,4 +470,84 @@
       .features-grid { grid-template-columns: 1fr; }
       .hero-visual { display: none; }
     }
- 
+ /* ── Botón flotante Manual de Usuario ── */
+.fab-manual {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+
+  background: #185FA5;
+  color: #E6F1FB;
+  text-decoration: none;
+
+  border-radius: 50px;
+  padding: 14px;
+
+  box-shadow: 0 4px 16px rgba(24, 95, 165, 0.30);
+  cursor: pointer;
+
+  overflow: hidden;
+  white-space: nowrap;
+
+  transition:
+    padding       0.30s cubic-bezier(.4, 0, .2, 1),
+    gap           0.30s cubic-bezier(.4, 0, .2, 1),
+    box-shadow    0.20s ease,
+    background    0.20s ease;
+}
+
+.fab-manual:hover {
+  padding: 14px 20px 14px 16px;
+  gap: 9px;
+  background: #0C447C;
+  box-shadow: 0 6px 24px rgba(24, 95, 165, 0.40);
+}
+
+.fab-manual:active {
+  transform: scale(0.97);
+}
+
+.fab-manual svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  transition: transform 0.20s ease;
+}
+
+.fab-manual:hover svg {
+  transform: scale(1.10);
+}
+
+.fab-manual__label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition:
+    max-width  0.30s cubic-bezier(.4, 0, .2, 1),
+    opacity    0.25s ease;
+}
+
+.fab-manual:hover .fab-manual__label {
+  max-width: 180px;
+  opacity: 1;
+}
+
+/* ── Responsivo: solo icono en móvil ── */
+@media (max-width: 480px) {
+  .fab-manual:hover {
+    padding: 14px;
+    gap: 0;
+  }
+  .fab-manual:hover .fab-manual__label {
+    max-width: 0;
+    opacity: 0;
+  }
+}
