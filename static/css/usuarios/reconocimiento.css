@@ -10,25 +10,53 @@
 }
 
 body { background: var(--bg); }
-.page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
-.card { background: var(--white);margin-top: -10px;  border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+.page { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1.5rem; }
+.card { background: var(--white); margin-top: -10px; border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; min-height: calc(100vh - 120px); display: flex; flex-direction: column; }
 
 .card-header {
     background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
     padding: 1rem 2.5rem; color: white;
-   
 }
 .card-header {
-
     display: flex;
     gap: 10px;
     align-items: end;
-    
-    margin-bottom: 0.3rem; }
+    margin-bottom: 0.3rem;
+}
 
 .card-header p  { color: rgba(255,255,255,0.82); font-size: 0.95rem; }
 
-.card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;margin-top: -10px; }
+.card-body { padding: 1.25rem 1.5rem; margin-top: -10px; display: flex; flex-direction: column; flex: 1; }
+
+/* ── Layout de dos columnas ── */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 1.25rem;
+    align-items: stretch;
+    flex: 1;
+}
+
+.col-camara {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.col-controles {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.seña-info {
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+
 .card-header  svg{
     background: rgba(255, 255, 255, 0.25);
     border-radius: 10px;
@@ -38,13 +66,13 @@ body { background: var(--bg); }
 }
 .tet h1{
     font-size: 1.8rem; 
-    
 }
 
 .camara-area {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 100%;
+    min-height: 420px;
     background: #0F172A;
     border-radius: 16px;
     overflow: hidden;
@@ -54,7 +82,7 @@ body { background: var(--bg); }
 
 #video {
     width: 100%; height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 16px;
     transform: scaleX(-1);
 }
@@ -83,15 +111,15 @@ body { background: var(--bg); }
 
 .resultado {
     background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
-    padding: 1rem 1.25rem; min-height: 60px;
+    padding: 1rem 1.25rem; min-height: 80px;
+    flex: 1;
     font-size: 1rem; color: var(--text-muted); font-style: italic;
-    margin-top: -10px;
 }
 .resultado.activo { color: var(--text-dark); font-style: normal; font-weight: 500; }
 
 #seña-actual {
     font-size: 2.5rem; font-weight: 800; color: var(--blue-primary);
-    text-align: center; min-height: 50px; letter-spacing: 1px; margin-top: -20px;
+    text-align: center; min-height: 50px; letter-spacing: 1px; margin-top: 0;
 }
 #confianza-texto { font-size: 0.85rem; color: var(--text-muted); text-align: center; }
 #estado-texto    { font-size: 0.85rem; color: var(--text-muted); text-align: center; font-style: italic; }
@@ -108,15 +136,30 @@ body { background: var(--bg); }
     font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
     box-shadow: 0 4px 14px rgba(37,99,235,0.45);
     transition: transform 0.15s, box-shadow 0.15s;
-    margin-top: -15px;
 }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
 .btn.rojo  { background: linear-gradient(135deg, #DC2626, #EF4444); box-shadow: 0 4px 14px rgba(220,38,38,0.35); }
+.btn.btn-limpiar { background: linear-gradient(135deg,#64748B,#94A3B8); box-shadow: none; }
 
-.botones { display: flex; 
-           justify-content: space-between;
-           align-items: center; 
-           gap: 1rem; }
+.botones {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.botones .pill-toggle {
+    order: -1;
+    flex: 0 0 100%;
+    align-self: center;
+    margin: 0 auto;
+}
+
+.botones .btn {
+    flex: 1 1 calc(50% - 0.375rem);
+    text-align: center;
+}
 
 /* ── Pill toggle ─────────────────────────────────────── */
 .pill-toggle {
@@ -187,6 +230,7 @@ body { background: var(--bg); }
 
     .card {
         border-radius: 16px;
+        min-height: unset;
     }
 
     .card-header {
@@ -211,7 +255,17 @@ body { background: var(--bg); }
 
     .card-body {
         padding: 0.85rem;
+    }
+
+    .layout-grid {
+        grid-template-columns: 1fr;
         gap: 0.85rem;
+    }
+
+    .camara-area {
+        height: auto;
+        aspect-ratio: 4 / 3;
+        min-height: unset;
     }
 
     #seña-actual {
@@ -219,17 +273,18 @@ body { background: var(--bg); }
     }
 
     .botones {
+        flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
         gap: 0.65rem;
     }
 
-    .btn {
+    .botones .btn {
         flex: 1 1 calc(50% - 0.65rem);
         min-width: 120px;
         padding: 0.75rem 1rem;
         font-size: 0.88rem;
-        text-align: center;
+        width: auto;
     }
 
     .pill-toggle {
@@ -256,6 +311,7 @@ body { background: var(--bg); }
 
     .card {
         border-radius: 20px;
+        min-height: unset;
     }
 
     .card-header {
@@ -275,18 +331,30 @@ body { background: var(--bg); }
 
     .card-body {
         padding: 1rem 1.25rem;
+    }
+
+    .layout-grid {
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
 
+    .camara-area {
+        height: auto;
+        aspect-ratio: 4 / 3;
+        min-height: unset;
+    }
+
     .botones {
+        flex-direction: row;
         flex-wrap: wrap;
         gap: 0.75rem;
     }
 
-    .btn {
+    .botones .btn {
         flex: 1 1 auto;
         padding: 0.8rem 1.25rem;
         font-size: 0.92rem;
+        width: auto;
     }
 }
 
@@ -307,21 +375,29 @@ body { background: var(--bg); }
     .tet h1 {
         font-size: 1.55rem;
     }
+
+    .layout-grid {
+        grid-template-columns: 3fr 2fr;
+    }
+
+    .camara-area {
+        min-height: 320px;
+    }
 }
 
 /* ── PC Windows / MacBook Pro 15–16" (1280px – 1535px) ─── */
 @media (min-width: 1280px) and (max-width: 1535px) {
     .page {
-        max-width: 920px;
-        padding: 2.25rem 1.5rem;
+        max-width: 1280px;
+        padding: 1.5rem 2rem;
     }
 }
 
 /* ── iMac / pantallas grandes ≥ 1536px ─────────────────── */
 @media (min-width: 1536px) {
     .page {
-        max-width: 1020px;
-        padding: 2.5rem 1.5rem;
+        max-width: 1400px;
+        padding: 2rem 2.5rem;
     }
 
     .card-header {
@@ -351,6 +427,10 @@ body { background: var(--bg); }
 @media (max-height: 500px) and (max-width: 900px) {
     .page {
         padding: 0.5rem 0.75rem;
+    }
+
+    .card {
+        min-height: unset;
     }
 
     .card-header {
