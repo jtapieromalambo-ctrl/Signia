@@ -144,8 +144,8 @@ def buscar_video(request):
 
         # ── PROCESAMIENTO CON CAPA GRAMATICAL LSC ────────────────────────────
         if palabras_texto and palabras_texto.strip():
-            # Limpieza básica (solo para logging; la IA recibe el texto original)
-            texto_para_ia = palabras_texto.strip().split('.')[0].strip()
+            # La IA recibe el texto original completo
+            texto_para_ia = palabras_texto.strip()
             print("📝 Texto para IA LSC:", texto_para_ia)
 
             # Obtener vocabulario disponible en BD para detección de faltantes
