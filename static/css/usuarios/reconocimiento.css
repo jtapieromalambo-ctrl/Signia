@@ -47,7 +47,7 @@ body { background: var(--bg); }
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    justify-content: space-between;
+    justify-content: flex-start;
     height: 100%;
 }
 

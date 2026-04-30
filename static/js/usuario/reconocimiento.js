@@ -20,10 +20,20 @@ let framesSinMano   = 0;
 let handLandmarker  = null;
 let mpListo         = false;
 
+// Variables para ventana deslizante (sliding window)
+let ultimaSenaDetectada = '';
+let cooldownActivo = 0;
+let procesando = false;
+let framesAcumuladosDesdePred = 0;
+
 const FRAMES_SIN_MANO_MAX = 8;
-const MIN_FRAMES_SEÑA     = 8;
+const MIN_FRAMES_SEÑA     = 10;
+const MAX_BUFFER_SIZE     = 30; // Ventana de ~1.5s
+const INTERVALO_PRED      = 12; // Predecir cada ~0.6s
+const COOLDOWN_FRAMES     = 18; // Esperar ~0.9s después de una detección
 const INTERVALO_MS        = 50;
 const JPEG_QUALITY        = 0.4;
+const UMBRAL_CONFIANZA    = 75; // Confianza mínima para de corrido
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
 async function iniciarMediaPipe() {
@@ -167,27 +177,50 @@ function tick(timestamp) {
     if (hayMano) {
         grabando = true;
         framesSinMano = 0;
+        
+        // Ventana deslizante: agregamos el frame y quitamos el más viejo si excede el máximo
         secuenciaFrames.push(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
-        badgeSeña.textContent   = 'Grabando... ' + secuenciaFrames.length + ' frames';
-        estadoTexto.textContent = 'Grabando seña — mantén el movimiento';
+        if (secuenciaFrames.length > MAX_BUFFER_SIZE) {
+            secuenciaFrames.shift();
+        }
+        
+        badgeSeña.textContent   = 'Capturando...';
+        estadoTexto.textContent = 'Traduciendo de corrido...';
+
+        // Manejo de cooldown para no repetir la misma seña muy rápido
+        if (cooldownActivo > 0) {
+            cooldownActivo--;
+        } else {
+            framesAcumuladosDesdePred++;
+            // Predecir periódicamente si tenemos suficientes frames
+            if (framesAcumuladosDesdePred >= INTERVALO_PRED && secuenciaFrames.length >= MIN_FRAMES_SEÑA && !procesando) {
+                framesAcumuladosDesdePred = 0;
+                procesarSecuencia([...secuenciaFrames]); // Usamos copia del array
+            }
+        }
     } else {
         if (grabando) {
             framesSinMano++;
             if (framesSinMano >= FRAMES_SIN_MANO_MAX) {
+                // Hacer una última predicción si bajó la mano y quedó algo sin evaluar
+                if (secuenciaFrames.length >= MIN_FRAMES_SEÑA && !procesando && framesAcumuladosDesdePred > 0) {
+                    procesarSecuencia([...secuenciaFrames]);
+                }
+                
+                // Reset de la ventana deslizante al bajar la mano
                 grabando = false;
-                const frames = secuenciaFrames.slice();
                 secuenciaFrames = [];
                 framesSinMano   = 0;
-                if (frames.length >= MIN_FRAMES_SEÑA) {
-                    procesarSecuencia(frames);
-                } else {
-                    estadoTexto.textContent = 'Seña muy corta — intenta de nuevo';
-                    badgeSeña.textContent   = 'Esperando mano...';
-                }
+                framesAcumuladosDesdePred = 0;
+                cooldownActivo = 0;
+                ultimaSenaDetectada = ''; // Permite repetir la misma seña si vuelve a subir la mano
+                
+                estadoTexto.textContent = 'Manos bajas — puedes continuar cuando quieras';
+                badgeSeña.textContent   = 'Esperando mano...';
             }
         } else {
             badgeSeña.textContent   = 'Esperando mano...';
-            estadoTexto.textContent = 'Listo — muestra tu mano y haz la seña';
+            estadoTexto.textContent = 'Listo — muestra tu mano para firmar';
         }
     }
 }
@@ -204,15 +237,25 @@ function detener() {
     btnCamara.textContent      = 'Iniciar cámara';
     btnCamara.classList.remove('rojo');
     btnCamara.onclick = iniciar;
-    secuenciaFrames = []; grabando = false; framesSinMano = 0;
+    
+    // Resetear variables
+    secuenciaFrames = []; 
+    grabando = false; 
+    framesSinMano = 0;
+    ultimaSenaDetectada = '';
+    cooldownActivo = 0;
+    procesando = false;
+    framesAcumuladosDesdePred = 0;
+    
     speechSynthesis.cancel();
 }
 
 // ── Predicción ───────────────────────────────────────────────────────
 async function procesarSecuencia(frames) {
+    if (procesando) return;
+    procesando = true;
+
     try {
-        estadoTexto.textContent = 'Analizando ' + frames.length + ' frames...';
-        badgeSeña.textContent   = 'Analizando...';
         const framesAEnviar = submuestrear(frames, 12);
 
         const response = await fetch('/reconocimientos/predecir/', {
@@ -221,38 +264,41 @@ async function procesarSecuencia(frames) {
             body:    JSON.stringify({ frames: framesAEnviar }),
         });
         const data = await response.json();
-        console.log('[DEBUG] predecir:', data);
+        console.log('[DEBUG] predecir continuo:', data);
 
         const sena = data.seña || '';
 
+        // Modal de groserías
         if (sena && typeof GroseriasModal !== 'undefined' && GroseriasModal.verificarSena(sena)) {
             GroseriasModal.mostrar(sena, 'sena');
+            procesando = false;
             return;
         }
 
-        if (sena && data.confianza >= 70) {
-            señaActual.textContent     = sena.toUpperCase();
-            confianzaTexto.textContent = 'Confianza: ' + data.confianza + '%';
-            estadoTexto.textContent    = 'Seña detectada: ' + sena;
-            badgeSeña.textContent      = sena.toUpperCase();
-            if (modoVoz) {
-                hablar(sena);
-            } else {
-                textoAcumulado += (textoAcumulado ? ' ' : '') + sena;
-                resultado.classList.add('activo');
-                resultado.innerHTML = '<div id="historial">' + textoAcumulado + '</div>';
+        if (sena && data.confianza >= UMBRAL_CONFIANZA) {
+            // Solo agregar si es una seña diferente a la última detectada en esta ráfaga
+            if (sena !== ultimaSenaDetectada) {
+                ultimaSenaDetectada = sena;
+                cooldownActivo = COOLDOWN_FRAMES; // Evitar detecciones espurias durante la transición
+                
+                señaActual.textContent     = sena.toUpperCase();
+                confianzaTexto.textContent = 'Confianza: ' + data.confianza + '%';
+                
+                if (modoVoz) {
+                    hablar(sena);
+                } else {
+                    textoAcumulado += (textoAcumulado ? ' ' : '') + sena;
+                    resultado.classList.add('activo');
+                    resultado.innerHTML = '<div id="historial">' + textoAcumulado + '</div>';
+                }
             }
-        } else {
-            señaActual.textContent     = '--';
-            confianzaTexto.textContent = 'Confianza: --';
-            estadoTexto.textContent    = data.confianza
-                ? 'Confianza baja (' + data.confianza + '%) — intenta de nuevo'
-                : 'No se reconoció la seña — intenta de nuevo';
-            badgeSeña.textContent = 'Esperando mano...';
         }
+        // Nota: Si no se reconoce nada o es la misma seña, simplemente se ignora y el loop continúa.
+        // No borramos la seña anterior de la interfaz para no parpadear visualmente.
     } catch (err) {
         console.error('[DEBUG] Error:', err);
-        estadoTexto.textContent = 'Error al procesar: ' + err.message;
+    } finally {
+        procesando = false;
     }
 }
 
@@ -267,6 +313,12 @@ function limpiarHistorial() {
     textoAcumulado  = '';
     secuenciaFrames = [];
     grabando        = false;
+    framesSinMano   = 0;
+    ultimaSenaDetectada = '';
+    cooldownActivo = 0;
+    procesando = false;
+    framesAcumuladosDesdePred = 0;
+    
     resultado.classList.remove('activo');
     resultado.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">El texto traducido aparecerá aquí...</span>';
     señaActual.textContent     = '--';
