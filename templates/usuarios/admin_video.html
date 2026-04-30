@@ -192,7 +192,14 @@
                             <h4>Grabaciones guardadas</h4>
                             <span class="cam-saved-count" id="camSavedCount">0</span>
                         </div>
-                        <div id="btn-subir-cam-wrap" style="display:none;">
+                        <div id="btn-subir-cam-wrap" style="display:none; align-items: center; gap: 0.75rem;">
+                            <!-- Barra de renombrado en lote -->
+                            <div class="cam-batch-actions" id="camBatchActions" style="display:none; align-items:center; gap:0.5rem; background:#f1f5f9; padding:0.35rem 0.75rem; border-radius:0.5rem; border:1px solid #e2e8f0;">
+                                <input type="checkbox" id="camSelectAll" onchange="toggleSelectAllCam(this.checked)" title="Seleccionar todos" style="cursor:pointer; width:16px; height:16px;">
+                                <input type="text" id="camBatchName" placeholder="Nombre en lote..." style="padding:0.3rem 0.5rem; border:1px solid #cbd5e1; border-radius:0.25rem; font-size:0.85rem; width:130px; outline:none;">
+                                <button class="btn-ghost" style="padding:0.3rem 0.75rem; font-size:0.85rem;" onclick="aplicarNombreLote()">Aplicar</button>
+                            </div>
+                            
                             <button class="btn-primary cam-btn-subir-all" onclick="subirGrabacionesCamara()">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/>
@@ -257,7 +264,15 @@
 
         <div class="section-title-row">
             <h2>Videos subidos</h2>
-            <div class="search-wrap">
+            
+            <div id="recBatchActions" style="display:none; align-items:center; gap:0.5rem; background:#f1f5f9; padding:0.35rem 0.75rem; border-radius:0.5rem; border:1px solid #e2e8f0; margin-left:1rem;">
+                <input type="text" id="recBatchName" placeholder="Nuevo nombre..." style="padding:0.3rem 0.5rem; border:1px solid #cbd5e1; border-radius:0.25rem; font-size:0.85rem; width:130px; outline:none;">
+                <button class="btn-ghost" style="padding:0.3rem 0.75rem; font-size:0.85rem;" onclick="renombrarLoteReconocimiento()" title="Renombrar los seleccionados">Renombrar</button>
+                <div style="width:1px; height:1rem; background:#cbd5e1; margin:0 0.25rem;"></div>
+                <button class="btn-danger-sm" style="padding:0.3rem 0.75rem; font-size:0.85rem;" onclick="eliminarLoteReconocimiento()" title="Eliminar los seleccionados">Eliminar</button>
+            </div>
+
+            <div class="search-wrap" style="margin-left:auto;">
                 <input type="text" class="search-input" placeholder="Buscar seña..."
                        oninput="filtrarTabla('tabla-reconocimiento', this.value)">
             </div>
@@ -267,6 +282,7 @@
             <table class="video-table" id="tabla-reconocimiento">
                 <thead>
                     <tr>
+                        <th style="width: 40px; text-align: center;"><input type="checkbox" id="recSelectAll" onchange="toggleSelectAllRec(this.checked)" style="cursor:pointer; width:16px; height:16px;"></th>
                         <th>Seña (label)</th>
                         <th>Fecha</th>
                         <th>Estado</th>
@@ -277,7 +293,8 @@
                     {% for v in videos_reconocimiento %}
                     {% with fecha_r=v.creado|date:"d/m/Y H:i" %}
                     <tr data-id="{{ v.id }}">
-                        <td><span class="label-chip">{{ v.label }}</span></td>
+                        <td style="text-align: center;"><input type="checkbox" class="rec-checkbox" value="{{ v.id }}" onchange="verificarSelectAllRec()" style="cursor:pointer; width:16px; height:16px;"></td>
+                        <td><span class="label-chip" id="rec-label-{{ v.id }}">{{ v.label }}</span></td>
                         <td class="date-cell">{{ fecha_r }}</td>
                         <td>
                             {% if v.procesado %}
@@ -308,7 +325,7 @@
                     {% endwith %}
                     {% empty %}
                     <tr id="empty-reconocimiento">
-                        <td colspan="4" class="empty-cell">No hay videos subidos aún</td>
+                        <td colspan="5" class="empty-cell">No hay videos subidos aún</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -695,8 +712,8 @@ function cerrarModal() {
 }
 
 async function confirmarEliminar() {
-    const { tipo, id, btn } = _delState;
-    if (!tipo || !id) return;
+    const { tipo, id, btn, ids } = _delState;
+    if (!tipo || (!id && !ids)) return;
 
     const btnConfirm = document.getElementById('delBtnConfirm');
     btnConfirm.classList.add('loading');
@@ -709,10 +726,28 @@ async function confirmarEliminar() {
                 'DELETE',
                 () => {
                     document.querySelector(`#tabla-reconocimiento tr[data-id="${id}"]`)?.remove();
-                    actualizarContador('count-reconocimiento', -1);
+                    // NO actualizamos contador de count-reconocimiento aquí, ya no representa los videos subidos
                     mostrarToastGlobal('✓ Video eliminado correctamente');
                 }
             );
+
+        } else if (tipo === 'reconocimiento_lote') {
+            const promesas = ids.map(videoId => {
+                return fetch(`/reconocimientos/admin-videos/reconocimiento/eliminar/${videoId}/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': CSRF }
+                }).then(r => r.json()).then(data => {
+                    if (data.ok) {
+                        document.querySelector(`#tabla-reconocimiento tr[data-id="${videoId}"]`)?.remove();
+                    }
+                });
+            });
+            await Promise.all(promesas);
+            mostrarToastGlobal(`✓ ${ids.length} video(s) eliminado(s) correctamente`);
+            
+            // Refrescar UI de la barra de lote
+            document.getElementById('recSelectAll').checked = false;
+            verificarSelectAllRec();
 
         } else if (tipo === 'traductor') {
             await _eliminarFetch(
@@ -857,8 +892,15 @@ async function cargarSenasEntrenadas(mostrarSpinner = false) {
         const data = await res.json();
         if (!data.ok || !data.clases.length) {
             tbody.innerHTML = `<tr><td colspan="4" class="empty-cell">No hay modelo entrenado aún</td></tr>`;
+            const countEl = document.getElementById('count-reconocimiento');
+            if (countEl) countEl.textContent = '0';
             return;
         }
+        
+        // Actualizar el contador superior
+        const countEl = document.getElementById('count-reconocimiento');
+        if (countEl) countEl.textContent = data.clases.length;
+        
         tbody.innerHTML = data.clases.map(c => {
             const pct   = c.efectividad;
             const nivel = pct >= 85 ? ['badge-ok',      'Alta']
@@ -1001,7 +1043,6 @@ async function subirReconocimiento() {
     await Promise.all(promesas);
     progressBar.style.width = '100%';
     progressLbl.textContent = `Listo — ${subidos} subidos${errores ? ', '+errores+' errores' : ''}`;
-    actualizarContador('count-reconocimiento', subidos);
     mostrarToast('toast-reconocimiento', `✅ ${subidos} video${subidos!==1?'s':''} subido${subidos!==1?'s':''} correctamente`);
     setTimeout(() => { limpiarPreview('reconocimiento'); progressWrap.style.display='none'; progressBar.style.width='0%'; }, 3000);
 }
@@ -1019,7 +1060,8 @@ function agregarFilaReconocimiento(v) {
     const tr = document.createElement('tr');
     tr.setAttribute('data-id', v.id);
     tr.innerHTML = `
-        <td><span class="label-chip">${v.label}</span></td>
+        <td style="text-align: center;"><input type="checkbox" class="rec-checkbox" value="${v.id}" onchange="verificarSelectAllRec()" style="cursor:pointer; width:16px; height:16px;"></td>
+        <td><span class="label-chip" id="rec-label-${v.id}">${v.label}</span></td>
         <td class="date-cell">${v.creado}</td>
         <td><span class="badge badge-new">Nuevo</span></td>
         <td>
@@ -1032,6 +1074,122 @@ function agregarFilaReconocimiento(v) {
         </td>
     `;
     tbody.prepend(tr);
+}
+
+// ── Lógica de Selección y Lote para Reconocimiento ──
+function toggleSelectAllRec(checked) {
+    document.querySelectorAll('.rec-checkbox').forEach(cb => {
+        if (cb.closest('tr').style.display !== 'none') { // Solo afectar las visibles si hay búsqueda
+            cb.checked = checked;
+        }
+    });
+    verificarSelectAllRec();
+}
+
+function verificarSelectAllRec() {
+    const checkboxes = document.querySelectorAll('.rec-checkbox');
+    let totalVisibles = 0;
+    let marcadosVisibles = 0;
+    
+    checkboxes.forEach(cb => {
+        if (cb.closest('tr').style.display !== 'none') {
+            totalVisibles++;
+            if (cb.checked) marcadosVisibles++;
+        }
+    });
+    
+    const selectAll = document.getElementById('recSelectAll');
+    const batchActions = document.getElementById('recBatchActions');
+    
+    if (totalVisibles === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        batchActions.style.display = 'none';
+    } else if (marcadosVisibles === totalVisibles) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+        batchActions.style.display = 'flex';
+    } else if (marcadosVisibles === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        batchActions.style.display = 'none';
+    } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+        batchActions.style.display = 'flex';
+    }
+}
+
+async function renombrarLoteReconocimiento() {
+    const nuevoNombre = document.getElementById('recBatchName').value.trim();
+    if (!nuevoNombre) {
+        mostrarToastGlobal('⚠️ Escribe el nuevo nombre de seña', true);
+        return;
+    }
+    const checkboxes = document.querySelectorAll('.rec-checkbox:checked');
+    if (!checkboxes.length) return;
+    
+    // Cambiar texto a 'Renombrando...' visualmente en los chips
+    checkboxes.forEach(cb => {
+        const id = cb.value;
+        const chip = document.getElementById(`rec-label-${id}`);
+        if (chip) chip.style.opacity = '0.5';
+    });
+    
+    const promesas = Array.from(checkboxes).map(cb => {
+        const id = cb.value;
+        return fetch(`/reconocimientos/admin-videos/reconocimiento/editar/${id}/`, {
+            method: 'PUT',
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ label: nuevoNombre })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                const chip = document.getElementById(`rec-label-${id}`);
+                if (chip) {
+                    chip.textContent = data.label;
+                    chip.style.opacity = '1';
+                    chip.style.backgroundColor = '#dcfce7';
+                    setTimeout(() => chip.style.backgroundColor = '', 1000);
+                }
+            }
+        });
+    });
+    
+    await Promise.all(promesas);
+    mostrarToastGlobal(`✅ Se renombraron ${checkboxes.length} video(s)`);
+    document.getElementById('recBatchName').value = '';
+    document.getElementById('recSelectAll').checked = false;
+    toggleSelectAllRec(false);
+}
+
+function eliminarLoteReconocimiento() {
+    const checkboxes = document.querySelectorAll('.rec-checkbox:checked');
+    if (!checkboxes.length) return;
+    
+    // Usamos el modal de eliminación global pasándole una configuración especial para lote
+    _delState = { tipo: 'reconocimiento_lote', ids: Array.from(checkboxes).map(cb => cb.value) };
+    
+    document.getElementById('delModalTitle').textContent  = 'Eliminar múltiples videos';
+    document.getElementById('delModalDesc').textContent   = 'Los videos y sus datos de entrenamiento serán eliminados permanentemente.';
+    document.getElementById('delRecordName').textContent  = `${checkboxes.length} videos seleccionados`;
+    document.getElementById('delRecordSub').textContent   = 'Esta acción vaciará los registros seleccionados';
+
+    const btnConfirm = document.getElementById('delBtnConfirm');
+    btnConfirm.classList.remove('loading');
+    btnConfirm.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;stroke:white;">
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+            <path d="M3 6h18"/>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Sí, eliminar
+    `;
+
+    document.getElementById('delOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('delBtnConfirm').focus(), 300);
 }
 
 function editarTraductor(id, nombre) {
@@ -1258,10 +1416,12 @@ function renderSavedList() {
     const empty = document.getElementById('camSavedEmpty');
     const count = document.getElementById('camSavedCount');
     const btnW  = document.getElementById('btn-subir-cam-wrap');
+    const batchActions = document.getElementById('camBatchActions');
 
     count.textContent = _camSavedBlobs.length;
     empty.style.display = _camSavedBlobs.length ? 'none' : 'flex';
-    btnW.style.display  = _camSavedBlobs.length ? 'block' : 'none';
+    btnW.style.display  = _camSavedBlobs.length ? 'flex' : 'none';
+    batchActions.style.display = _camSavedBlobs.length > 1 ? 'flex' : 'none';
 
     list.innerHTML = '';
     _camSavedBlobs.forEach((item, idx) => {
@@ -1271,6 +1431,7 @@ function renderSavedList() {
         const sizeMB = (item.blob.size / 1024 / 1024).toFixed(2);
         div.innerHTML = `
             <div class="cam-saved-item-info">
+                <input type="checkbox" class="cam-saved-checkbox" value="${idx}" style="margin-right: 0.75rem; cursor:pointer; width:16px; height:16px;" onchange="verificarSelectAllCam()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 10l4.553-2.277A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/>
                     <rect x="3" y="6" width="12" height="12" rx="2"/>
@@ -1299,6 +1460,65 @@ function renderSavedList() {
         `;
         list.appendChild(div);
     });
+    
+    document.getElementById('camSelectAll').checked = false;
+}
+
+function toggleSelectAllCam(checked) {
+    document.querySelectorAll('.cam-saved-checkbox').forEach(cb => cb.checked = checked);
+}
+
+function verificarSelectAllCam() {
+    const total = document.querySelectorAll('.cam-saved-checkbox').length;
+    const marcados = document.querySelectorAll('.cam-saved-checkbox:checked').length;
+    const selectAll = document.getElementById('camSelectAll');
+    
+    if (total === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    } else if (marcados === total) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+    } else if (marcados === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+    }
+}
+
+function aplicarNombreLote() {
+    const nuevoNombre = document.getElementById('camBatchName').value.trim();
+    if (!nuevoNombre) {
+        mostrarToastGlobal('⚠️ Escribe un nombre para aplicar', true);
+        return;
+    }
+    const checkboxes = document.querySelectorAll('.cam-saved-checkbox:checked');
+    if (checkboxes.length === 0) {
+        mostrarToastGlobal('⚠️ Selecciona al menos un video', true);
+        return;
+    }
+    checkboxes.forEach(cb => {
+        const idx = parseInt(cb.value);
+        if (_camSavedBlobs[idx]) {
+            _camSavedBlobs[idx].nombre = nuevoNombre;
+            const nameInput = document.getElementById(`cam-name-${idx}`);
+            if (nameInput) nameInput.value = nuevoNombre;
+            
+            // Efecto visual de resaltado temporal
+            nameInput.style.backgroundColor = '#dcfce7';
+            nameInput.style.transition = 'background-color 0.5s ease';
+            setTimeout(() => nameInput.style.backgroundColor = '', 500);
+        }
+    });
+    
+    // Limpiar
+    document.getElementById('camBatchName').value = '';
+    document.getElementById('camSelectAll').checked = false;
+    document.getElementById('camSelectAll').indeterminate = false;
+    toggleSelectAllCam(false);
+    mostrarToastGlobal('✅ Nombre aplicado a los videos seleccionados');
 }
 
 function previsualizarCam(idx) {
@@ -1394,7 +1614,6 @@ async function subirGrabacionesCamara() {
     await Promise.all(promesas);
     progBar.style.width = '100%';
     progLbl.textContent = `Listo — ${subidos} subidos${errores ? ', '+errores+' errores' : ''}`;
-    actualizarContador('count-reconocimiento', subidos);
     mostrarToast('toast-reconocimiento', `✅ ${subidos} grabación${subidos!==1?'es':''} subida${subidos!==1?'s':''}`);
     setTimeout(() => {
         // Limpiar solo los subidos con éxito
@@ -1420,15 +1639,13 @@ async function verificarEstado() {
             label.textContent = '✅ Modelo entrenado y cargado en memoria'; label.className = 'train-status-label ok';
             btn.disabled = false;
 
-            // Borrar todas las filas de la tabla de reconocimiento y resetear contador
+            // Borrar todas las filas de la tabla de videos pendientes
             const tbody = document.querySelector('#tabla-reconocimiento tbody');
             if (tbody) {
-                tbody.innerHTML = `<tr id="empty-reconocimiento"><td colspan="4" class="empty-cell">No hay videos subidos aún</td></tr>`;
+                tbody.innerHTML = `<tr id="empty-reconocimiento"><td colspan="5" class="empty-cell">No hay videos subidos aún</td></tr>`;
             }
-            const countEl = document.getElementById('count-reconocimiento');
-            if (countEl) countEl.textContent = '0';
 
-            // Recargar tabla de señas entrenadas
+            // Recargar tabla de señas entrenadas (esto ahora actualizará el contador automáticamente)
             cargarSenasEntrenadas(true);
 
             setTimeout(() => { document.getElementById('trainStatusWrap').style.display='none'; bar.style.width='0%'; label.className='train-status-label idle'; }, 5000);

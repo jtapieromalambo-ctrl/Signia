@@ -12,9 +12,11 @@ urlpatterns = [
     # ── Panel admin ───────────────────────────────────────────────
     path('admin-videos/', views.admin_videos, name='admin_videos'),
 
-    # Reconocimiento: subir y eliminar
+    # Reconocimiento: subir, editar y eliminar
     path('admin-videos/reconocimiento/subir/',
          views.reconocimiento_subir, name='reconocimiento_subir'),
+    path('admin-videos/reconocimiento/editar/<int:video_id>/',
+         views.reconocimiento_editar, name='reconocimiento_editar'),
     path('admin-videos/reconocimiento/eliminar/<int:video_id>/',
          views.reconocimiento_eliminar, name='reconocimiento_eliminar'),
 
