@@ -22,7 +22,8 @@
                  </div>
         </div>
         <div class="card-body">
-
+          <div class="layout-grid">
+            <div class="col-camara">
             <div class="camara-area">
                 <div id="placeholder">
                     <span class="emoji"><svg xmlns="http://www.w3.org/2000/svg" 
@@ -40,8 +41,10 @@
                 <canvas id="canvas" width="320" height="240"></canvas>
                 <div id="badge-seña">Detectando...</div>
             </div>
+            </div><!-- /col-camara -->
 
-            <div style="text-align:center;">
+            <div class="col-controles">
+            <div class="seña-info">
                 <div id="seña-actual">--</div>
                 <div id="confianza-texto">Confianza: --</div>
                 <div id="estado-texto">Presiona "Iniciar cámara" para comenzar</div>
@@ -67,12 +70,15 @@
                          <path d="M19.8 17.8a7.5 7.5 0 0 0 .003-10.603"/><path d="M17 15a3.5 3.5 0 0 0-.025-4.975"/></svg></span>
                 </div>
 
-                <button class="btn" onclick="limpiarHistorial()" style="background: linear-gradient(135deg,#64748B,#94A3B8); box-shadow:none;">Limpiar texto</button>
+                <button class="btn btn-limpiar" onclick="limpiarHistorial()">Limpiar texto</button>
             </div>
 
             <div class="resultado" id="resultado">
                 <span style="color:var(--text-muted); font-style:italic;">El texto traducido aparecerá aquí...</span>
             </div>
+
+            </div><!-- /col-controles -->
+          </div><!-- /layout-grid -->
 
         </div>
     </div>

@@ -379,6 +379,71 @@ RESPONDE ÚNICAMENTE con JSON válido. Sin texto extra, sin markdown, sin backti
 """.strip()
 
 
+# ─── Preprocesador de texto hablado ──────────────────────────────────────────
+# El reconocimiento de voz (Web Speech API / Whisper) entrega texto sin
+# puntuación ni mayúsculas. Esta función infiere signos de pregunta y
+# capitalización para que el LLM pueda aplicar correctamente los módulos
+# 4 (verbos), 5 (negación) y 6 (preguntas) del sistema prompt LSC.
+
+_PALABRAS_INTERROGATIVAS = {
+    'como', 'cómo', 'donde', 'dónde', 'cuando', 'cuándo',
+    'quien', 'quién', 'quienes', 'quiénes', 'que', 'qué',
+    'cuanto', 'cuánto', 'cuanta', 'cuánta', 'cuantos', 'cuántos',
+    'por que', 'por qué',
+}
+
+_PALABRAS_SALUDOS = {
+    'hola', 'buenos dias', 'buenos días', 'buenas tardes', 'buenas noches',
+    'buen dia', 'buen día', 'buenas',
+}
+
+def _preprocesar_texto_hablado(texto: str) -> str:
+    """
+    Normaliza texto proveniente de reconocimiento de voz:
+    - Capitaliza primera letra de la oración.
+    - Infiere signos de pregunta (¿...?) cuando hay pronombres interrogativos
+      sin puntuación, para activar los módulos de preguntas del LLM.
+    - Separa saludos de preguntas encadenadas (ej: "hola cómo estás" →
+      "Hola. ¿Cómo estás?") para que cada cláusula se procese correctamente.
+    """
+    texto = texto.strip()
+    if not texto:
+        return texto
+
+    # Capitalizar primera letra preservando el resto
+    texto = texto[0].upper() + texto[1:]
+
+    # Si ya tiene signos de pregunta o exclamación, no tocar
+    if any(c in texto for c in '¿?¡!'):
+        return texto
+
+    texto_lower = texto.lower()
+
+    # Detectar si contiene palabra interrogativa sin signo de pregunta
+    tiene_interrogativa = any(
+        re.search(rf'\b{p}\b', texto_lower)
+        for p in _PALABRAS_INTERROGATIVAS
+    )
+
+    if not tiene_interrogativa:
+        return texto
+
+    # Separar saludo inicial del resto (ej: "Hola cómo estás" → "Hola. ¿Cómo estás?")
+    for saludo in sorted(_PALABRAS_SALUDOS, key=len, reverse=True):
+        patron = rf'^({re.escape(saludo)})[,\s]+(.+)$'
+        m = re.match(patron, texto_lower)
+        if m:
+            longitud_saludo = len(m.group(1))
+            parte_saludo = texto[:longitud_saludo]
+            parte_pregunta = texto[longitud_saludo:].lstrip(', ').strip()
+            if parte_pregunta:
+                parte_pregunta = parte_pregunta[0].upper() + parte_pregunta[1:]
+                return f"{parte_saludo}. ¿{parte_pregunta}?"
+
+    # Si no hay saludo pero sí interrogativa, envolver en ¿...?
+    return f"¿{texto}?"
+
+
 # ─── Función principal ────────────────────────────────────────────────────────
 def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None = None) -> dict:
     """
@@ -401,37 +466,80 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
     if not texto_espanol or not texto_espanol.strip():
         return _respuesta_vacia()
 
+    # ── Preprocesar texto hablado (sin puntuación) ────────────────────────────
+    texto_procesado = _preprocesar_texto_hablado(texto_espanol)
+
     # Construir contexto de vocabulario disponible
     contexto_vocab = ""
     if vocabulario_disponible:
         vocab_str = ", ".join(v.upper() for v in vocabulario_disponible[:200])
         contexto_vocab = f"\n\nVOCABULARIO DISPONIBLE EN LA BASE DE DATOS (señas que SÍ existen):\n{vocab_str}\n\nMarca en missing_candidates solo las palabras que NO estén en ese vocabulario."
 
-    user_prompt = f"Convierte al orden gramatical LSC:\n\"{texto_espanol.strip()}\"{contexto_vocab}"
+    # Incluir el texto original (sin procesar) como referencia
+    nota_origen = ""
+    if texto_procesado != texto_espanol.strip():
+        nota_origen = f"\n\n(Texto original de reconocimiento de voz: \"{texto_espanol.strip()}\")"
 
-    try:
-        client = _get_client()
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",   # Modelo recomendado de Groq
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT_LSC},
-                {"role": "user",   "content": user_prompt},
-            ],
-            temperature=0.1,          # Bajo para respuestas consistentes
-            max_tokens=800,
-            response_format={"type": "json_object"},
-        )
+    user_prompt = (
+        f"Convierte al orden gramatical LSC:\n\"{texto_procesado}\""
+        f"{nota_origen}{contexto_vocab}"
+    )
 
-        raw = response.choices[0].message.content.strip()
-        data = json.loads(raw)
-        return _normalizar_respuesta(data, vocabulario_disponible)
+    # ── Cadena de modelos: intenta cada uno en orden hasta que uno responda ──────
+    # Cada modelo tiene su propio contador TPD en Groq, así que si el principal
+    # se agota por rate limit (429), los respaldos siguen disponibles.
+    MODELOS_GROQ = [
+        "llama-3.3-70b-versatile",  # Principal: mejor calidad LSC
+        "llama-3.1-8b-instant",     # Respaldo 1: más rápido, límite independiente
+        "llama3-8b-8192",           # Respaldo 2: Llama 3 base (muy estable)
+        "llama3-70b-8192",          # Respaldo 3: Llama 3 70B base
+    ]
 
-    except json.JSONDecodeError as e:
-        print(f"⚠️ LSC Grammar: JSON inválido de Groq: {e}")
-        return _fallback_sin_ia(texto_espanol)
-    except Exception as e:
-        print(f"⚠️ LSC Grammar: Error Groq: {e}")
-        return _fallback_sin_ia(texto_espanol)
+    ultimo_error = None
+
+    for modelo in MODELOS_GROQ:
+        try:
+            client = _get_client()
+            response = client.chat.completions.create(
+                model=modelo,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT_LSC},
+                    {"role": "user",   "content": user_prompt},
+                ],
+                temperature=0.1,
+                max_tokens=800,
+                response_format={"type": "json_object"},
+            )
+
+            raw = response.choices[0].message.content.strip()
+            data = json.loads(raw)
+
+            if modelo != MODELOS_GROQ[0]:
+                print(f"ℹ️ LSC Grammar: usando modelo de respaldo '{modelo}'")
+
+            return _normalizar_respuesta(data, vocabulario_disponible)
+
+        except json.JSONDecodeError as e:
+            # JSON inválido no depende del modelo, no tiene sentido reintentar
+            print(f"⚠️ LSC Grammar: JSON inválido con modelo '{modelo}': {e}")
+            return _fallback_sin_ia(texto_espanol)
+
+        except Exception as e:
+            ultimo_error = e
+            error_str = str(e)
+
+            # Rate limit (429), sobrecarga (503) o modelo descontinuado → probar siguiente modelo
+            if "429" in error_str or "503" in error_str or "rate_limit" in error_str.lower() or "model_decommissioned" in error_str.lower():
+                print(f"⚠️ LSC Grammar: modelo '{modelo}' sin cupo o descontinuado, probando siguiente...")
+                continue
+
+            # Otro error (auth, red) → no tiene sentido reintentar
+            print(f"⚠️ LSC Grammar: Error Groq con modelo '{modelo}': {e}")
+            return _fallback_sin_ia(texto_espanol)
+
+    # Todos los modelos agotados → fallback básico
+    print(f"⚠️ LSC Grammar: todos los modelos Groq agotados. Último error: {ultimo_error}")
+    return _fallback_sin_ia(texto_espanol)
 
 
 # ─── Normalización de respuesta ───────────────────────────────────────────────
