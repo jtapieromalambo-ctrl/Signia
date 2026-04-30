@@ -333,12 +333,13 @@ def _calcular_senas_entrenadas():
 
 
 def admin_videos(request):
+    senas_entrenadas = _calcular_senas_entrenadas()
     context = {
         'videos_reconocimiento': VideoSeña.objects.all().order_by('-creado'),
         'videos_traductor':      VideoTraductor.objects.all().order_by('nombre'),
-        'total_reconocimiento':  VideoSeña.objects.count(),
+        'total_reconocimiento':  len(senas_entrenadas) if senas_entrenadas else 0,
         'total_traductor':       VideoTraductor.objects.count(),
-        'senas_entrenadas':      _calcular_senas_entrenadas(),
+        'senas_entrenadas':      senas_entrenadas,
         'total_mensajes':        0,
     }
     try:
@@ -374,6 +375,31 @@ def reconocimiento_subir(request):
             'creado': instancia.creado.strftime('%d/%m/%Y %H:%M'),
         }
     })
+
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def reconocimiento_editar(request, video_id):
+    try:
+        instancia = VideoSeña.objects.get(pk=video_id)
+        # Parse application/x-www-form-urlencoded or application/json
+        import json
+        try:
+            body = json.loads(request.body)
+            nuevo_label = body.get('label', '').strip()
+        except:
+            from django.http import QueryDict
+            body = QueryDict(request.body)
+            nuevo_label = body.get('label', '').strip()
+            
+        if not nuevo_label:
+            return JsonResponse({'ok': False, 'error': 'El label no puede estar vacío'}, status=400)
+            
+        instancia.label = nuevo_label
+        instancia.save()
+        return JsonResponse({'ok': True, 'label': instancia.label})
+    except VideoSeña.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'No encontrado'}, status=404)
 
 
 @csrf_exempt
