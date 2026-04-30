@@ -51,8 +51,6 @@
             </div>
 
             <div class="botones">
-                <button class="btn" id="btn-camara" onclick="iniciar()">Iniciar cámara</button>
-
                 <div class="pill-toggle" id="pill-toggle" onclick="cambiarModo()">
                     <div class="pill-thumb" id="pill-thumb"></div>
                     <span class="pill-icon pill-icon-left" id="icon-texto"><svg xmlns="http://www.w3.org/2000/svg" 
@@ -70,7 +68,10 @@
                          <path d="M19.8 17.8a7.5 7.5 0 0 0 .003-10.603"/><path d="M17 15a3.5 3.5 0 0 0-.025-4.975"/></svg></span>
                 </div>
 
-                <button class="btn btn-limpiar" onclick="limpiarHistorial()">Limpiar texto</button>
+                <div class="botones-fila">
+                    <button class="btn" id="btn-camara" onclick="iniciar()">Iniciar cámara</button>
+                    <button class="btn btn-limpiar" onclick="limpiarHistorial()">Limpiar texto</button>
+                </div>
             </div>
 
             <div class="resultado" id="resultado">
