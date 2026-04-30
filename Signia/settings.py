@@ -4,9 +4,9 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-c%hk5v7hvx0)ky5+@!_gqu7ys!_td@(%+98s1yz!w9r7_^^7^e'
+SECRET_KEY = config('SECRET_KEY')
 
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -26,7 +26,6 @@ INSTALLED_APPS = [
     'usuarios',
     'reconocimientos',
     'traduccion',
-    'avatar',
     'historial',
     
 ]
@@ -113,8 +112,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'osorioescobardavidfelipe@gmail.com'
-EMAIL_HOST_PASSWORD = 'axbr cqtv wowh uidz'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
 
 # ── ALLAUTH ────────────────────────────────────────────
