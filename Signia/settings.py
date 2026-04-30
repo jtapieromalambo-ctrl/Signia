@@ -172,3 +172,6 @@ SESSION_SAVE_EVERY_REQUEST = True
 # ── GROQ (capa gramatical LSC) ─────────────────────────
 import os
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
+
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54']
