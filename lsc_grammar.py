@@ -599,37 +599,80 @@ def _normalizar_token(token: str) -> str:
 # ─── Fallback sin IA ──────────────────────────────────────────────────────────
 def _fallback_sin_ia(texto: str) -> dict:
     """
-    Fallback básico cuando la IA no está disponible.
-    Hace limpieza básica y devuelve tokens sin reordenar (palabra por palabra).
+    Fallback heurístico cuando la IA no está disponible.
+    Aplica reglas gramaticales básicas de orden LSC.
+    (Tiempo + Sujeto + Objeto/Verbo + Negación + Pregunta).
     """
-    # Limpieza básica
     ARTICULOS = {'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas'}
     PREPOSICIONES = {'a', 'de', 'en', 'con', 'por', 'para', 'hacia', 'desde',
-                     'sin', 'sobre', 'bajo', 'ante', 'tras', 'al'}
+                     'sin', 'sobre', 'bajo', 'ante', 'tras', 'al', 'del'}
+    COPULATIVOS = {'es', 'son', 'soy', 'eres', 'somos', 'estoy', 'esta', 'estan', 'estamos'}
+    TIEMPO = {'manana', 'hoy', 'ayer', 'ahora', 'antes', 'despues', 'siempre', 'nunca', 'ya', 'pronto', 'tarde', 'temprano'}
+    SUJETOS = {'yo', 'tu', 'el', 'ella', 'nosotros', 'ustedes', 'ellos', 'ellas'}
+    PREGUNTAS = {'como', 'donde', 'cuando', 'quien', 'que', 'cuanto', 'por_que'}
+    NEGACION = {'no'}
 
     texto_limpio = texto.lower().strip()
     texto_limpio = unicodedata.normalize('NFD', texto_limpio)
     texto_limpio = ''.join(c for c in texto_limpio if unicodedata.category(c) != 'Mn')
+    
+    # Preservar conocimiento de si es pregunta directa antes de quitar signos
+    es_pregunta_directa = any(c in texto_limpio for c in '¿?')
+    
+    # Agrupar "por que" antes de limpiar puntuación y dividir
+    texto_limpio = texto_limpio.replace("por que", "por_que")
+    
+    # Eliminar signos de puntuación
     texto_limpio = re.sub(r'[.,!¿?¡;:]', '', texto_limpio)
 
     palabras = texto_limpio.split()
-    tokens = []
+    
+    tokens_tiempo = []
+    tokens_sujeto = []
+    tokens_negacion = []
+    tokens_pregunta = []
+    tokens_resto = []
+    
     for p in palabras:
-        if p in ARTICULOS or p in PREPOSICIONES:
+        if p in ARTICULOS or p in PREPOSICIONES or p in COPULATIVOS:
             continue
-        tokens.append({
-            "word": p.upper(),
-            "type": "other"
-        })
+            
+        if p in TIEMPO:
+            tokens_tiempo.append({"word": p.upper(), "type": "time"})
+        elif p in SUJETOS:
+            tokens_sujeto.append({"word": p.upper(), "type": "subject"})
+        elif p in PREGUNTAS:
+            tokens_pregunta.append({"word": p.upper(), "type": "wh"})
+        elif p in NEGACION:
+            tokens_negacion.append({"word": p.upper(), "type": "neg"})
+        else:
+            tokens_resto.append({"word": p.upper(), "type": "other"})
+
+    # Orden LSC Canónico: Tiempo -> Sujeto -> Resto -> Negación -> Pregunta
+    tokens_ordenados = tokens_tiempo + tokens_sujeto + tokens_resto + tokens_negacion + tokens_pregunta
+    
+    sentence_type = "declarative"
+    facial_expression = "neutral"
+    
+    if tokens_pregunta:
+        sentence_type = "question_wh"
+        facial_expression = "cejas_fruncidas"
+        tokens_ordenados.append({"word": "[EF:CEJAS_FRUNCIDAS]", "type": "facial"})
+    elif es_pregunta_directa:
+        sentence_type = "question_yn"
+        facial_expression = "cejas_arriba"
+        tokens_ordenados.append({"word": "[EF:CEJAS_ARRIBA]", "type": "facial"})
+    elif tokens_negacion:
+        sentence_type = "negative"
 
     return {
-        "tokens": tokens,
-        "sentence_type": "declarative",
-        "facial_expression": "neutral",
+        "tokens": tokens_ordenados,
+        "sentence_type": sentence_type,
+        "facial_expression": facial_expression,
         "faltantes": [],
         "estrategia_faltantes": {},
-        "notes": "Fallback: IA no disponible. Se usó limpieza básica sin reordenamiento LSC.",
-        "error": "Groq no disponible — usando modo básico sin gramática LSC.",
+        "notes": "Fallback heurístico: IA no disponible. Se aplicó orden básico LSC por reglas.",
+        "error": "Groq no disponible — usando reglas gramaticales básicas LSC locales.",
     }
 
 
