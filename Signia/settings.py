@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -98,7 +99,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_ROOT = BASE_DIR / "media"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = '/login/'
@@ -174,4 +175,4 @@ import os
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com']
