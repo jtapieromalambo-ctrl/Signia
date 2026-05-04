@@ -27,13 +27,13 @@ let procesando = false;
 let framesAcumuladosDesdePred = 0;
 
 const FRAMES_SIN_MANO_MAX = 8;
-const MIN_FRAMES_SEÑA     = 10;
-const MAX_BUFFER_SIZE     = 30; // Ventana de ~1.5s
-const INTERVALO_PRED      = 12; // Predecir cada ~0.6s
-const COOLDOWN_FRAMES     = 18; // Esperar ~0.9s después de una detección
+const MIN_FRAMES_SEÑA     = 15;
+const MAX_BUFFER_SIZE     = 50; // Ventana de ~2.5s (permite señas largas)
+const INTERVALO_PRED      = 18; // Predecir cada ~0.9s
+const COOLDOWN_FRAMES     = 24; // Esperar ~1.2s después de una detección
 const INTERVALO_MS        = 50;
 const JPEG_QUALITY        = 0.4;
-const UMBRAL_CONFIANZA    = 75; // Confianza mínima para de corrido
+const UMBRAL_CONFIANZA    = 60; // Confianza mínima para de corrido
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
 async function iniciarMediaPipe() {
@@ -256,7 +256,9 @@ async function procesarSecuencia(frames) {
     procesando = true;
 
     try {
-        const framesAEnviar = submuestrear(frames, 12);
+        // Al enviar 24 frames en lugar de 12, el servidor tiene el doble de información 
+        // temporal para que su "interpolación" coincida mejor con los 30 frames del entrenamiento.
+        const framesAEnviar = submuestrear(frames, 24);
 
         const response = await fetch('/reconocimientos/predecir/', {
             method:  'POST',
