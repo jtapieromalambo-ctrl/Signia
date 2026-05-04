@@ -87,7 +87,7 @@
 
 <script>
     // Rutas locales — sin CDN, sin CORS
-    window.MP_WASM_PATH   = "{% static 'js/vendor/mediapipe/wasm' %}";
+    window.MP_WASM_PATH   = "{% static 'js/vendor/mediapipe/wasm' %}/";
     window.MP_MODEL_PATH  = "{% url 'hand_landmarker' %}";
     window.MP_BUNDLE_PATH = "{% static 'js/vendor/mediapipe/vision_bundle.mjs' %}";
 </script>
