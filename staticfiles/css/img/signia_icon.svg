@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img">
+  <title>Signia</title>
+
+  <rect x="0" y="0" width="48" height="48" rx="12" fill="#2563EB"/>
+  <rect x="0" y="0" width="48" height="48" rx="12" fill="#5b21b6" opacity="0.45"/>
+
+  <!-- Palma -->
+  <rect x="12" y="24" width="26" height="17" rx="5" fill="white"/>
+  <!-- Pulgar -->
+  <path d="M12 32 Q8 29 9 24 Q11 20 14 22" fill="white"/>
+  <!-- Dedos -->
+  <rect x="12" y="17" width="6" height="11" rx="3" fill="white"/>
+  <rect x="19" y="14" width="6" height="13" rx="3" fill="white"/>
+  <rect x="26" y="15" width="6" height="12" rx="3" fill="white"/>
+  <rect x="33" y="17" width="6" height="10" rx="3" fill="white"/>
+</svg>
