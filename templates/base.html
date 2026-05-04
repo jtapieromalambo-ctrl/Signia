@@ -438,13 +438,11 @@
     {% endif %}
 </script>
 <!-- Botón flotante Manual de Usuario -->
-<a 
-  href="/static/manual/manual-usuario.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
+<button 
+  onclick="document.getElementById('modal-manual').style.display='flex'"
   class="fab-manual"
   title="Abrir Manual de Usuario"
-  aria-label="Abrir Manual de Usuario en PDF"
+  aria-label="Abrir Manual de Usuario"
 >
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
        fill="none" stroke="currentColor" stroke-width="2"
@@ -456,7 +454,86 @@
     <polyline points="10 9 9 9 8 9"/>
   </svg>
   <span class="fab-manual__label">Manual de Usuario</span>
-</a>
+</button>
+
+<!-- Modal del Manual -->
+<div id="modal-manual" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+">
+  <div style="
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 1100px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  ">
+    <!-- Header del modal -->
+    <div style="
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #E2E8F0;
+      background: #1E3A8A;
+      border-radius: 16px 16px 0 0;
+    ">
+      <span style="color:white; font-weight:700; font-size:16px; font-family:'Poppins',sans-serif;">
+        📖 Manual de Usuario — Signia
+      </span>
+      <button onclick="document.getElementById('modal-manual').style.display='none'" style="
+        background: rgba(255,255,255,0.15);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      " onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+         onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+    </div>
+    <!-- Iframe con el manual -->
+    <iframe 
+      src="{% static 'manual/manual-usuario.html' %}"
+      style="flex:1; border:none; width:100%;"
+      title="Manual de Usuario Signia"
+    ></iframe>
+  </div>
+</div>
+
+<script>
+  // Cerrar modal manual con Escape (solo si el modal de discapacidad NO está activo)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modalManual = document.getElementById('modal-manual');
+      const modalDisc = document.getElementById('discModal');
+      if (modalManual.style.display === 'flex' && !modalDisc) {
+        modalManual.style.display = 'none';
+      }
+    }
+  });
+
+  // Cerrar al hacer clic en el fondo oscuro
+  document.getElementById('modal-manual').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+</script>
 
 </body>
 </html>
