@@ -360,6 +360,24 @@
         }
     });
 
+    // ── Nav activo automático ──
+    (function () {
+        const path = window.location.pathname;
+        document.querySelectorAll('.nav-links a, .nav-mobile-menu a').forEach(function(link) {
+            const linkPath = new URL(link.href, location.origin).pathname;
+            const li = link.closest('li');
+            
+            // Caso especial para Reconocimiento (singular vs plural en URL)
+            const isReconocimiento = linkPath.includes('reconocimiento') && path.includes('reconocimiento');
+            
+            if (path === linkPath || (path !== '/' && path.startsWith(linkPath) && linkPath !== '/') || isReconocimiento) {
+                li && li.classList.add('active');
+            } else {
+                li && li.classList.remove('active');
+            }
+        });
+    })();
+
     // ── Menú usuario dentro del móvil ──
     function toggleMenuMobile() {
         const menuMobile = document.getElementById('userMenuMobile');
