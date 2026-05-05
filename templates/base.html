@@ -196,7 +196,13 @@
     {% for message in messages %}
         {% if 'signed in' not in message|lower and 'successfully' not in message|lower %}
         <div class="alert-msg {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
-            {% if message.tags == 'error' %}⚠️{% elif message.tags == 'success' %}✅{% else %}ℹ️{% endif %}
+            {% if message.tags == 'error' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            {% elif message.tags == 'success' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+            {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            {% endif %}
             {{ message }}
         </div>
         {% endif %}
@@ -209,22 +215,37 @@
 <div class="modal-overlay" id="discModal">
     <div class="modal-box">
         {% if user.discapacidad == 'sordo' %}
-            <div class="modal-icon">👂</div>
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ear"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3 3 0 1 1-6 0"/><path d="M10.3 12a2.5 2.5 0 1 0 3.4 3.4"/></svg>
+            </div>
             <h2>¡Bienvenido, {{ user.username }}!</h2>
             <p>Hemos detectado que eres <strong>sordo</strong>. Te redirigiremos al <strong>Traductor de Señas</strong> donde podrás escribir texto y el avatar lo traducirá a señas.</p>
-            <div class="modal-disc-badge modal-disc-sordo">👂 Sordo — Texto → Señas</div>
+            <div class="modal-disc-badge modal-disc-sordo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ear"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3 3 0 1 1-6 0"/><path d="M10.3 12a2.5 2.5 0 1 0 3.4 3.4"/></svg>
+                Sordo — Texto → Señas
+            </div>
             <a href="{% url 'traduccion' %}" class="modal-btn">Ir al Traductor →</a>
         {% elif user.discapacidad == 'mudo' %}
-            <div class="modal-icon">🤟</div>
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            </div>
             <h2>¡Bienvenido, {{ user.username }}!</h2>
             <p>Hemos detectado que eres <strong>mudo</strong>. Te redirigiremos al <strong>Reconocimiento de Señas</strong> donde podrás hacer señas a la cámara y se traducirán a texto.</p>
-            <div class="modal-disc-badge modal-disc-mudo">🤟 Mudo — Señas → Texto</div>
+            <div class="modal-disc-badge modal-disc-mudo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+                Mudo — Señas → Texto
+            </div>
             <a href="{% url 'reconocimiento' %}" class="modal-btn">Ir al Reconocimiento →</a>
         {% else %}
-            <div class="modal-icon">🙂</div>
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </div>
             <h2>¡Bienvenido, {{ user.username }}!</h2>
             <p>Tienes <strong>acceso general</strong> a todas las herramientas de Signia.</p>
-            <div class="modal-disc-badge modal-disc-ninguna">🙂 Acceso general</div>
+            <div class="modal-disc-badge modal-disc-ninguna">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                Acceso general
+            </div>
             <a href="{% url 'perfil' %}" class="modal-btn">Ver mi perfil →</a>
         {% endif %}
     </div>
@@ -249,7 +270,9 @@
 {% if user.is_authenticated %}
 <div id="aviso-inactividad">
     <div class="aviso-box">
-        <div class="aviso-icono">⏱️</div>
+        <div class="aviso-icono">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-timer"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
+        </div>
         <div class="aviso-titulo">Sesión por vencer</div>
         <div class="aviso-texto">Tu sesión se cerrará por inactividad en:</div>
         <div class="aviso-contador" id="cuenta-regresiva">60</div>
@@ -280,7 +303,9 @@
               justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
 
     <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:260px;">
-      <span style="font-size:1.5rem;">🍪</span>
+      <span style="font-size:1.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cookie"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+      </span>
       <p style="margin:0; font-size:0.88rem; line-height:1.6; color:#CBD5E1;">
         Usamos cookies para mejorar tu experiencia en Signia. Al continuar navegando, aceptas nuestra
         <a href="{% url 'politica_cookies' %}" target="_blank"
@@ -320,7 +345,13 @@
         font-family: 'Poppins', sans-serif;
         white-space: nowrap;
         transition: all 0.2s;
-      ">Aceptar todo ✓</button>
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      ">
+        Aceptar todo
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -502,8 +533,13 @@
 <div id="modal-manual" class="modal-overlay-manual" aria-modal="true" role="dialog" aria-label="Manual de Usuario">
   <div class="modal-container-manual">
     <div class="modal-header-manual">
-      <span class="modal-title-manual">📖 Manual de Usuario — Signia</span>
-      <button class="modal-close-manual" onclick="closeManual()" aria-label="Cerrar manual">✕</button>
+      <span class="modal-title-manual">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open" style="vertical-align: middle; margin-right: 5px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Manual de Usuario — Signia
+      </span>
+      <button class="modal-close-manual" onclick="closeManual()" aria-label="Cerrar manual">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
     </div>
     <iframe 
       src="{% static 'manual/manual-usuario.html' %}"
