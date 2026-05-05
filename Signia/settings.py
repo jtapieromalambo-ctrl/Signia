@@ -118,7 +118,7 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
 
 # ── ALLAUTH ────────────────────────────────────────────
-SITE_ID = 1
+SITE_ID = 2
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
