@@ -13,7 +13,10 @@
 
   {% if messages %}
     {% for message in messages %}
-      <div class="alert-success">✅ {{ message }}</div>
+      <div class="alert-success">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+        {{ message }}
+      </div>
     {% endfor %}
   {% endif %}
 
@@ -47,40 +50,64 @@
           <p>{{ usuario.date_joined|date:"d/m/Y" }}</p>
         </div>
         <div class="info-item">
-          <label>Tipo de acceso</label>
+          <label>Tipo de discapacidad</label>
           <p>
             {% if usuario.discapacidad == 'sordo' %}
-              <span class="discapacidad-badge disc-sordo">👂 Sordo</span>
+              <span class="discapacidad-badge disc-sordo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ear"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3 3 0 1 1-6 0"/><path d="M10.3 12a2.5 2.5 0 1 0 3.4 3.4"/></svg>
+                {{ usuario.get_discapacidad_display }}
+              </span>
             {% elif usuario.discapacidad == 'mudo' %}
-              <span class="discapacidad-badge disc-mudo">🤟 Mudo</span>
+              <span class="discapacidad-badge disc-mudo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+                {{ usuario.get_discapacidad_display }}
+              </span>
             {% else %}
-              <span class="discapacidad-badge disc-ninguna">🙂 Acceso general</span>
+              <span class="discapacidad-badge disc-ninguna">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                {{ usuario.get_discapacidad_display }}
+              </span>
             {% endif %}
           </p>
         </div>
       </div>
 
       <div class="perfil-acciones">
-        <a href="{% url 'editar_perfil' %}" class="btn-accion btn-accion-primary">✏️ Editar perfil</a>
-        <a href="{% url 'cambiar_password' %}" class="btn-accion btn-accion-outline">🔒 Cambiar contraseña</a>
-        <button onclick="document.getElementById('modalEliminar').style.display='flex'" class="btn-accion btn-accion-danger">🗑️ Eliminar cuenta</button>
+        <a href="{% url 'editar_perfil' %}" class="btn-accion btn-accion-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-pen"><path d="M2 21a8 8 0 0 1 10.821-7.487"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><circle cx="10" cy="8" r="5"/></svg>
+          Editar perfil
+        </a>
+        <a href="{% url 'cambiar_password' %}" class="btn-accion btn-accion-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+          Cambiar contraseña
+        </a>
+        <button onclick="document.getElementById('modalEliminar').style.display='flex'" class="btn-accion btn-accion-danger">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Eliminar cuenta
+        </button>
       </div>
     </div>
   </div>
 
   <div class="accesos">
     <a href="{% url 'traduccion' %}" class="acceso-card">
-      <div class="acceso-icon">🖐️</div>
+      <div class="acceso-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+      </div>
       <h3>Traductor</h3>
       <p>Convierte texto a lenguaje de señas</p>
     </a>
     <a href="{% url 'reconocimiento' %}" class="acceso-card">
-      <div class="acceso-icon">📷</div>
+      <div class="acceso-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+      </div>
       <h3>Reconocimiento</h3>
       <p>Interpreta señas con la cámara</p>
     </a>
     <a href="{% url 'contacto' %}" class="acceso-card">
-      <div class="acceso-icon">✉️</div>
+      <div class="acceso-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      </div>
       <h3>Contacto</h3>
       <p>Envíanos un mensaje</p>
     </a>
@@ -90,7 +117,9 @@
 <!-- Modal confirmar eliminar -->
 <div class="modal-eliminar" id="modalEliminar" style="display:none;">
   <div class="modal-eliminar-box">
-    <div class="icon">⚠️</div>
+    <div class="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    </div>
     <h2>¿Eliminar tu cuenta?</h2>
     <p>Esta acción es <strong>permanente</strong> y no se puede deshacer. Se eliminarán todos tus datos, historial y configuraciones.</p>
     <div class="modal-eliminar-acciones">
