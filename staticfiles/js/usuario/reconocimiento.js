@@ -206,12 +206,13 @@ async function procesarSecuencia() {
             body: JSON.stringify({ frames: framesAEnviar })
         });
         const data = await response.json();
-        if (GroseriasModal.verificarSena(sena)) {
-        GroseriasModal.mostrar(sena, "sena");
-        return;
+       // ✅ ASÍ DEBE QUEDAR
+if (GroseriasModal.verificarSena(data.seña)) {
+    GroseriasModal.mostrar(data.seña, "sena");
+    return;
 }
 
-        if (data.seña && data.confianza >= 70) {
+if (data.seña && data.confianza >= 70) {
             señaActual.textContent     = data.seña.toUpperCase();
             confianzaTexto.textContent = `Confianza: ${data.confianza}%`;
             estadoTexto.textContent    = `Seña detectada: ${data.seña}`;
