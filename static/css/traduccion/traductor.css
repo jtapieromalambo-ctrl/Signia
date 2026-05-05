@@ -123,6 +123,8 @@ label {
     background: var(--gris-suave);
     transition: border-color 0.2s, box-shadow 0.2s;
     overflow: hidden;
+    min-height: 60px;
+    flex-shrink: 0;
 }
 
 .input-group:focus-within {
@@ -132,14 +134,15 @@ label {
 }
 
 .input-group input[type="text"] {
-    flex: 1;
-    padding: 11px 14px;
-    border: none;
-    background: transparent;
-    font-family: 'Nunito', 'DM Sans', sans-serif;
-    font-size: 16px;
-    color: var(--texto);
-    outline: none;
+  flex: 1;
+  border: none;
+  outline: none;
+  height: 60px; /* Altura fija coherente con el grupo */
+  padding: 0 1.5rem;
+  font-size: 16px; /* Para evitar zoom en iOS */
+  color: var(--text-dark);
+  background: transparent;
+  font-family: inherit;
 }
 
 .input-group input[type="text"]::placeholder {
@@ -147,8 +150,8 @@ label {
 }
 
 .btn-lupa {
-    width: 46px;
-    min-width: 46px;
+    width: 60px;
+    height: 60px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
