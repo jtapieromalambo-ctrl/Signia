@@ -87,9 +87,10 @@
 
 <script>
     // Rutas locales — sin CDN, sin CORS
-    window.MP_WASM_PATH   = "{% static 'js/vendor/mediapipe/wasm' %}/";
-    window.MP_MODEL_PATH  = "{% url 'hand_landmarker' %}";
-    window.MP_BUNDLE_PATH = "{% static 'js/vendor/mediapipe/vision_bundle.mjs' %}";
+    
+    window.MP_WASM_PATH   = "{% static 'js/vendor/mediapipe/wasm' %}".replace(/\/$/, "");
+window.MP_MODEL_PATH  = "{% static 'reconocimientos/datos/hand_landmarker.task' %}";
+window.MP_BUNDLE_PATH = "{% static 'js/vendor/mediapipe/vision_bundle.mjs' %}";
 </script>
 <!-- reconocimiento.js como módulo ES — hace import() dinámico del bundle -->
 <script type="module" src="{% static 'js/usuario/reconocimiento.js' %}"></script>
