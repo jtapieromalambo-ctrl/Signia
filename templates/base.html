@@ -457,7 +457,7 @@
 </script>
 <!-- Botón flotante Manual de Usuario -->
 <button 
-  onclick="document.getElementById('modal-manual').style.display='flex'"
+  onclick="openManual()"
   class="fab-manual"
   title="Abrir Manual de Usuario"
   aria-label="Abrir Manual de Usuario"
@@ -475,83 +475,49 @@
 </button>
 
 <!-- Modal del Manual -->
-<div id="modal-manual" style="
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-">
-  <div style="
-    background: white;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 1100px;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
-  ">
-    <!-- Header del modal -->
-    <div style="
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      border-bottom: 1px solid #E2E8F0;
-      background: #1E3A8A;
-      border-radius: 16px 16px 0 0;
-    ">
-      <span style="color:white; font-weight:700; font-size:16px; font-family:'Poppins',sans-serif;">
-        📖 Manual de Usuario — Signia
-      </span>
-      <button onclick="document.getElementById('modal-manual').style.display='none'" style="
-        background: rgba(255,255,255,0.15);
-        border: none;
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-      " onmouseover="this.style.background='rgba(255,255,255,0.3)'"
-         onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+<div id="modal-manual" class="modal-overlay-manual" aria-modal="true" role="dialog" aria-label="Manual de Usuario">
+  <div class="modal-container-manual">
+    <div class="modal-header-manual">
+      <span class="modal-title-manual">📖 Manual de Usuario — Signia</span>
+      <button class="modal-close-manual" onclick="closeManual()" aria-label="Cerrar manual">✕</button>
     </div>
-    <!-- Iframe con el manual -->
     <iframe 
       src="{% static 'manual/manual-usuario.html' %}"
-      style="flex:1; border:none; width:100%;"
+      class="modal-iframe-manual"
       title="Manual de Usuario Signia"
     ></iframe>
   </div>
 </div>
 
 <script>
+  const modalManual = document.getElementById('modal-manual');
+
+  function openManual() {
+    modalManual.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeManual() {
+    modalManual.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
   // Cerrar modal manual con Escape (solo si el modal de discapacidad NO está activo)
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-      const modalManual = document.getElementById('modal-manual');
       const modalDisc = document.getElementById('discModal');
-      if (modalManual.style.display === 'flex' && !modalDisc) {
-        modalManual.style.display = 'none';
+      if (modalManual.classList.contains('is-open') && !modalDisc) {
+        closeManual();
       }
     }
   });
 
   // Cerrar al hacer clic en el fondo oscuro
-  document.getElementById('modal-manual').addEventListener('click', function(e) {
-    if (e.target === this) this.style.display = 'none';
+  modalManual.addEventListener('click', function(e) {
+    if (e.target === modalManual) closeManual();
   });
 </script>
+
 
 </body>
 </html>
