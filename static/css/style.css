@@ -136,7 +136,7 @@ nav.main-nav .nav-links a {
 }
 
 nav.main-nav .nav-links a:hover       { color: #2563eb; background: #dbeafe; }
-nav.main-nav .nav-links .active a     { background: #dbeafe; color: #2563eb; font-weight: 600; }
+nav.main-nav .nav-links .active a     { color: #2563eb; font-weight: 600; }
 
 /* Botón hamburguesa — oculto en desktop */
 .nav-hamburger {
