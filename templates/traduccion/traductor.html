@@ -56,6 +56,19 @@
             Palabra no encontrada
         </div>
 
+        <div class="video" id="contenedorVideo">
+            {% if video_base %}
+                <video id="videoBase" width="100%" autoplay muted loop playsinline preload="auto">
+                    <source src="{{ video_base.video.url }}" type="video/mp4">
+                </video>
+            {% else %}
+                <span class="video-placeholder">Sin video base</span>
+            {% endif %}
+
+            <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
+            <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
+        </div>
+
         <label for="palabra">Palabra</label>
 
         <div class="input-group">
@@ -71,19 +84,6 @@
         </div>
 
         <input type="file" name="audio" id="audioInput" style="display:none">
-
-        <div class="video" id="contenedorVideo">
-            {% if video_base %}
-                <video id="videoBase" width="100%" autoplay muted loop playsinline preload="auto">
-                    <source src="{{ video_base.video.url }}" type="video/mp4">
-                </video>
-            {% else %}
-                <span class="video-placeholder">Sin video base</span>
-            {% endif %}
-
-            <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
-            <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
-        </div>
 
         <button type="button" id="btnMic" class="btn-mic">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
