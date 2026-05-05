@@ -28,7 +28,7 @@
 
     <!-- Desktop links -->
     <ul class="nav-links" id="desktopNav">
-      <li class="active"><a href="{% url 'index' %}">Inicio</a></li>
+      <li><a href="{% url 'index' %}">Inicio</a></li>
       <li><a href="{% url 'home' %}">Login</a></li>
       <li><a href="{% url 'traduccion' %}">Traductor</a></li>
       <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
@@ -47,7 +47,7 @@
   <!-- Mobile drawer -->
   <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
     <ul>
-      <li class="active"><a href="{% url 'index' %}" onclick="closeMenu()">Inicio</a></li>
+      <li><a href="{% url 'index' %}" onclick="closeMenu()">Inicio</a></li>
       <li><a href="{% url 'home' %}" onclick="closeMenu()">Login</a></li>
       <li><a href="{% url 'traduccion' %}" onclick="closeMenu()">Traductor</a></li>
       <li><a href="{% url 'reconocimiento' %}" onclick="closeMenu()">Reconocimiento</a></li>
@@ -262,6 +262,24 @@
     modalEl.addEventListener('click', (e) => {
       if (e.target === modalEl) closeManual();
     });
+    /* ── Nav activo automático ── */
+    (function () {
+      const path = window.location.pathname;
+      /* Selecciona todos los enlaces en ambos navs */
+      document.querySelectorAll('.nav-links a, .mobile-menu a').forEach(link => {
+        const linkPath = new URL(link.href, location.origin).pathname;
+        const li = link.closest('li');
+
+        // Caso especial para Reconocimiento (singular vs plural en URL)
+        const isReconocimiento = linkPath.includes('reconocimiento') && path.includes('reconocimiento');
+
+        if (path === linkPath || (path !== '/' && path.startsWith(linkPath) && linkPath !== '/') || isReconocimiento) {
+          li && li.classList.add('active');
+        } else {
+          li && li.classList.remove('active');
+        }
+      });
+    })();
   </script>
 
 </body>
