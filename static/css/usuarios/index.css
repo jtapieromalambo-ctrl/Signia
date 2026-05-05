@@ -467,3 +467,114 @@ footer {
   .hero-text h1 { font-size: 1.65rem; }
   .logo-text    { font-size: 1.1rem; }
 }
+
+/* ================================================================
+   MODAL – Manual de Usuario
+   ================================================================ */
+
+/* Overlay */
+.modal-overlay {
+  display: none;            /* oculto por defecto */
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.60);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Visible cuando JS añade la clase */
+.modal-overlay.is-open { display: flex; }
+
+/* Contenedor interior */
+.modal-container {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.30);
+}
+
+/* Barra de título */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #1E3A8A;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.30); }
+
+/* Iframe */
+.modal-iframe {
+  flex: 1;
+  border: none;
+  width: 100%;
+  display: block;
+  min-height: 0;  /* permite que flex-shrink funcione bien */
+}
+
+/* ── Modal responsive: tablet (≤768px) ── */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end;  /* el modal sube desde abajo en tablet */
+  }
+  .modal-container {
+    height: 92vh;
+    border-radius: 20px 20px 12px 12px;
+  }
+}
+
+/* ── Modal responsive: móvil (≤540px) ── */
+@media (max-width: 540px) {
+  .modal-overlay {
+    padding: 0;             /* sin margen: ocupa toda la pantalla */
+    align-items: stretch;
+  }
+  .modal-container {
+    height: 100dvh;         /* viewport dinámico para móviles con barra del navegador */
+    height: 100vh;          /* fallback */
+    max-width: 100%;
+    border-radius: 0;       /* sin bordes redondeados en pantalla completa */
+    box-shadow: none;
+  }
+  .modal-header {
+    border-radius: 0;
+    padding: 12px 16px;
+  }
+  .modal-title { font-size: 13px; }
+}
