@@ -33,6 +33,7 @@ body {
   overflow-x: hidden;
   background: transparent;
   margin: 0;
+  overscroll-behavior: none;
 }
 
 /* ── 3. FONDO ANIMADO ── */
@@ -75,7 +76,7 @@ nav.main-nav {
   padding: 0 2.5rem;
   height: 64px;
   box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
-  position: sticky;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
