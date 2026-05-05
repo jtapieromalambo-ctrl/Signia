@@ -248,7 +248,9 @@
         <button onclick="cerrarModal()"
                 style="background:rgba(255,255,255,0.2); border:none; color:white;
                        width:32px; height:32px; border-radius:50%; font-size:1.1rem;
-                       cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+                       cursor:pointer; display:flex; align-items:center; justify-content:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
       </div>
 
       <!-- Cuerpo modal -->
@@ -261,7 +263,8 @@
         <a id="modal-ver-completo" href="#" target="_blank"
            style="color:var(--blue-primary); font-size:0.88rem; text-decoration:underline;
                   display:flex; align-items:center; gap:0.3rem; margin-right:auto;">
-          Ver página completa ↗
+          Ver página completa
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
         </a>
         <button onclick="cerrarModal()"
                 style="background:#F1F5F9; border:none; padding:0.6rem 1.5rem;
@@ -270,8 +273,9 @@
         </button>
         <button onclick="aceptarDesdeModal()"
                 style="background:var(--blue-primary); border:none; color:white;
-                       padding:0.6rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:600;">
-          Entendido ✓
+                       padding:0.6rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.4rem;">
+          Entendido
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
         </button>
       </div>
     </div>
@@ -297,10 +301,13 @@
     // Contenido del modal
     const contenidos = {
       terminos: {
-        titulo: '📋 Términos y Condiciones',
+        titulo: 'Términos y Condiciones',
         url: "{% url 'terminos' %}",
         html: `
-          <h3 style="color:#1E293B; margin-bottom:0.5rem;">1. Aceptación de los términos</h3>
+          <h3 style="color:#1E293B; margin-bottom:0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list" style="vertical-align: sub; margin-right: 5px;"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+            1. Aceptación de los términos
+          </h3>
           <p>Al registrarte en Signia, aceptas cumplir con estos Términos y Condiciones. Si no estás de acuerdo, no debes usar la plataforma.</p>
 
           <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">2. Uso del servicio</h3>
@@ -323,27 +330,39 @@
         `
       },
       cookies: {
-        titulo: '🍪 Política de Cookies',
+        titulo: 'Política de Cookies',
         url: "{% url 'politica_cookies' %}",
         html: `
-          <h3 style="color:#1E293B; margin-bottom:0.5rem;">¿Qué son las cookies?</h3>
+          <h3 style="color:#1E293B; margin-bottom:0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cookie" style="vertical-align: sub; margin-right: 5px;"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+            ¿Qué son las cookies?
+          </h3>
           <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas Signia. Nos ayudan a mejorar tu experiencia.</p>
 
           <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">Cookies que usamos</h3>
 
-          <div style="background:#F0F7FF; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
-            <strong style="color:#2563EB;">🔐 Cookies de sesión</strong>
-            <p style="margin:0.3rem 0 0;">Necesarias para mantener tu sesión activa mientras navegas. Se eliminan al cerrar el navegador.</p>
+          <div style="background:#F0F7FF; border-radius:12px; padding:1rem; margin-bottom:0.75rem; display: flex; gap: 0.75rem; align-items: flex-start;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="16" r="1"/><rect width="18" height="12" x="3" y="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+            <div>
+              <strong style="color:#2563EB;">Cookies de sesión</strong>
+              <p style="margin:0.3rem 0 0;">Necesarias para mantener tu sesión activa mientras navegas. Se eliminan al cerrar el navegador.</p>
+            </div>
           </div>
 
-          <div style="background:#F0FFF4; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
-            <strong style="color:#16A34A;">⚙️ Cookies funcionales</strong>
-            <p style="margin:0.3rem 0 0;">Recuerdan tus preferencias como idioma y tipo de discapacidad para personalizar tu experiencia.</p>
+          <div style="background:#F0FFF4; border-radius:12px; padding:1rem; margin-bottom:0.75rem; display: flex; gap: 0.75rem; align-items: flex-start;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" style="flex-shrink: 0; margin-top: 2px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <div>
+              <strong style="color:#16A34A;">Cookies funcionales</strong>
+              <p style="margin:0.3rem 0 0;">Recuerdan tus preferencias como idioma y tipo de discapacidad para personalizar tu experiencia.</p>
+            </div>
           </div>
 
-          <div style="background:#FFFBEB; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
-            <strong style="color:#D97706;">🔒 Cookies de autenticación</strong>
-            <p style="margin:0.3rem 0 0;">Usadas por Django y django-allauth para gestionar el inicio de sesión de forma segura, incluyendo Google OAuth.</p>
+          <div style="background:#FFFBEB; border-radius:12px; padding:1rem; margin-bottom:0.75rem; display: flex; gap: 0.75rem; align-items: flex-start;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" style="flex-shrink: 0; margin-top: 2px;"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div>
+              <strong style="color:#D97706;">Cookies de autenticación</strong>
+              <p style="margin:0.3rem 0 0;">Usadas por Django y django-allauth para gestionar el inicio de sesión de forma segura, incluyendo Google OAuth.</p>
+            </div>
           </div>
 
           <h3 style="color:#1E293B; margin:1rem 0 0.5rem;">¿Cómo controlar las cookies?</h3>
