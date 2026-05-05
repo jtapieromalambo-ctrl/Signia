@@ -92,7 +92,7 @@ nav {
   white-space: nowrap;
 }
 .nav-links a:hover            { color: var(--blue-primary); background: var(--blue-light); }
-.nav-links .active a          { background: var(--blue-light); color: var(--blue-primary); font-weight: 600; }
+.nav-links .active a          { color: var(--blue-primary); font-weight: 600; }
 
 /* Hamburger button – hidden on desktop */
 .hamburger {
