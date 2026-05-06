@@ -102,6 +102,10 @@ MEDIA_URL = '/media/'
 # CompressedStaticFilesStorage (sin Manifest) para evitar que WhiteNoise renombre
 # los archivos WASM de MediaPipe con hashes — MediaPipe los busca por nombre exacto.
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+import mimetypes
+mimetypes.add_type("application/wasm", ".wasm")
+mimetypes.add_type("application/octet-stream", ".task")
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = '/login/'
