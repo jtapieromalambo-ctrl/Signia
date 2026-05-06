@@ -116,7 +116,12 @@ async function iniciar() {
     }
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 30 } }
+            video: { 
+                width: { ideal: 320 }, 
+                height: { ideal: 240 }, 
+                frameRate: { ideal: 30 },
+                facingMode: "user"
+            }
         });
         video.srcObject = stream;
 
@@ -164,7 +169,21 @@ function tick(timestamp) {
     // Guarda: video debe tener dimensiones válidas
     if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) return;
 
-    ctx.drawImage(video, 0, 0, 320, 240);
+    // Evitar que el video de móviles (portrait) se achate (squash) al dibujarlo en 320x240
+    // Calculamos un recorte (crop) tipo object-fit: cover para mantener la proporción
+    const cw = canvas.width;  // 320
+    const ch = canvas.height; // 240
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const scale = Math.max(cw / vw, ch / vh);
+    const sw = vw * scale;
+    const sh = vh * scale;
+    const dx = (cw - sw) / 2;
+    const dy = (ch - sh) / 2;
+    
+    // Limpiar canvas y dibujar el video centrado sin deformarlo
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(video, 0, 0, vw, vh, dx, dy, sw, sh);
 
     let hayMano = false;
     try {
