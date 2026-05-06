@@ -177,4 +177,10 @@ import os
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com', '.up.railway.app']
+
+# Railway specific domains
+railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+if railway_domain:
+    ALLOWED_HOSTS.append(railway_domain)
+    CSRF_TRUSTED_ORIGINS = [f'https://{railway_domain}']
