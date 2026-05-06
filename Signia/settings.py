@@ -188,3 +188,7 @@ railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
 if railway_domain:
     ALLOWED_HOSTS.append(railway_domain)
     CSRF_TRUSTED_ORIGINS = [f'https://{railway_domain}']
+
+# Configuración crucial para que Django sepa que está bajo HTTPS detrás del proxy de Railway
+# Esto arregla el error "redirect_uri_mismatch" de Google (http vs https)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
