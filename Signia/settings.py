@@ -4,7 +4,7 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-railway')
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'Signia.wsgi.application'
 # ── BASE DE DATOS con Neon PostgreSQL ─────────────────
 DATABASES = {
     'default': {
-        **dj_database_url.parse(config('DATABASE_URL'), conn_max_age=0),
+        **dj_database_url.parse(config('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')), conn_max_age=0),
         'DISABLE_SERVER_SIDE_CURSORS': True,
         'OPTIONS': {
             'sslmode': 'require',
@@ -115,8 +115,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
 
 # ── ALLAUTH ────────────────────────────────────────────
@@ -174,7 +174,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # ── GROQ (capa gramatical LSC) ─────────────────────────
 import os
-os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
+os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY', default='')
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com', '.up.railway.app']
