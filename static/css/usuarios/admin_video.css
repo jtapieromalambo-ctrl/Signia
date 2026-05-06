@@ -1723,3 +1723,89 @@ body {
     animation: spin 0.9s linear infinite;
     flex-shrink: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE MEJORADO (Global)
+═══════════════════════════════════════════════════════════ */
+
+/* -- Tablets y Laptops Pequeñas (< 1024px) -- */
+@media (max-width: 1024px) {
+    .admin-page { padding: 1.5rem 1rem 3rem; }
+    .train-panel { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .btn-train { width: 100%; justify-content: center; }
+    .admin-header h1 { font-size: 1.6rem; }
+}
+
+/* -- Móviles (< 768px) -- */
+@media (max-width: 768px) {
+    .admin-page { padding: 1rem 0.75rem 2rem; }
+    
+    .admin-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .admin-header-left { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .admin-stats { width: 100%; flex-wrap: wrap; }
+    .stat-pill { flex: 1; min-width: 45%; padding: 0.5rem; }
+    
+    .tabs-bar {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.25rem;
+    }
+    
+    /* Scrollbar invisible para las tabs en móvil */
+    .tabs-bar::-webkit-scrollbar { display: none; }
+    .tabs-bar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .tab-btn { padding: 0.6rem 0.85rem; font-size: 0.85rem; }
+    
+    .section-title-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .search-wrap { width: 100%; }
+    .search-input { width: 100%; }
+    
+    #recBatchActions, #camBatchActions { 
+        width: 100%; 
+        flex-wrap: wrap; 
+        justify-content: space-between; 
+        margin-left: 0 !important; 
+    }
+    #recBatchName, #camBatchName { flex: 1; min-width: 100px; }
+    
+    .upload-zone { padding: 1.5rem 1rem; }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .upload-title { font-size: 0.95rem; }
+    
+    .cam-section-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .cam-toggle-btn { width: 100%; justify-content: center; }
+    
+    /* Prevenir que la tabla rompa el diseño */
+    .table-wrap { width: 100%; overflow-x: auto; }
+    .video-table th, .video-table td { padding: 0.6rem 0.5rem; font-size: 0.8rem; }
+    .label-chip { font-size: 0.8rem; padding: 0.2rem 0.4rem; }
+    .date-cell { font-size: 0.7rem; white-space: nowrap; }
+    .acciones-cell, .video-table td:last-child { white-space: nowrap; }
+    
+    .form-row { grid-template-columns: 1fr; gap: 0.75rem; }
+    .form-card { padding: 1rem; }
+    
+    .del-modal-body { padding: 1.5rem 1.25rem 1.25rem; }
+    .del-modal-title { font-size: 1.1rem; }
+    .del-modal-desc { font-size: 0.8rem; }
+    .del-modal-actions { grid-template-columns: 1fr; gap: 0.5rem; }
+    .del-btn-confirm { order: -1; } /* Confirmar arriba en móvil */
+    .del-modal-footer { padding: 0.75rem 1rem; flex-wrap: wrap; }
+    
+    .cam-saved-row-header { flex-direction: column; align-items: flex-start; }
+    #btn-subir-cam-wrap { width: 100%; flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    .cam-btn-subir-all { width: 100%; justify-content: center; }
+    .cam-saved-item { min-width: 100%; max-width: 100%; }
+    
+    .toast { width: 90%; left: 50%; white-space: normal; text-align: center; font-size: 0.8rem; padding: 0.75rem 1rem; }
+}
+
+/* -- Móviles pequeños (< 480px) -- */
+@media (max-width: 480px) {
+    .stat-pill { min-width: 100%; }
+    .cam-preview-wrap { aspect-ratio: 4/3; }
+    .cam-countdown { font-size: 3.5rem; }
+}
