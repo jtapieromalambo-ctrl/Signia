@@ -169,10 +169,18 @@ function tick(timestamp) {
     // Guarda: video debe tener dimensiones válidas
     if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) return;
 
-    // Evitar que el video de móviles (portrait) se achate (squash) al dibujarlo en 320x240
+    // Para móviles: adaptar el canvas al tamaño real que se está mostrando en pantalla
+    // Esto asegura que MediaPipe procese exactamente el mismo encuadre que el usuario ve
+    if (canvas.width !== video.clientWidth || canvas.height !== video.clientHeight) {
+        if (video.clientWidth > 0 && video.clientHeight > 0) {
+            canvas.width = video.clientWidth;
+            canvas.height = video.clientHeight;
+        }
+    }
+
     // Calculamos un recorte (crop) tipo object-fit: cover para mantener la proporción
-    const cw = canvas.width;  // 320
-    const ch = canvas.height; // 240
+    const cw = canvas.width;
+    const ch = canvas.height;
     const vw = video.videoWidth;
     const vh = video.videoHeight;
     const scale = Math.max(cw / vw, ch / vh);
