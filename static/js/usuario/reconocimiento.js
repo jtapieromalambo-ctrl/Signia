@@ -27,13 +27,13 @@ let procesando = false;
 let framesAcumuladosDesdePred = 0;
 
 const FRAMES_SIN_MANO_MAX = 8;
-const MIN_FRAMES_SEÑA     = 10;
-const MAX_BUFFER_SIZE     = 30; // Ventana de ~1.5s
-const INTERVALO_PRED      = 12; // Predecir cada ~0.6s
-const COOLDOWN_FRAMES     = 18; // Esperar ~0.9s después de una detección
+const MIN_FRAMES_SEÑA     = 15;
+const MAX_BUFFER_SIZE     = 50; // Ventana de ~2.5s (permite señas largas)
+const INTERVALO_PRED      = 18; // Predecir cada ~0.9s
+const COOLDOWN_FRAMES     = 24; // Esperar ~1.2s después de una detección
 const INTERVALO_MS        = 50;
 const JPEG_QUALITY        = 0.4;
-const UMBRAL_CONFIANZA    = 75; // Confianza mínima para de corrido
+const UMBRAL_CONFIANZA    = 60; // Confianza mínima para de corrido
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
 async function iniciarMediaPipe() {
@@ -116,7 +116,12 @@ async function iniciar() {
     }
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 30 } }
+            video: { 
+                width: { ideal: 320 }, 
+                height: { ideal: 240 }, 
+                frameRate: { ideal: 30 },
+                facingMode: "user"
+            }
         });
         video.srcObject = stream;
 
@@ -164,7 +169,29 @@ function tick(timestamp) {
     // Guarda: video debe tener dimensiones válidas
     if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) return;
 
-    ctx.drawImage(video, 0, 0, 320, 240);
+    // Para móviles: adaptar el canvas al tamaño real que se está mostrando en pantalla
+    // Esto asegura que MediaPipe procese exactamente el mismo encuadre que el usuario ve
+    if (canvas.width !== video.clientWidth || canvas.height !== video.clientHeight) {
+        if (video.clientWidth > 0 && video.clientHeight > 0) {
+            canvas.width = video.clientWidth;
+            canvas.height = video.clientHeight;
+        }
+    }
+
+    // Calculamos un recorte (crop) tipo object-fit: cover para mantener la proporción
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const scale = Math.max(cw / vw, ch / vh);
+    const sw = vw * scale;
+    const sh = vh * scale;
+    const dx = (cw - sw) / 2;
+    const dy = (ch - sh) / 2;
+    
+    // Limpiar canvas y dibujar el video centrado sin deformarlo
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(video, 0, 0, vw, vh, dx, dy, sw, sh);
 
     let hayMano = false;
     try {
@@ -256,7 +283,9 @@ async function procesarSecuencia(frames) {
     procesando = true;
 
     try {
-        const framesAEnviar = submuestrear(frames, 12);
+        // Al enviar 24 frames en lugar de 12, el servidor tiene el doble de información 
+        // temporal para que su "interpolación" coincida mejor con los 30 frames del entrenamiento.
+        const framesAEnviar = submuestrear(frames, 24);
 
         const response = await fetch('/reconocimientos/predecir/', {
             method:  'POST',

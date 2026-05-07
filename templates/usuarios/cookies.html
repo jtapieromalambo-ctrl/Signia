@@ -45,10 +45,16 @@
   </nav>
 
   <div class="container">
-    <a href="javascript:history.back()" class="back-link">← Volver</a>
+    <a href="javascript:history.back()" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Volver
+    </a>
 
     <div class="header-doc">
-      <h1>🍪 Política de Cookies</h1>
+      <h1>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cookie" style="vertical-align: sub; margin-right: 8px;"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+          Política de Cookies
+      </h1>
       <p>Última actualización: enero de 2026 · Signia - Comunicación sin barreras</p>
     </div>
 
@@ -60,24 +66,36 @@
     <div class="card-doc">
       <h2>Tipos de cookies que usamos</h2>
 
-      <div class="cookie-tipo" style="background:#EFF6FF;">
-        <strong style="color:#2563EB;">🔐 Cookies de sesión</strong>
-        <p style="color:#374151;">Necesarias para que puedas navegar en Signia y usar sus funciones. Se eliminan automáticamente al cerrar el navegador. Sin estas cookies, la plataforma no funciona.</p>
+      <div class="cookie-tipo" style="background:#EFF6FF; display: flex; gap: 0.75rem; align-items: flex-start;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole" style="flex-shrink: 0; margin-top: 3px;"><circle cx="12" cy="16" r="1"/><rect width="18" height="12" x="3" y="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+        <div>
+          <strong style="color:#2563EB;">Cookies de sesión</strong>
+          <p style="color:#374151;">Necesarias para que puedas navegar en Signia y usar sus funciones. Se eliminan automáticamente al cerrar el navegador. Sin estas cookies, la plataforma no funciona.</p>
+        </div>
       </div>
 
-      <div class="cookie-tipo" style="background:#F0FFF4;">
-        <strong style="color:#16A34A;">⚙️ Cookies funcionales</strong>
-        <p style="color:#374151;">Recuerdan tus preferencias como el tipo de discapacidad seleccionado, para personalizar tu experiencia en cada visita.</p>
+      <div class="cookie-tipo" style="background:#F0FFF4; display: flex; gap: 0.75rem; align-items: flex-start;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" style="flex-shrink: 0; margin-top: 3px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <div>
+          <strong style="color:#16A34A;">Cookies funcionales</strong>
+          <p style="color:#374151;">Recuerdan tus preferencias como el tipo de discapacidad seleccionado, para personalizar tu experiencia en cada visita.</p>
+        </div>
       </div>
 
-      <div class="cookie-tipo" style="background:#FFFBEB;">
-        <strong style="color:#D97706;">🔒 Cookies de autenticación</strong>
-        <p style="color:#374151;">Gestionadas por Django y django-allauth para mantener tu sesión segura, incluyendo cuando inicias sesión con Google.</p>
+      <div class="cookie-tipo" style="background:#FFFBEB; display: flex; gap: 0.75rem; align-items: flex-start;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" style="flex-shrink: 0; margin-top: 3px;"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        <div>
+          <strong style="color:#D97706;">Cookies de autenticación</strong>
+          <p style="color:#374151;">Gestionadas por Django y django-allauth para mantener tu sesión segura, incluyendo cuando inicias sesión con Google.</p>
+        </div>
       </div>
 
-      <div class="cookie-tipo" style="background:#FFF1F2;">
-        <strong style="color:#E11D48;">🚫 Cookies de terceros</strong>
-        <p style="color:#374151;">Signia no instala cookies de publicidad ni de rastreo de terceros. Las únicas cookies externas provienen de Google OAuth, solo si inicias sesión con esa opción.</p>
+      <div class="cookie-tipo" style="background:#FFF1F2; display: flex; gap: 0.75rem; align-items: flex-start;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ban" style="flex-shrink: 0; margin-top: 3px;"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+        <div>
+          <strong style="color:#E11D48;">Cookies de terceros</strong>
+          <p style="color:#374151;">Signia no instala cookies de publicidad ni de rastreo de terceros. Las únicas cookies externas provienen de Google OAuth, solo si inicias sesión con esa opción.</p>
+        </div>
       </div>
     </div>
 
@@ -97,6 +115,8 @@
     </div>
   </div>
 
-  <footer>© 2026 Signia · Sistema de traducción de lenguaje de señas 🤟</footer>
+  <footer>© 2026 Signia · Sistema de traducción de lenguaje de señas
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand" style="vertical-align: middle; margin-left: 2px;"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+  </footer>
 </body>
 </html>
