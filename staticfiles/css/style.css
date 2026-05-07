@@ -136,7 +136,7 @@ nav.main-nav .nav-links a {
 }
 
 nav.main-nav .nav-links a:hover       { color: #2563eb; background: #dbeafe; }
-nav.main-nav .nav-links .active a     { background: #dbeafe; color: #2563eb; font-weight: 600; }
+nav.main-nav .nav-links .active a     { color: #2563eb; font-weight: 600; }
 
 /* Botón hamburguesa — oculto en desktop */
 .nav-hamburger {
@@ -552,3 +552,163 @@ body.disc-modal-activo nav.main-nav {
   z-index: 1 !important;
   pointer-events: none !important;
 }
+
+/* ── 12. MANUAL DE USUARIO (FAB & MODAL) ── */
+
+/* Floating Action Button (FAB) */
+.fab-manual {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: #185FA5;
+  color: #E6F1FB;
+  text-decoration: none;
+  border-radius: 50px;
+  padding: 14px;
+  box-shadow: 0 4px 16px rgba(24, 95, 165, 0.30);
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: padding 0.30s cubic-bezier(.4, 0, .2, 1),
+              gap     0.30s cubic-bezier(.4, 0, .2, 1),
+              box-shadow 0.20s ease, 
+              background 0.20s ease;
+}
+.fab-manual:hover  { padding: 14px 20px 14px 16px; gap: 9px; background: #0C447C; box-shadow: 0 6px 24px rgba(24, 95, 165, 0.40); }
+.fab-manual:active { transform: scale(0.97); }
+.fab-manual svg    { width: 22px; height: 22px; flex-shrink: 0; transition: transform 0.20s ease; }
+.fab-manual:hover svg { transform: scale(1.10); }
+
+.fab-manual__label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: max-width 0.30s cubic-bezier(.4, 0, .2, 1), 
+              opacity 0.25s ease;
+}
+.fab-manual:hover .fab-manual__label { max-width: 180px; opacity: 1; }
+
+/* Modal Overlay */
+.modal-overlay-manual {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.60);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Visible cuando JS añade la clase */
+.modal-overlay-manual.is-open { display: flex !important; }
+
+/* Contenedor interior */
+.modal-container-manual {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.30);
+}
+
+/* Barra de título */
+.modal-header-manual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #1E3A8A;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+.modal-title-manual {
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-close-manual {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.modal-close-manual:hover { background: rgba(255, 255, 255, 0.30); }
+
+/* Iframe */
+.modal-iframe-manual {
+  flex: 1;
+  border: none;
+  width: 100%;
+  display: block;
+  min-height: 0;
+}
+
+/* ── Responsivo: Tablet (≤768px) ── */
+@media (max-width: 768px) {
+  .modal-overlay-manual {
+    padding: 12px;
+    align-items: flex-end;
+  }
+  .modal-container-manual {
+    height: 92vh;
+    border-radius: 20px 20px 12px 12px;
+  }
+}
+
+/* ── Responsivo: Móvil (≤540px) ── */
+@media (max-width: 540px) {
+  .fab-manual { 
+    bottom: 16px; 
+    right: 16px; 
+    padding: 12px; 
+  }
+  .fab-manual:hover { padding: 12px; gap: 0; }
+  .fab-manual:hover .fab-manual__label { max-width: 0; opacity: 0; }
+
+  .modal-overlay-manual {
+    padding: 0;
+    align-items: stretch;
+  }
+  .modal-container-manual {
+    height: 100dvh;
+    height: 100vh;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .modal-header-manual {
+    border-radius: 0;
+    padding: 12px 16px;
+  }
+  .modal-title-manual { font-size: 13px; }
+}
