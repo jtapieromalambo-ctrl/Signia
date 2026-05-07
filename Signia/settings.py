@@ -114,7 +114,6 @@ LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── EMAIL ──────────────────────────────────────────────
-EMAIL_BACKEND = 'usuarios.email_backend.SSLEmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_SSL = False
