@@ -114,7 +114,8 @@ LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── EMAIL ──────────────────────────────────────────────
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'usuarios.email_backend.BrevoEmailBackend'
+BREVO_API_KEY = config('BREVO_API_KEY', default='')
 EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')
 EMAIL_PORT = 465
 EMAIL_USE_TLS = True
