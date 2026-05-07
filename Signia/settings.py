@@ -114,15 +114,9 @@ LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── EMAIL ──────────────────────────────────────────────
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_SSL = False
-EMAIL_USE_TLS = True
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # el backend por defecto
-
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
+EMAIL_BACKEND = 'usuarios.resend_backend.ResendEmailBackend'
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+DEFAULT_FROM_EMAIL = 'Signia <onboarding@resend.dev>'
 
 # ── ALLAUTH ────────────────────────────────────────────
 SITE_ID = config("SITE_ID", default=1, cast=int)
