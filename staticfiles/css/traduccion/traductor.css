@@ -262,3 +262,225 @@ label {
         transform: translateX(-50%) translateY(-15px);
     }
 }
+
+/* Estilos LSC */
+
+/* Aviso fallback */
+.lsc-aviso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #92400e;
+    margin-bottom: 14px;
+}
+
+/* Panel LSC principal — toast flotante inferior derecha */
+.lsc-panel {
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    top: auto !important;
+    left: auto !important;
+    width: 320px;
+    max-width: calc(100vw - 40px);
+    border: 1px solid #d1fae5;
+    border-radius: 14px;
+    padding: 16px 18px 20px;
+    background: #f0fdf4;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+    z-index: 99999 !important;
+    animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    overflow: hidden;
+    /* Reset any inherited flex/grid behavior */
+    display: block !important;
+    margin: 0 !important;
+    flex: none !important;
+}
+
+.lsc-panel.lsc-panel--hiding {
+    animation: toastOut 0.3s ease-in forwards;
+}
+
+/* Barra de progreso auto-dismiss */
+.lsc-panel__progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 0 0 14px 14px;
+    background: #22c55e;
+    animation: progressBar var(--lsc-duration, 7s) linear forwards;
+}
+
+/* Botón cerrar */
+.lsc-panel__close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: rgba(0,0,0,0.06);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1;
+    transition: background 0.2s;
+}
+.lsc-panel__close:hover { background: rgba(0,0,0,0.14); }
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(12px) scale(0.96); }
+}
+
+@keyframes progressBar {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+
+/* Badges meta */
+.lsc-panel__meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.lsc-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.lsc-badge--declarative  { background: #dbeafe; color: #1e40af; }
+.lsc-badge--negative     { background: #fee2e2; color: #991b1b; }
+.lsc-badge--question_yn  { background: #fef9c3; color: #854d0e; }
+.lsc-badge--question_wh  { background: #ede9fe; color: #4c1d95; }
+.lsc-badge--exclamative  { background: #fce7f3; color: #9d174d; }
+.lsc-badge--facial       { background: #fce7f3; color: #9d174d; }
+
+/* Fila de tokens */
+.lsc-tokens {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px 4px;
+}
+
+.lsc-token-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+
+/* Flecha entre tokens */
+.lsc-arrow {
+    position: absolute;
+    right: -10px;
+    top: 10px;
+    font-size: 16px;
+    color: #86efac;
+    pointer-events: none;
+    line-height: 1;
+}
+
+.lsc-token {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    background: #fff;
+    border: 1.5px solid #86efac;
+    color: #166534;
+    white-space: nowrap;
+}
+
+.lsc-token--missing {
+    background: #fff1f2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.lsc-token--synonym {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #92400e;
+}
+
+/* Etiqueta bajo el token */
+.lsc-token__label {
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.lsc-token__label--spell  { color: #b91c1c; }
+.lsc-token__label--record { color: #b45309; }
+.lsc-token__label--syn    { color: #92400e; }
+
+/* Nota lingüística */
+.lsc-panel__note {
+    font-size: 12px;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+/* Faltantes */
+.lsc-faltantes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #d1fae5;
+}
+
+.lsc-faltantes__titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    width: 100%;
+}
+
+.lsc-faltante-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.lsc-faltante-chip--spell  { background: #fee2e2; color: #991b1b; }
+.lsc-faltante-chip--record { background: #fff7ed; color: #92400e; }
+
+.lsc-faltante-chip__est {
+    font-weight: 400;
+    font-size: 10px;
+    opacity: 0.8;
+}

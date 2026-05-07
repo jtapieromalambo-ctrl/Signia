@@ -1,0 +1,250 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signia ÔÇô Inicio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/usuarios/index.css' %}">
+</head>
+<body>
+
+  <!-- FONDO ANIMADO -->
+  <div class="bg"></div>
+  <div class="bg bg2"></div>
+  <div class="bg bg3"></div>
+
+  <!-- NAVBAR -->
+  <nav>
+     <a class="nav-logo" href="{% url 'index' %}">
+    <img src="{% static 'css/img/signia_icono.png' %}" alt="Signia" style="height: 60px; width: auto;">
+</a>
+    <ul class="nav-links">
+      <li class="active"><a href="{% url 'index' %}">Inicio</a></li>
+      <li><a href="{% url 'home' %}">Login</a></li>
+      <li><a href="{% url 'traduccion' %}">Traductor</a></li>
+      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+      <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-badge">Lenguaje de se├▒as colombiano</div>
+      <h1>Comun├¡cate sin <span>barreras</span> con Signia</h1>
+      <p>Plataforma de traducci├│n e interpretaci├│n de lenguaje de se├▒as impulsada por inteligencia artificial. Conectamos a personas sordas y mudas con el mundo.</p>
+      <div class="hero-actions">
+        <a href="{% url 'registro' %}" class="btn-primary">Comenzar gratis</a>
+        <a href="{% url 'home' %}" class="btn-secondary">Iniciar sesi├│n</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="visual-card">
+        <p class="visual-title">Se├▒as del abecedario</p>
+
+        <div class="video-wrapper">
+          <video
+            id="sign-video"
+            src="{% static 'se├▒as.mp4' %}" 
+            autoplay
+            muted
+            loop
+            playsinline
+          ></video>
+        </div>
+
+        <div class="translation-box">
+          <p id="sign-translation" class="sign-translation-text">ÔÇô</p>
+        </div>
+
+        <div class="visual-stat">
+          <div class="stat-dot"></div>
+          <p>Traducci├│n en tiempo real activa</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="features-title">
+      <h2>┬┐Qu├® puedes hacer con Signia?</h2>
+      <p>Herramientas dise├▒adas para facilitar la comunicaci├│n inclusiva</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" 
+          width="24" height="24" viewBox="0 0 24 24" fill="none" 
+          stroke="#2563EB" stroke-width="2" stroke-linecap="round" 
+          stroke-linejoin="round" class="lucide lucide-hand-icon lucide-hand">
+          <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/>
+          <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/>
+          <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/>
+          <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+        </svg></div>
+        <h3>Traductor de se├▒as</h3>
+        <p>Escribe texto y nuestro avatar animado lo convierte autom├íticamente en lenguaje de se├▒as colombiano en tiempo real.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg"
+           width="24" height="24" viewBox="0 0 24 24" fill="none" 
+           stroke="#2563EB" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" class="lucide lucide-camera-icon lucide-camera">
+            <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/>
+          <circle cx="12" cy="13" r="3"/></svg></div>
+        <h3>Reconocimiento por c├ímara</h3>
+        <p>Usa tu c├ímara para hacer se├▒as y Signia las interpreta y convierte a texto de forma instant├ínea con IA.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" 
+          width="24" height="24" viewBox="0 0 24 24" fill="none" 
+          stroke="#2563EB" stroke-width="2" stroke-linecap="round" 
+          stroke-linejoin="round" class="lucide lucide-hand-heart-icon lucide-hand-heart">
+          <path d="M11 14h2a2 2 0 0 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"/>
+          <path d="m14.45 13.39 5.05-4.694C20.196 8 21 6.85 21 5.75a2.75 2.75 0 0 0-4.797-1.837.276.276 0 0 1-.406 0A2.75 2.75 0 0 0 11 5.75c0 1.2.802 2.248 1.5 2.946L16 11.95"/>
+          <path d="m2 15 6 6"/>
+          <path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a1 1 0 0 0-2.75-2.91"/></svg>
+        </div>
+        <h3>Acceso inclusivo</h3>
+        <p>Dise├▒ado para personas sordas, mudas y cualquiera que quiera aprender o comunicarse en lenguaje de se├▒as.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrapper">
+    <div class="cta">
+      <h2>┬┐Listo para empezar?</h2>
+      <p>Crea tu cuenta gratis y accede a todas las herramientas de Signia hoy mismo.</p>
+      <a href="{% url 'registro' %}" class="btn-white">Crear cuenta gratis</a>
+    </div>
+  </div>
+
+  <footer>┬® 2025 Signia ┬À Sistema de traducci├│n de lenguaje de se├▒as</footer>
+
+  <script>
+    const video = document.getElementById('sign-video');
+    const translationEl = document.getElementById('sign-translation');
+
+    const signs = [
+      { start: 0,  end: 3,  text: "Hola" },
+      { start: 3,  end: 6,  text: "┬┐C├│mo est├ís?" },
+    ];
+
+    function updateTranslation() {
+      const t = video.currentTime;
+      const current = signs.find(s => t >= s.start && t < s.end);
+      const newText = current ? current.text : "ÔÇô";
+
+      if (translationEl.textContent !== newText) {
+        translationEl.style.opacity = '0';
+        setTimeout(() => {
+          translationEl.textContent = newText;
+          translationEl.style.opacity = '1';
+        }, 150);
+      }
+
+      requestAnimationFrame(updateTranslation);
+    }
+
+    video.addEventListener('loadedmetadata', () => {
+      requestAnimationFrame(updateTranslation);
+    });
+
+    if (video.readyState >= 1) {
+      requestAnimationFrame(updateTranslation);
+    }
+  </script>
+<button 
+  onclick="document.getElementById('modal-manual').style.display='flex'"
+  class="fab-manual"
+  title="Abrir Manual de Usuario"
+  aria-label="Abrir Manual de Usuario"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <polyline points="10 9 9 9 8 9"/>
+  </svg>
+  <span class="fab-manual__label">Manual de Usuario</span>
+</button>
+
+<!-- Modal del Manual -->
+<div id="modal-manual" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+">
+  <div style="
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 1100px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  ">
+    <div style="
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #E2E8F0;
+      background: #1E3A8A;
+      border-radius: 16px 16px 0 0;
+    ">
+      <span style="color:white; font-weight:700; font-size:16px; font-family:'Poppins',sans-serif;">
+        ­ƒôû Manual de Usuario ÔÇö Signia
+      </span>
+      <button onclick="document.getElementById('modal-manual').style.display='none'" style="
+        background: rgba(255,255,255,0.15);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      " onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+         onmouseout="this.style.background='rgba(255,255,255,0.15)'">Ô£ò</button>
+    </div>
+    <iframe 
+      src="{% static 'manual/manual-usuario.html' %}"
+      style="flex:1; border:none; width:100%;"
+      title="Manual de Usuario Signia"
+    ></iframe>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('modal-manual').style.display = 'none';
+    }
+  });
+  document.getElementById('modal-manual').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+</script>
+
+</body>
+</html>
