@@ -42,6 +42,22 @@
   .paginacion a:hover { background: var(--blue-primary); color: white; }
   .clear-btn { display: flex; align-items: center; gap: 7px; background: #fff; border: 1.5px solid #f09595; color: #a32d2d; border-radius: 999px; padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; margin-left: auto; }
   .clear-btn:hover { background: #fcebeb; }
+  
+  /* -- Responsive -- */
+  @media (max-width: 768px) {
+    .page { padding: 1.5rem 1rem; }
+    .historial-header { padding: 1.5rem 1.25rem; }
+    .historial-header h1 { font-size: 1.4rem; }
+    .historial-header p { font-size: 0.85rem; }
+    .historial-header::before { width: 100px; height: 100px; right: -20px; top: -20px; }
+    .filtros { gap: 0.5rem; }
+    .filtro-btn { padding: 0.45rem 0.9rem; font-size: 0.82rem; }
+    .clear-btn { margin-left: 0; width: 100%; justify-content: center; padding: 0.6rem; }
+    .entrada { padding: 0.9rem 1rem; gap: 0.75rem; }
+    .entrada-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+    .entrada-contenido { font-size: 0.9rem; }
+    .vacio { padding: 2.5rem 1.5rem; }
+  }
 </style>
 {% endblock %}
 
@@ -50,17 +66,29 @@
 
   <!-- HEADER — sin cambios -->
   <div class="historial-header">
-    <h1>📋 Mi Historial</h1>
+    <h1 style="display: flex; align-items: center; gap: 0.75rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        Mi Historial
+    </h1>
     <p>Registro de todas tus traducciones y reconocimientos</p>
   </div>
 
   <!-- LÍNEA 68: botón usa openModal() en vez de classList.add, y solo aparece si hay entradas -->
   <div class="filtros">
     <a href="{% url 'historial' %}" class="filtro-btn {% if not tipo_filtro %}active{% endif %}">Todos</a>
-    <a href="{% url 'historial' %}?tipo=traduccion" class="filtro-btn {% if tipo_filtro == 'traduccion' %}active{% endif %}">🖐️ Traducciones</a>
-    <a href="{% url 'historial' %}?tipo=reconocimiento" class="filtro-btn {% if tipo_filtro == 'reconocimiento' %}active{% endif %}">📷 Reconocimientos</a>
+    <a href="{% url 'historial' %}?tipo=traduccion" class="filtro-btn {% if tipo_filtro == 'traduccion' %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+        Traducciones
+    </a>
+    <a href="{% url 'historial' %}?tipo=reconocimiento" class="filtro-btn {% if tipo_filtro == 'reconocimiento' %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        Reconocimientos
+    </a>
     {% if entradas %}
-      <button class="clear-btn" onclick="openModal()">🗑 Borrar todo el historial</button>
+      <button class="clear-btn" onclick="openModal()" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Borrar todo el historial
+      </button>
     {% endif %}
   </div>
 
@@ -70,7 +98,11 @@
       {% for entrada in entradas %}
         <div class="entrada {{ entrada.tipo }}" id="entrada-{{ entrada.id }}">
           <div class="entrada-icon">
-            {% if entrada.tipo == 'traduccion' %}🖐️{% else %}📷{% endif %}
+            {% if entrada.tipo == 'traduccion' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            {% endif %}
           </div>
           <div class="entrada-info">
             <div class="entrada-tipo">{{ entrada.get_tipo_display }}</div>
@@ -79,7 +111,9 @@
           </div>
           <form method="POST" action="{% url 'eliminar_entrada' entrada.id %}" onsubmit="return confirmarEliminar(event, {{ entrada.id }})">
             {% csrf_token %}
-            <button type="submit" class="btn-eliminar" title="Eliminar">🗑️</button>
+            <button type="submit" class="btn-eliminar" title="Eliminar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
           </form>
         </div>
       {% endfor %}
@@ -88,17 +122,25 @@
     {% if entradas.has_other_pages %}
       <div class="paginacion">
         {% if entradas.has_previous %}
-          <a href="?page={{ entradas.previous_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">← Anterior</a>
+          <a href="?page={{ entradas.previous_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+              Anterior
+          </a>
         {% endif %}
         {% if entradas.has_next %}
-          <a href="?page={{ entradas.next_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Siguiente →</a>
+          <a href="?page={{ entradas.next_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
         {% endif %}
       </div>
     {% endif %}
 
   {% else %}
     <div class="vacio">
-      <div class="icon">📭</div>
+      <div class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+      </div>
       <h2>Sin registros aún</h2>
       <p>Cuando uses el traductor o el reconocimiento, tus actividades aparecerán aquí.</p>
     </div>
@@ -107,7 +149,10 @@
   <!-- LÍNEA 120: modal movido FUERA del if/else (antes estaba dentro del else, por eso no aparecía) -->
   <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:100; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:18px; padding:28px; max-width:360px; width:90%;">
-      <h2 style="font-size:17px; font-weight:600; margin-bottom:8px;">⚠️ Borrar todo el historial</h2>
+      <h2 style="font-size:17px; font-weight:600; margin-bottom:8px; display: flex; align-items: center; gap: 0.5rem; color: #dc2626;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          Borrar todo el historial
+      </h2>
       <p style="font-size:14px; color:#555; margin-bottom:22px; line-height:1.5;">
         {% if user.is_staff %}
           Como administrador, eliminarás permanentemente todos los registros. Esta acción no se puede deshacer.

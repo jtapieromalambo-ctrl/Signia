@@ -32,7 +32,10 @@
 <div class="page">
   <div class="card">
     <div class="card-header">
-      <h1>🤟 Casi listo</h1>
+      <h1 style="display: flex; align-items: center; gap: 0.6rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+          Casi listo
+      </h1>
       <p>Completa tu perfil para continuar con Google</p>
     </div>
     <div class="card-body">
@@ -47,7 +50,10 @@
             {% endfor %}
           </div>
         {% endfor %}
-        <button type="submit" class="btn">Continuar →</button>
+        <button type="submit" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            Continuar
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
       </form>
     </div>
   </div>
