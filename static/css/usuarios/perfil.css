@@ -225,15 +225,17 @@
  }
 
  .btn-accion-danger {
-   background: white;
-   color: #DC2626;
-   border: 1.5px solid #FCA5A5;
+   background: #ef4444;
+   color: white;
+   border: none;
+   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
    margin-left: auto;
  }
 
  .btn-accion-danger:hover {
-   background: #FEE2E2;
+   background: #dc2626;
    transform: translateY(-1px);
+   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
  }
 
  .alert-success {
@@ -395,15 +397,74 @@
  }
 
  @media (max-width: 640px) {
+   .perfil-header {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     text-align: center;
+     padding: 2.5rem 1.5rem;
+   }
+
+   .perfil-avatar {
+     margin-left: auto;
+     margin-right: auto;
+   }
+
    .info-grid {
      grid-template-columns: 1fr;
+   }
+
+   .info-item {
+     text-align: center;
    }
 
    .accesos {
      grid-template-columns: 1fr;
    }
 
-   .btn-accion-danger {
-     margin-left: 0;
+   .perfil-acciones {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 0.75rem;
    }
+
+   .btn-accion-primary { order: 1; justify-content: center; }
+   .btn-accion-danger { order: 2; margin-left: 0; justify-content: center; width: 100%; }
+   .btn-accion-outline { order: 3; grid-column: span 2; justify-content: center; }
+
+   .btn-accion {
+     padding: 0.75rem 0.4rem;
+     font-size: 0.8rem;
+     justify-content: center;
+     height: 100%; /* Asegura que todos los botones del grid tengan la misma altura */
+   }
+ }
+
+ /* ── ICONOS SVG ── */
+ .acceso-icon svg {
+   width: 28px;
+   height: 28px;
+   color: var(--blue-primary);
+ }
+
+ .discapacidad-badge svg {
+   width: 16px;
+   height: 16px;
+ }
+
+ .btn-accion svg {
+   width: 18px;
+   height: 18px;
+ }
+
+ .alert-success svg {
+   width: 18px;
+   height: 18px;
+   color: #16A34A;
+ }
+
+ .modal-eliminar-box .icon svg {
+   width: 48px;
+   height: 48px;
+   margin-bottom: 0.5rem;
  }

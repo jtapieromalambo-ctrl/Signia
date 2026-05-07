@@ -4,7 +4,7 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-railway')
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'Signia.wsgi.application'
 # ── BASE DE DATOS con Neon PostgreSQL ─────────────────
 DATABASES = {
     'default': {
-        **dj_database_url.parse(config('DATABASE_URL'), conn_max_age=0),
+        **dj_database_url.parse(config('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')), conn_max_age=0),
         'DISABLE_SERVER_SIDE_CURSORS': True,
         'OPTIONS': {
             'sslmode': 'require',
@@ -99,7 +99,13 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_ROOT = BASE_DIR / "media"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# CompressedStaticFilesStorage (sin Manifest) para evitar que WhiteNoise renombre
+# los archivos WASM de MediaPipe con hashes — MediaPipe los busca por nombre exacto.
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+import mimetypes
+mimetypes.add_type("application/wasm", ".wasm")
+mimetypes.add_type("application/octet-stream", ".task")
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = '/login/'
@@ -110,11 +116,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ── EMAIL ──────────────────────────────────────────────
 EMAIL_BACKEND = 'usuarios.email_backend.SSLEmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # el backend por defecto
+
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
 
 # ── ALLAUTH ────────────────────────────────────────────
@@ -172,7 +180,17 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # ── GROQ (capa gramatical LSC) ─────────────────────────
 import os
-os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
+os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY', default='')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com', '.up.railway.app']
+
+# Railway specific domains
+railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+if railway_domain:
+    ALLOWED_HOSTS.append(railway_domain)
+    CSRF_TRUSTED_ORIGINS = [f'https://{railway_domain}']
+
+# Configuración crucial para que Django sepa que está bajo HTTPS detrás del proxy de Railway
+# Esto arregla el error "redirect_uri_mismatch" de Google (http vs https)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
