@@ -18,9 +18,8 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         return user
 
     def get_login_redirect_url(self, request):
-        """Para usuarios que ya existían y hacen login con Google"""
         user = request.user
-        if user.is_authenticated and user.discapacidad == 'ninguna':
+        if user.is_authenticated and not user.discapacidad_seleccionada:
             return '/seleccionar-discapacidad/'
         if user.discapacidad == 'sordo':
             return '/traduccion/'
@@ -29,5 +28,4 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         return '/perfil/'
 
     def get_signup_redirect_url(self, request):
-        """Para usuarios nuevos que se registran con Google por primera vez"""
         return '/seleccionar-discapacidad/'

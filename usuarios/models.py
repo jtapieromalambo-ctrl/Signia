@@ -5,6 +5,7 @@ import string
 from django.utils import timezone
 from datetime import timedelta
 
+
 class Usuario(AbstractUser):
     # Sobreescribimos username para permitir espacios y caracteres especiales
     username = models.CharField(
@@ -18,6 +19,7 @@ class Usuario(AbstractUser):
         ('sordo',   'Sordo'),
         ('mudo',    'Mudo'),
     ]
+
     email = models.EmailField(unique=True)
     discapacidad = models.CharField(
         max_length=10,
@@ -27,6 +29,7 @@ class Usuario(AbstractUser):
     email_verificado = models.BooleanField(default=False)
     acepto_terminos = models.BooleanField(default=False)
     fecha_aceptacion_terminos = models.DateTimeField(null=True, blank=True)
+    discapacidad_seleccionada = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

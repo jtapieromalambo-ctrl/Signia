@@ -788,6 +788,7 @@ def seleccionar_discapacidad(request):
         discapacidad = request.POST.get('discapacidad', 'ninguna')
         if discapacidad in ['ninguna', 'sordo', 'mudo']:
             request.user.discapacidad = discapacidad
+            request.user.discapacidad_seleccionada = True
             request.user.save()
 
             # Correo de bienvenida para usuarios de Google (solo primera vez)
