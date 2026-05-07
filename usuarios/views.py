@@ -781,7 +781,7 @@ def requiere_email_verificado(view_func):
 # ── SELECCIONAR DISCAPACIDAD (post-Google OAuth) ───────
 @login_required
 def seleccionar_discapacidad(request):
-    if request.user.discapacidad != 'ninguna':
+    if request.user.discapacidad_seleccionada:
         return redirigir_por_discapacidad(request.user)
 
     if request.method == 'POST':
