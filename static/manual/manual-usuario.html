@@ -21,13 +21,14 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
 
   body {
     font-family: 'Sora', sans-serif;
     background: #F8FAFC;
     color: var(--texto);
     overflow-x: hidden;
+    width: 100%;
   }
 
   /* ── HERO ── */
@@ -262,20 +263,44 @@
   }
 
   /* ── TABLA ── */
-  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 20px 0; }
+  table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    font-size: 13px; 
+    margin: 32px 0; 
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  }
   th {
     background: var(--azul-dark);
     color: white;
-    padding: 10px 14px;
-    text-align: left;
+    padding: 14px;
+    text-align: center;
     font-weight: 600;
     font-size: 12px;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
-  th:first-child { border-radius: 8px 0 0 0; }
-  th:last-child  { border-radius: 0 8px 0 0; }
-  td { padding: 10px 14px; border-bottom: 1px solid #F1F5F9; color: var(--gris); line-height: 1.5; }
-  tr:nth-child(even) td { background: var(--azul-light); }
+  td { 
+    padding: 16px 14px; 
+    border-bottom: 1px solid #F1F5F9; 
+    color: var(--gris); 
+    line-height: 1.5; 
+    text-align: center;
+    vertical-align: middle;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  td .lucide-icon {
+    margin-right: 6px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
 
   /* ── GRID 2 COLS ── */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
