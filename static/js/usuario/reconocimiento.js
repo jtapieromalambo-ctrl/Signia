@@ -25,15 +25,18 @@ let ultimaSenaDetectada = '';
 let cooldownActivo = 0;
 let procesando = false;
 let framesAcumuladosDesdePred = 0;
+let timerInactividad = null;
+
+const TIMEOUT_SIN_SENA_MS = 10000; // 10 segundos sin seña → limpiar palabra
 
 const FRAMES_SIN_MANO_MAX = 8;
 const MIN_FRAMES_SEÑA     = 15;
 const MAX_BUFFER_SIZE     = 50; // Ventana de ~2.5s (permite señas largas)
-const INTERVALO_PRED      = 18; // Predecir cada ~0.9s
-const COOLDOWN_FRAMES     = 24; // Esperar ~1.2s después de una detección
+const INTERVALO_PRED      = 12; // Predecir cada ~0.6s (más fluido para diálogo)
+const COOLDOWN_FRAMES     = 14; // Esperar ~0.7s después de una detección
 const INTERVALO_MS        = 50;
-const JPEG_QUALITY        = 0.4;
-const UMBRAL_CONFIANZA    = 60; // Confianza mínima para de corrido
+const JPEG_QUALITY        = 0.65; // Mayor calidad → landmarks más precisos
+const UMBRAL_CONFIANZA    = 55; // Confianza mínima para de corrido
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
 async function iniciarMediaPipe() {
@@ -273,6 +276,7 @@ function detener() {
     cooldownActivo = 0;
     procesando = false;
     framesAcumuladosDesdePred = 0;
+    if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
     
     speechSynthesis.cancel();
 }
@@ -321,9 +325,9 @@ async function procesarSecuencia(frames) {
                     resultado.innerHTML = '<div id="historial">' + textoAcumulado + '</div>';
                 }
             }
+            // Reiniciar el timer de inactividad cada vez que se detecta algo válido
+            reiniciarTimerInactividad();
         }
-        // Nota: Si no se reconoce nada o es la misma seña, simplemente se ignora y el loop continúa.
-        // No borramos la seña anterior de la interfaz para no parpadear visualmente.
     } catch (err) {
         console.error('[DEBUG] Error:', err);
     } finally {
@@ -338,6 +342,17 @@ function submuestrear(frames, max) {
     return out;
 }
 
+// ── Timer de inactividad (10s sin seña → limpiar palabra) ────────────
+function reiniciarTimerInactividad() {
+    if (timerInactividad) clearTimeout(timerInactividad);
+    timerInactividad = setTimeout(() => {
+        señaActual.textContent     = '--';
+        confianzaTexto.textContent = 'Confianza: --';
+        estadoTexto.textContent    = 'Listo — muestra tu mano para firmar';
+        timerInactividad = null;
+    }, TIMEOUT_SIN_SENA_MS);
+}
+
 function limpiarHistorial() {
     textoAcumulado  = '';
     secuenciaFrames = [];
@@ -347,6 +362,7 @@ function limpiarHistorial() {
     cooldownActivo = 0;
     procesando = false;
     framesAcumuladosDesdePred = 0;
+    if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
     
     resultado.classList.remove('activo');
     resultado.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">El texto traducido aparecerá aquí...</span>';

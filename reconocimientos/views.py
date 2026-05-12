@@ -129,10 +129,34 @@ def construir_features(secuencia_norm):
     return np.concatenate([posiciones, deltas.flatten(), magnitud])
 
 
+def _normalizar_landmarks_centroide(puntos):
+    """
+    Recibe lista plana de landmarks [x0,y0,z0, x1,y1,z1, ...] (63 o 126 valores).
+    Normaliza cada mano restando su centroide → features invariantes a posición en pantalla.
+    """
+    arr = np.array(puntos, dtype=np.float64)
+    # Mano 1 (primeros 63 = 21 puntos × 3)
+    mano1 = arr[:63].reshape(21, 3)
+    centroide1 = mano1.mean(axis=0)
+    mano1 = mano1 - centroide1
+
+    resultado = mano1.flatten().tolist()
+
+    # Mano 2 (si existe, siguientes 63 valores)
+    if len(arr) > 63:
+        mano2 = arr[63:126].reshape(21, 3)
+        if np.any(mano2 != 0):  # solo si hay segunda mano real
+            centroide2 = mano2.mean(axis=0)
+            mano2 = mano2 - centroide2
+        resultado += mano2.flatten().tolist()
+
+    return resultado
+
+
 def aumentar_secuencia(secuencia_array):
     """
     Genera variaciones artificiales para aumentar el dataset.
-    Igual que en extraer_secuencias.py
+    8 variaciones totales para mejor generalización.
     """
     variaciones = [secuencia_array]
 
@@ -144,7 +168,7 @@ def aumentar_secuencia(secuencia_array):
     factor = np.random.uniform(0.93, 1.07)
     variaciones.append(secuencia_array * factor)
 
-    # Variación 3: velocidad diferente
+    # Variación 3: velocidad diferente (más lenta o más rápida)
     n_alt    = np.random.randint(20, 45)
     idx_orig = np.linspace(0, len(secuencia_array) - 1, len(secuencia_array))
     idx_alt  = np.linspace(0, len(secuencia_array) - 1, n_alt)
@@ -152,6 +176,30 @@ def aumentar_secuencia(secuencia_array):
     for i in range(secuencia_array.shape[1]):
         sec_alt[:, i] = np.interp(idx_alt, idx_orig, secuencia_array[:, i])
     variaciones.append(sec_alt)
+
+    # Variación 4: espejo horizontal (simula mano izquierda/derecha)
+    espejo = secuencia_array.copy()
+    for f in range(len(espejo)):
+        for j in range(0, min(len(espejo[f]), 126), 3):  # cada punto x,y,z
+            espejo[f][j] = 1.0 - espejo[f][j]  # invertir X
+    variaciones.append(espejo)
+
+    # Variación 5: traslación aleatoria (simula desplazamiento en pantalla)
+    dx = np.random.uniform(-0.08, 0.08)
+    dy = np.random.uniform(-0.08, 0.08)
+    traslacion = secuencia_array.copy()
+    for f in range(len(traslacion)):
+        for j in range(0, min(len(traslacion[f]), 126), 3):
+            traslacion[f][j]     += dx  # x
+            traslacion[f][j + 1] += dy  # y
+    variaciones.append(traslacion)
+
+    # Variación 6: ruido más fuerte (robustez a temblor intenso)
+    ruido_fuerte = secuencia_array + np.random.normal(0, 0.018, secuencia_array.shape)
+    variaciones.append(ruido_fuerte)
+
+    # Variación 7: velocidad inversa (la seña al revés, útil para simetría temporal)
+    variaciones.append(secuencia_array[::-1].copy())
 
     return variaciones
 
@@ -204,6 +252,8 @@ def predecir(request):
                         puntos.extend([punto.x, punto.y, punto.z])
                 if len(resultado.hand_landmarks) == 1:
                     puntos.extend([0.0] * 63)
+                # Normalizar al centroide → invariante a posición en pantalla
+                puntos = _normalizar_landmarks_centroide(puntos)
                 secuencia.append(puntos)
 
         print(f'[RECONOCIMIENTO] Frames con mano detectada: {len(secuencia)}/{len(frames_b64)} recibidos')
@@ -531,6 +581,8 @@ def entrenar_modelo(request):
                                     puntos.extend([punto.x, punto.y, punto.z])
                             if len(resultado.hand_landmarks) == 1:
                                 puntos.extend([0.0] * 63)
+                            # Normalizar al centroide → invariante a posición en pantalla
+                            puntos = _normalizar_landmarks_centroide(puntos)
                             secuencia.append(puntos)
                     except Exception as e_frame:
                         print(f'[Train] ⚠️  Error procesando frame: {e_frame}')
@@ -600,9 +652,12 @@ def entrenar_modelo(request):
             y_enc         = nuevo_encoder.fit_transform(y)
 
             nuevo_modelo = RandomForestClassifier(
-                n_estimators=300,
+                n_estimators=500,
                 max_depth=None,
-                min_samples_leaf=2,
+                min_samples_leaf=1,
+                min_samples_split=3,
+                max_features='sqrt',
+                class_weight='balanced',
                 random_state=42,
                 n_jobs=-1
             )
@@ -708,8 +763,10 @@ def sena_eliminar(request, nombre):
         nuevo_encoder = LabelEncoder()
         y_enc = nuevo_encoder.fit_transform(y)
 
-        nuevo_modelo = RandomForestClassifier(n_estimators=300, max_depth=None,
-                                              min_samples_leaf=2, random_state=42, n_jobs=-1)
+        nuevo_modelo = RandomForestClassifier(n_estimators=500, max_depth=None,
+                                              min_samples_leaf=1, min_samples_split=3,
+                                              max_features='sqrt', class_weight='balanced',
+                                              random_state=42, n_jobs=-1)
         nuevo_modelo.fit(X, y_enc)
 
         with open(MODELO_PATH, 'wb') as f:
