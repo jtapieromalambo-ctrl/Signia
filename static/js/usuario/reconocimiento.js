@@ -27,16 +27,26 @@ let procesando = false;
 let framesAcumuladosDesdePred = 0;
 let timerInactividad = null;
 
+// ── Sistema de confirmación para señas compuestas ──────────────────
+// La primera predicción se guarda como «candidata» sin mostrarla.
+// Solo se muestra cuando una segunda predicción la confirma (misma seña)
+// o cuando la mano baja. Si la segunda predicción es diferente, se
+// reemplaza la candidata (el gesto seguía evolucionando).
+let candidataPendiente   = null;   // { seña, confianza, timestamp }
+let timerCandidataTimeout = null;  // Safety net: confirmar tras 2.5s sin cambio
+const CANDIDATA_TIMEOUT_MS = 1000; // Máximo tiempo esperando confirmación (reducido de 2.5s a 1s)
+
 const TIMEOUT_SIN_SENA_MS = 10000; // 10 segundos sin seña → limpiar palabra
 
-const FRAMES_SIN_MANO_MAX = 8;
-const MIN_FRAMES_SEÑA     = 15;
-const MAX_BUFFER_SIZE     = 50; // Ventana de ~2.5s (permite señas largas)
-const INTERVALO_PRED      = 12; // Predecir cada ~0.6s (más fluido para diálogo)
-const COOLDOWN_FRAMES     = 14; // Esperar ~0.7s después de una detección
+const FRAMES_SIN_MANO_MAX = 12;    // Más tolerancia a pérdidas breves de tracking
+const MIN_FRAMES_SEÑA     = 10;    // Frames mínimos (reducido de 15 a 10 para mayor rapidez)
+const MAX_BUFFER_SIZE     = 60;    // Ventana de ~3s (permite señas más largas)
+const INTERVALO_PRED      = 10;    // Predecir cada ~0.5s (reducido de 15 a 10)
+const COOLDOWN_FRAMES     = 15;    // Esperar ~0.75s después de una detección confirmada
 const INTERVALO_MS        = 50;
-const JPEG_QUALITY        = 0.65; // Mayor calidad → landmarks más precisos
-const UMBRAL_CONFIANZA    = 55; // Confianza mínima para de corrido
+const JPEG_QUALITY        = 0.65;  // Mayor calidad → landmarks más precisos
+const UMBRAL_CONFIANZA    = 55;    // Confianza mínima para de corrido
+const UMBRAL_CONFIANZA_ALTA = 80;  // Confianza para confirmar inmediatamente sin esperar la segunda predicción
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
 async function iniciarMediaPipe() {
@@ -217,6 +227,11 @@ function tick(timestamp) {
         badgeSeña.textContent   = 'Capturando...';
         estadoTexto.textContent = 'Traduciendo de corrido...';
 
+        // Debug periódico: mostrar estado cada 10 frames
+        if (secuenciaFrames.length % 10 === 0) {
+            console.log(`[TICK] 📊 buffer=${secuenciaFrames.length} | acum=${framesAcumuladosDesdePred} | cooldown=${cooldownActivo} | candidata=${candidataPendiente ? candidataPendiente.seña : 'ninguna'}`);
+        }
+
         // Manejo de cooldown para no repetir la misma seña muy rápido
         if (cooldownActivo > 0) {
             cooldownActivo--;
@@ -235,6 +250,11 @@ function tick(timestamp) {
                 // Hacer una última predicción si bajó la mano y quedó algo sin evaluar
                 if (secuenciaFrames.length >= MIN_FRAMES_SEÑA && !procesando && framesAcumuladosDesdePred > 0) {
                     procesarSecuencia([...secuenciaFrames]);
+                }
+                
+                // Si hay candidata pendiente sin confirmar → confirmarla al bajar la mano
+                if (candidataPendiente) {
+                    confirmarCandidata();
                 }
                 
                 // Reset de la ventana deslizante al bajar la mano
@@ -276,19 +296,49 @@ function detener() {
     cooldownActivo = 0;
     procesando = false;
     framesAcumuladosDesdePred = 0;
+    candidataPendiente = null;
+    if (timerCandidataTimeout) { clearTimeout(timerCandidataTimeout); timerCandidataTimeout = null; }
     if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
     
     speechSynthesis.cancel();
 }
 
-// ── Predicción ───────────────────────────────────────────────────────
+// ── Confirmar candidata — muestra la seña al usuario ─────────────────
+function confirmarCandidata() {
+    if (!candidataPendiente) return;
+
+    const { seña: sena, confianza } = candidataPendiente;
+    candidataPendiente = null;
+    if (timerCandidataTimeout) { clearTimeout(timerCandidataTimeout); timerCandidataTimeout = null; }
+
+    // No confirmar reposo ni señas ya mostradas
+    if (!sena || sena === 'reposo' || sena === ultimaSenaDetectada) return;
+
+    ultimaSenaDetectada = sena;
+    cooldownActivo = COOLDOWN_FRAMES;
+
+    señaActual.textContent     = sena.toUpperCase();
+    confianzaTexto.textContent = 'Confianza: ' + confianza + '%';
+
+    if (modoVoz) {
+        hablar(sena);
+    } else {
+        textoAcumulado += (textoAcumulado ? ' ' : '') + sena;
+        resultado.classList.add('activo');
+        resultado.innerHTML = '<div id="historial">' + textoAcumulado + '</div>';
+    }
+
+    reiniciarTimerInactividad();
+    console.log(`[CONFIRM] ✅ Seña confirmada: "${sena}" (${confianza}%)`);
+}
+
+// ── Predicción con sistema de confirmación ───────────────────────────
 async function procesarSecuencia(frames) {
     if (procesando) return;
     procesando = true;
 
     try {
-        // Al enviar 24 frames en lugar de 12, el servidor tiene el doble de información 
-        // temporal para que su "interpolación" coincida mejor con los 30 frames del entrenamiento.
+        // Enviar 24 frames submuestreados → el servidor interpola a 30 para el modelo
         const framesAEnviar = submuestrear(frames, 24);
 
         const response = await fetch('/reconocimientos/predecir/', {
@@ -308,25 +358,49 @@ async function procesarSecuencia(frames) {
             return;
         }
 
-        if (sena && data.confianza >= UMBRAL_CONFIANZA) {
-            // Solo agregar si es una seña diferente a la última detectada en esta ráfaga
-            if (sena !== ultimaSenaDetectada) {
-                ultimaSenaDetectada = sena;
-                cooldownActivo = COOLDOWN_FRAMES; // Evitar detecciones espurias durante la transición
-                
-                señaActual.textContent     = sena.toUpperCase();
-                confianzaTexto.textContent = 'Confianza: ' + data.confianza + '%';
-                
-                if (modoVoz) {
-                    hablar(sena);
-                } else {
-                    textoAcumulado += (textoAcumulado ? ' ' : '') + sena;
-                    resultado.classList.add('activo');
-                    resultado.innerHTML = '<div id="historial">' + textoAcumulado + '</div>';
-                }
+        if (sena && sena !== 'reposo' && data.confianza >= UMBRAL_CONFIANZA) {
+            // Confirmación inmediata si la confianza es muy alta
+            if (data.confianza >= UMBRAL_CONFIANZA_ALTA) {
+                candidataPendiente = { seña: sena, confianza: data.confianza, timestamp: Date.now() };
+                console.log(`[CANDIDATA] 🚀 Confirmación inmediata (alta confianza): "${sena}" (${data.confianza}%)`);
+                confirmarCandidata();
+                return;
             }
-            // Reiniciar el timer de inactividad cada vez que se detecta algo válido
-            reiniciarTimerInactividad();
+
+            if (!candidataPendiente) {
+                // ── Primera predicción: guardar como candidata, NO mostrar ──
+                candidataPendiente = { seña: sena, confianza: data.confianza, timestamp: Date.now() };
+                console.log(`[CANDIDATA] 🔶 Nueva candidata: "${sena}" (${data.confianza}%)`);
+
+                // Safety net: si pasan 1s sin confirmación ni cambio, confirmar automáticamente
+                if (timerCandidataTimeout) clearTimeout(timerCandidataTimeout);
+                timerCandidataTimeout = setTimeout(() => {
+                    console.log(`[CANDIDATA] ⏰ Timeout — confirmando candidata automáticamente`);
+                    confirmarCandidata();
+                }, CANDIDATA_TIMEOUT_MS);
+
+            } else if (sena === candidataPendiente.seña) {
+                // ── Segunda predicción igual → CONFIRMAR ──
+                // Usar la confianza más alta entre ambas
+                if (data.confianza > candidataPendiente.confianza) {
+                    candidataPendiente.confianza = data.confianza;
+                }
+                console.log(`[CANDIDATA] ✅ Confirmada por segunda predicción: "${sena}"`);
+                confirmarCandidata();
+
+            } else {
+                // ── Segunda predicción diferente → el gesto evolucionó ──
+                // Reemplazar candidata (ej: "gracias" → "buenos días")
+                console.log(`[CANDIDATA] 🔄 Cambió: "${candidataPendiente.seña}" → "${sena}"`);
+                candidataPendiente = { seña: sena, confianza: data.confianza, timestamp: Date.now() };
+
+                // Reiniciar timeout con la nueva candidata
+                if (timerCandidataTimeout) clearTimeout(timerCandidataTimeout);
+                timerCandidataTimeout = setTimeout(() => {
+                    console.log(`[CANDIDATA] ⏰ Timeout — confirmando candidata automáticamente`);
+                    confirmarCandidata();
+                }, CANDIDATA_TIMEOUT_MS);
+            }
         }
     } catch (err) {
         console.error('[DEBUG] Error:', err);
@@ -362,6 +436,8 @@ function limpiarHistorial() {
     cooldownActivo = 0;
     procesando = false;
     framesAcumuladosDesdePred = 0;
+    candidataPendiente = null;
+    if (timerCandidataTimeout) { clearTimeout(timerCandidataTimeout); timerCandidataTimeout = null; }
     if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
     
     resultado.classList.remove('activo');
