@@ -217,12 +217,8 @@
                     nuevasColas.forEach(url => colaVideos.push(url));
 
                     activo.pause();
-                    activo.style.display  = 'none';
                     activo.oncanplay      = null;
                     siguiente.oncanplay   = null;
-
-                    activo    = videoA;
-                    siguiente = videoB;
 
                     reproducirSiguiente();
                 } else {
@@ -325,12 +321,8 @@
                                 nuevasColas.forEach(url => colaVideos.push(url));
 
                                 activo.pause();
-                                activo.style.display  = 'none';
                                 activo.oncanplay      = null;
                                 siguiente.oncanplay   = null;
-
-                                activo    = videoA;
-                                siguiente = videoB;
 
                                 reproducirSiguiente();
                             } else {
@@ -383,10 +375,12 @@
     });
 
     document.getElementById('formulario').addEventListener('submit', function(e) {
+        e.preventDefault();
         const texto = inputPalabra?.value || '';
         if (GroseriasModal.verificarTexto(texto)) {
-            e.preventDefault();
             const detectada = GroseriasModal.obtenerPalabraDetectada(texto);
             GroseriasModal.mostrar(detectada, 'texto');
+        } else if (texto.trim().length > 0) {
+            enviarTextoAlBackend(texto);
         }
     });
