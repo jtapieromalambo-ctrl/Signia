@@ -517,7 +517,9 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
             if modelo != MODELOS_GROQ[0]:
                 print(f"ℹ️ LSC Grammar: usando modelo de respaldo '{modelo}'")
 
-            return _normalizar_respuesta(data, vocabulario_disponible)
+            respuesta = _normalizar_respuesta(data, vocabulario_disponible)
+            respuesta["modelo_usado"] = modelo
+            return respuesta
 
         except json.JSONDecodeError as e:
             # JSON inválido no depende del modelo, no tiene sentido reintentar
@@ -673,6 +675,7 @@ def _fallback_sin_ia(texto: str) -> dict:
         "estrategia_faltantes": {},
         "notes": "Fallback heurístico: IA no disponible. Se aplicó orden básico LSC por reglas.",
         "error": "Groq no disponible — usando reglas gramaticales básicas LSC locales.",
+        "modelo_usado": "fallback",
     }
 
 
@@ -685,6 +688,7 @@ def _respuesta_vacia() -> dict:
         "estrategia_faltantes": {},
         "notes": "",
         "error": None,
+        "modelo_usado": "none",
     }
 
 

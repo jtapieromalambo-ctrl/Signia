@@ -32,18 +32,7 @@
 
     <div class="inner">
 
-        {# ── Aviso fallback IA (solo si Groq no estaba disponible) ─────────── #}
-        {% if aviso_lsc %}
-        <div class="lsc-aviso">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            {{ aviso_lsc }}
-        </div>
-        {% endif %}
+        {# El aviso fallback IA ha sido reemplazado por el indicador de modelo en el label #}
 
         {# ── Notificación: palabra no encontrada ──────────────────────────── #}
         <div id="notificacionNoEncontrado" {% if urls_videos or not request.method == "POST" %}style="display:none"{% endif %}>
@@ -69,7 +58,20 @@
             <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
         </div>
 
-        <label for="palabra">Palabra</label>
+        <label id="labelPalabra" for="palabra" style="display: flex; align-items: center; gap: 8px;">
+            Palabra
+            {% if modelo_usado and modelo_usado != 'none' %}
+                <span class="punto-modelo" 
+                      title="Modelo usado: {{ modelo_usado }}"
+                      style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; 
+                             {% if modelo_usado == 'llama-3.3-70b-versatile' %}background-color: #10b981; /* Verde */
+                             {% elif 'llama' in modelo_usado %}background-color: #f59e0b; /* Amarillo (Respaldo) */
+                             {% elif modelo_usado == 'fallback' %}background-color: #ef4444; /* Rojo (Sin IA) */
+                             {% else %}background-color: #9ca3af; /* Gris */
+                             {% endif %}">
+                </span>
+            {% endif %}
+        </label>
 
         <div class="input-group">
             <input type="text" name="palabra" id="palabra" placeholder="Escribe una o varias palabras...">
