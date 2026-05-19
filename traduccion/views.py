@@ -97,6 +97,7 @@ def buscar_video(request):
     tokens_lsc = []         # Secuencia de tokens LSC ordenados
     info_tokens = []        # Info detallada por token (encontrado, faltante, etc.)
     faltantes = []          # Palabras sin video en BD
+    modelo_usado = None     # Modelo de IA utilizado o 'fallback'
     aviso_lsc = None        # Mensaje si la IA usó fallback
     lsc_metadata = {}       # Tipo de oración, expresión facial, etc.
     video_base = None
@@ -165,6 +166,8 @@ def buscar_video(request):
             if resultado_lsc.get("error"):
                 aviso_lsc = resultado_lsc["error"]
                 print("⚠️ LSC fallback:", aviso_lsc)
+                
+            modelo_usado = resultado_lsc.get("modelo_usado")
 
             # ── Extraer tokens LSC para buscar en BD ─────────────────────────
             tokens_lsc = tokens_para_busqueda(resultado_lsc)
@@ -224,5 +227,5 @@ def buscar_video(request):
         'info_tokens':      info_tokens,        # Detalles por token (encontrado, estrategia)
         'faltantes':        faltantes,          # Tokens sin video en BD
         'lsc_metadata':     lsc_metadata,       # Tipo de oración, expresión facial
-        'aviso_lsc':        aviso_lsc,          # Mensaje de aviso si IA usó fallback
+        'modelo_usado':     modelo_usado,       # Modelo utilizado por la IA o fallback
     })
