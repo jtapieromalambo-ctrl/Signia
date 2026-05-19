@@ -1,0 +1,39 @@
+# Entornos virtuales
+ENT/
+env/
+venv/
+.env
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de datos local
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos subidos por los usuarios
+media/
+
+# Archivos estáticos recolectados (producción)
+staticfiles/
+
+# Logs
+*.log
+logs/
+
+# Archivos de caché del modelo y datos de entrenamiento
+reconocimientos/modelo/*.pkl
+reconocimientos/modelo/*.npy
+reconocimientos/datos/
+
+# Configuraciones de IDE / Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
