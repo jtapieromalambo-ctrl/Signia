@@ -191,6 +191,13 @@
                     }
                 });
 
+                // ── Refrescar label de palabra (modelo usado) ─────────
+                const labelViejo = document.getElementById('labelPalabra');
+                const labelNuevo = doc.getElementById('labelPalabra');
+                if (labelViejo && labelNuevo) {
+                    labelViejo.innerHTML = labelNuevo.innerHTML;
+                }
+
                 // ── Refrescar toast LSC ───────────────────────────────
                 const toastViejo = document.getElementById('lscToast');
                 if (toastViejo) toastViejo.remove();
@@ -295,6 +302,13 @@
                                     }
                                 }
                             });
+
+                            // ── Refrescar label de palabra (modelo usado) ─────────
+                            const labelViejo = document.getElementById('labelPalabra');
+                            const labelNuevo = doc.getElementById('labelPalabra');
+                            if (labelViejo && labelNuevo) {
+                                labelViejo.innerHTML = labelNuevo.innerHTML;
+                            }
 
                             const toastViejo = document.getElementById('lscToast');
                             if (toastViejo) toastViejo.remove();
