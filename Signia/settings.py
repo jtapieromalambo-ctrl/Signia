@@ -101,7 +101,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
 # CompressedStaticFilesStorage (sin Manifest) para evitar que WhiteNoise renombre
 # los archivos WASM de MediaPipe con hashes — MediaPipe los busca por nombre exacto.
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 import mimetypes
 mimetypes.add_type("application/wasm", ".wasm")
