@@ -68,7 +68,7 @@ Sessions expire on browser close OR after 20 min inactivity (`SESSION_COOKIE_AGE
 ## Deployment (Railway)
 
 - `build.sh`: pip install → collectstatic → migrate
-- `Procfile`: `gunicorn Signia.wsgi --bind 0.0.0.0:8080` + release migration
+- `Procfile`: `gunicorn Signia.wsgi --bind 0.0.0.0:$PORT` + release migration
 - `nixpacks.toml`: installs system deps (`libgl1`, `libglib2.0-0`, `libgl1-mesa-glx`, `ffmpeg`)
 - `DATABASE_URL` from env (Neon PostgreSQL with SSL). Falls back to `db.sqlite3` locally.
 - `RAILWAY_PUBLIC_DOMAIN` env var dynamically appends to `ALLOWED_HOSTS` + `CSRF_TRUSTED_ORIGINS`
