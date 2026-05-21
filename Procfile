@@ -1,2 +1,2 @@
-web: gunicorn Signia.wsgi --bind 0.0.0.0:8080 --log-file -
+web: gunicorn Signia.wsgi --bind 0.0.0.0:$PORT --timeout 120 --log-file -
 release: python manage.py migrate

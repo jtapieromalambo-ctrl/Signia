@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from .models import video
-from faster_whisper import WhisperModel
 from historial.models import EntradaHistorial
 from lsc_grammar import convertir_a_lsc, tokens_para_busqueda   # ← NUEVA CAPA LSC
 import os
 import unicodedata
 import uuid
 import time
+import threading
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.environ["PATH"] += os.pathsep + os.path.join(BASE_DIR, "ffmpeg")
@@ -14,7 +14,20 @@ os.environ["PATH"] += os.pathsep + os.path.join(BASE_DIR, "ffmpeg")
 TEMP_DIR = os.path.join(BASE_DIR, 'temp')
 os.makedirs(TEMP_DIR, exist_ok=True)
 
-model = WhisperModel("base", device="cpu", compute_type="int8")
+# ── Whisper: carga lazy (no bloquea el arranque de Gunicorn) ──────────
+_whisper_model = None
+_whisper_lock = threading.Lock()
+
+def _get_whisper_model():
+    global _whisper_model
+    if _whisper_model is None:
+        with _whisper_lock:
+            if _whisper_model is None:
+                from faster_whisper import WhisperModel
+                print('[Whisper] ⏳ Cargando modelo base...')
+                _whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+                print('[Whisper] ✅ Modelo cargado')
+    return _whisper_model
 
 
 def pagina_base(request):
@@ -124,7 +137,7 @@ def buscar_video(request):
 
             if tamanio > 1000:
                 try:
-                    segments, info = model.transcribe(ruta, language='es', beam_size=5)
+                    segments, info = _get_whisper_model().transcribe(ruta, language='es', beam_size=5)
                     palabras_texto = " ".join(segment.text for segment in segments)
                     print("🎤 Whisper escuchó:", palabras_texto)
                 except Exception as e:
