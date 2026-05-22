@@ -114,12 +114,12 @@ import mimetypes
 mimetypes.add_type("application/wasm", ".wasm")
 mimetypes.add_type("application/octet-stream", ".task")
 
-# Agregar 'wasm' a las extensiones que WhiteNoise no debe comprimir para evitar el error
-# "Requested Range Not Satisfiable" cuando Chromium hace range requests al archivo WASM.
+# Agregar 'wasm' y 'task' a las extensiones que WhiteNoise no debe comprimir para evitar el error
+# "Requested Range Not Satisfiable" cuando Chromium hace range requests al archivo WASM o al modelo.
 WHITENOISE_SKIP_COMPRESS_EXTENSIONS = (
     'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2', 'tbz', 'xz', 
     'br', 'swf', 'flv', 'woff', 'woff2', '3gp', '3gpp', 'asf', 'avi', 'm4v', 
-    'mov', 'mp4', 'mpeg', 'mpg', 'webm', 'wmv', 'wasm'
+    'mov', 'mp4', 'mpeg', 'mpg', 'webm', 'wmv', 'wasm', 'task'
 )
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
