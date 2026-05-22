@@ -191,6 +191,13 @@
                     }
                 });
 
+                // ── Refrescar label de palabra (modelo usado) ─────────
+                const labelViejo = document.getElementById('labelPalabra');
+                const labelNuevo = doc.getElementById('labelPalabra');
+                if (labelViejo && labelNuevo) {
+                    labelViejo.innerHTML = labelNuevo.innerHTML;
+                }
+
                 // ── Refrescar toast LSC ───────────────────────────────
                 const toastViejo = document.getElementById('lscToast');
                 if (toastViejo) toastViejo.remove();
@@ -217,12 +224,8 @@
                     nuevasColas.forEach(url => colaVideos.push(url));
 
                     activo.pause();
-                    activo.style.display  = 'none';
                     activo.oncanplay      = null;
                     siguiente.oncanplay   = null;
-
-                    activo    = videoA;
-                    siguiente = videoB;
 
                     reproducirSiguiente();
                 } else {
@@ -277,7 +280,7 @@
                     const formData = new FormData(formulario);
                     formData.append('audio', blob, 'audio.webm');
 
-                    btnMic.textContent = '⏳ Procesando...';
+                    btnMic.textContent = 'Procesando...';
                     btnMic.disabled = true;
 
                     fetch(window.location.href, { method: 'POST', body: formData })
@@ -299,6 +302,13 @@
                                     }
                                 }
                             });
+
+                            // ── Refrescar label de palabra (modelo usado) ─────────
+                            const labelViejo = document.getElementById('labelPalabra');
+                            const labelNuevo = doc.getElementById('labelPalabra');
+                            if (labelViejo && labelNuevo) {
+                                labelViejo.innerHTML = labelNuevo.innerHTML;
+                            }
 
                             const toastViejo = document.getElementById('lscToast');
                             if (toastViejo) toastViejo.remove();
@@ -325,12 +335,8 @@
                                 nuevasColas.forEach(url => colaVideos.push(url));
 
                                 activo.pause();
-                                activo.style.display  = 'none';
                                 activo.oncanplay      = null;
                                 siguiente.oncanplay   = null;
-
-                                activo    = videoA;
-                                siguiente = videoB;
 
                                 reproducirSiguiente();
                             } else {
@@ -351,7 +357,7 @@
 
                 mediaRecorder.start(100);
                 grabando = true;
-                btnMic.textContent = '⏹ Detener';
+                btnMic.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square" style="vertical-align: middle; margin-right: 4px;"><rect width="18" height="18" x="3" y="3" rx="2"/></svg> Detener`;
 
             } else {
                 mediaRecorder.stop();
@@ -383,10 +389,12 @@
     });
 
     document.getElementById('formulario').addEventListener('submit', function(e) {
+        e.preventDefault();
         const texto = inputPalabra?.value || '';
         if (GroseriasModal.verificarTexto(texto)) {
-            e.preventDefault();
             const detectada = GroseriasModal.obtenerPalabraDetectada(texto);
             GroseriasModal.mostrar(detectada, 'texto');
+        } else if (texto.trim().length > 0) {
+            enviarTextoAlBackend(texto);
         }
     });
