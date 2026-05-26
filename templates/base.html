@@ -423,7 +423,7 @@
             const li = link.closest('li');
             
             // Caso especial para Reconocimiento (singular vs plural en URL)
-            const isReconocimiento = linkPath.includes('reconocimiento') && path.includes('reconocimiento');
+            const isReconocimiento = linkPath.includes('reconocimiento') && path.includes('reconocimiento') && !path.includes('admin');
             
             if (path === linkPath || (path !== '/' && path.startsWith(linkPath) && linkPath !== '/') || isReconocimiento) {
                 li && li.classList.add('active');

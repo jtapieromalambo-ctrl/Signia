@@ -292,6 +292,77 @@ def predecir(request):
 
 
 @csrf_exempt
+def predecir_landmarks(request):
+    """
+    Endpoint rápido: recibe landmarks ya calculados por el cliente (MediaPipe JS).
+    Evita correr MediaPipe en el servidor → solo normaliza + RandomForest.
+
+    Body JSON esperado:
+        { "secuencia": [[126 floats], [126 floats], ...] }
+    Cada fila tiene 126 floats = 21 puntos × 3 coordenadas × 2 manos
+    (la segunda mano puede ser todo ceros si solo hay una mano).
+    """
+    if modelo is None or encoder is None:
+        return JsonResponse({'error': 'Modelo no entrenado aún. Entrena desde el panel admin.'}, status=503)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        body      = json.loads(request.body)
+        secuencia = body.get('secuencia', [])
+
+        if not secuencia:
+            return JsonResponse({'seña': '', 'confianza': 0})
+
+        # Validación rápida de shape
+        secuencia = [list(fila) for fila in secuencia if fila]
+
+        print(f'[LANDMARKS] Frames recibidos: {len(secuencia)}')
+
+        if len(secuencia) < 5:
+            print('[LANDMARKS] ❌ Menos de 5 frames válidos')
+            return JsonResponse({'seña': '', 'confianza': 0})
+
+        # Normalizar cada frame al centroide (mismo proceso que predecir)
+        secuencia_norm_pts = []
+        for fila in secuencia:
+            # Rellenar a 126 si vino con menos (p.ej. solo una mano = 63)
+            if len(fila) < 126:
+                fila = list(fila) + [0.0] * (126 - len(fila))
+            fila = fila[:126]
+            fila = _normalizar_landmarks_centroide(fila)
+            secuencia_norm_pts.append(fila)
+
+        secuencia_norm = normalizar_secuencia(secuencia_norm_pts)
+        if secuencia_norm is None:
+            print('[LANDMARKS] ❌ Secuencia nula tras normalización')
+            return JsonResponse({'seña': '', 'confianza': 0})
+
+        features       = construir_features(secuencia_norm)
+        X              = np.array([features])
+        prediccion     = modelo.predict(X)
+        probabilidades = modelo.predict_proba(X)
+
+        seña      = encoder.inverse_transform(prediccion)[0]
+        confianza = round(float(np.max(probabilidades)) * 100, 1)
+
+        clases   = encoder.classes_
+        top3     = sorted(zip(clases, probabilidades[0]), key=lambda x: x[1], reverse=True)[:3]
+        top3_str = '|'.join(f'{c}:{round(p*100,1)}%' for c, p in top3)
+
+        print(f'[LANDMARKS] ✅ Seña: "{seña}" — confianza: {confianza}%')
+        print(f'[LANDMARKS] 🔢 Top 3: {top3_str}')
+
+        return JsonResponse({'seña': seña, 'confianza': confianza})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
 def detectar_mano(request):
     if request.method != 'POST':
         return JsonResponse({'hay_mano': False})

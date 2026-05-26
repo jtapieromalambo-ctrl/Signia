@@ -58,6 +58,21 @@
             <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
         </div>
 
+        {# ── Resultado LSC en orden LSC — panel permanente ──────────────── #}
+        <div id="lsc-resultado" class="lsc-resultado{% if not tokens_lsc %} lsc-resultado--hint{% endif %}">
+            {% if tokens_lsc %}
+                <span class="lsc-res__label">LSC</span>
+                <div class="lsc-res__chips">
+                    {% for t in info_tokens %}
+                    <span class="lsc-chip{% if not t.found %} lsc-chip--miss{% elif t.strategy == 'synonym' %} lsc-chip--syn{% endif %}">{{ t.original }}</span>
+                    {% if not forloop.last %}<span class="lsc-chip-sep" aria-hidden="true">›</span>{% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <span class="lsc-res__hint">El orden de señas LSC aparecerá aquí</span>
+            {% endif %}
+        </div>
+
         <label id="labelPalabra" for="palabra" style="display: flex; align-items: center; gap: 8px;">
             Palabra
             {% if modelo_usado and modelo_usado != 'none' %}
