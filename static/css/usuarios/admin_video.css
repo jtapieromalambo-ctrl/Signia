@@ -232,15 +232,18 @@ body {
     font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
-    padding: 0.65rem 1.25rem;
+    padding: 0 1.25rem;
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     transition: color 0.2s, border-color 0.2s;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.4rem;
     border-radius: var(--radius) var(--radius) 0 0;
+    width: 260px;
+    height: 48px;
 }
 
 .tab-btn:hover { color: var(--text); }

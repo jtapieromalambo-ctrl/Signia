@@ -861,7 +861,24 @@ function switchTab(tab, btn) {
     btn.classList.add('active');
     document.getElementById('panel-' + tab).classList.add('active');
     if (tab === 'reconocimiento') cargarSenasEntrenadas(true);
+    
+    // Guardar la pestaña activa para restaurarla al refrescar
+    localStorage.setItem('admin_active_tab', tab);
 }
+
+// Restaurar pestaña activa al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    const activeTab = localStorage.getItem('admin_active_tab');
+    if (activeTab) {
+        const tabBtn = document.querySelector(`.tab-btn[onclick*="'${activeTab}'"]`) || 
+                       document.querySelector(`.tab-btn[onclick*='"${activeTab}"']`);
+        if (tabBtn) {
+            // El switchTab ya hace el comportamiento pero para evitar loaders o efectos
+            // podemos simplemente invocarlo pasándole el botón correspondiente
+            switchTab(activeTab, tabBtn);
+        }
+    }
+});
 
 /* ── Señas entrenadas ── */
 async function cargarSenasEntrenadas(mostrarSpinner = false) {
@@ -1275,6 +1292,38 @@ function mostrarToast(id, msg, esError = false) {
 /* ── Entrenamiento ── */
 let _pollingInterval;
 
+function bloquearGrabacion(bloquear) {
+    const btnAbrirCamara = document.getElementById('btnAbrirCamara');
+    if (!btnAbrirCamara) return;
+    
+    if (bloquear) {
+        // Si la cámara está abierta, cerrarla
+        const body = document.getElementById('camBody');
+        if (body && body.style.display !== 'none') {
+            toggleCamara();
+        }
+        
+        // Deshabilitar botón de abrir cámara
+        btnAbrirCamara.disabled = true;
+        btnAbrirCamara.style.opacity = '0.5';
+        btnAbrirCamara.style.pointerEvents = 'none';
+        btnAbrirCamara.title = 'No se puede grabar mientras el modelo se está entrenando';
+        
+        // Deshabilitar botón de grabar
+        const btnGrabar = document.getElementById('btnGrabar');
+        if (btnGrabar) btnGrabar.disabled = true;
+    } else {
+        // Habilitar botón de abrir cámara
+        btnAbrirCamara.disabled = false;
+        btnAbrirCamara.style.opacity = '1';
+        btnAbrirCamara.style.pointerEvents = 'auto';
+        btnAbrirCamara.title = '';
+        
+        const btnGrabar = document.getElementById('btnGrabar');
+        if (btnGrabar) btnGrabar.disabled = false;
+    }
+}
+
 async function iniciarEntrenamiento() {
     const btn   = document.getElementById('btnTrain');
     const wrap  = document.getElementById('trainStatusWrap');
@@ -1288,6 +1337,7 @@ async function iniciarEntrenamiento() {
         const data = await res.json();
         if (!data.ok) { label.textContent = '⚠️ ' + (data.error || 'Error al iniciar'); label.className = 'train-status-label error'; btn.disabled = false; return; }
         label.textContent = '⏳ Extrayendo landmarks y entrenando...';
+        bloquearGrabacion(true);
         _pollingInterval = setInterval(verificarEstado, 3000);
     } catch { label.textContent = '❌ Error de conexión'; label.className = 'train-status-label error'; btn.disabled = false; }
 }
@@ -1629,10 +1679,39 @@ async function verificarEstado() {
 
             // Recargar tabla de señas entrenadas (esto ahora actualizará el contador automáticamente)
             cargarSenasEntrenadas(true);
+            
+            // Desbloquear grabación
+            bloquearGrabacion(false);
 
             setTimeout(() => { document.getElementById('trainStatusWrap').style.display='none'; bar.style.width='0%'; label.className='train-status-label idle'; }, 5000);
         }
     } catch { /* reintentando... */ }
 }
+
+// Verificar si el modelo se está entrenando al cargar la página
+async function chequearEntrenamientoAlCargar() {
+    try {
+        const res  = await fetch('/reconocimientos/admin-videos/entrenar/estado/');
+        const data = await res.json();
+        if (data.activo) {
+            const btn   = document.getElementById('btnTrain');
+            const wrap  = document.getElementById('trainStatusWrap');
+            const bar   = document.getElementById('trainProgressBar');
+            const label = document.getElementById('trainStatusLabel');
+            
+            btn.disabled = true;
+            wrap.style.display = 'block';
+            bar.className = 'train-progress-inner indeterminate';
+            label.className = 'train-status-label';
+            label.textContent = '⏳ Extrayendo landmarks y entrenando...';
+            
+            // Bloquear grabación
+            bloquearGrabacion(true);
+            
+            _pollingInterval = setInterval(verificarEstado, 3000);
+        }
+    } catch (e) { console.error(e); }
+}
+chequearEntrenamientoAlCargar();
 </script>
 {% endblock %}
