@@ -5,9 +5,10 @@ import os
 
 urlpatterns = [
     # ── Reconocimiento ────────────────────────────────────────────
-    path('camara/',        views.camara,        name='camara'),
-    path('predecir/',      views.predecir,      name='predecir'),
-    path('detectar_mano/', views.detectar_mano, name='detectar_mano'),
+    path('camara/',              views.camara,              name='camara'),
+    path('predecir/',            views.predecir,            name='predecir'),
+    path('predecir_landmarks/',  views.predecir_landmarks,  name='predecir_landmarks'),
+    path('detectar_mano/',       views.detectar_mano,       name='detectar_mano'),
 
     # ── Panel admin ───────────────────────────────────────────────
     path('admin-videos/', views.admin_videos, name='admin_videos'),
