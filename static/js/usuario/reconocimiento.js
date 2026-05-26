@@ -39,9 +39,9 @@ const CANDIDATA_TIMEOUT_MS = 1000; // Máximo tiempo esperando confirmación (re
 const TIMEOUT_SIN_SENA_MS = 10000; // 10 segundos sin seña → limpiar palabra
 
 const FRAMES_SIN_MANO_MAX = 12;    // Más tolerancia a pérdidas breves de tracking
-const MIN_FRAMES_SEÑA     = 10;    // Frames mínimos (reducido de 15 a 10 para mayor rapidez)
+const MIN_FRAMES_SEÑA     = 6;     // Frames mínimos antes de la primera predicción
 const MAX_BUFFER_SIZE     = 60;    // Ventana de ~3s (permite señas más largas)
-const INTERVALO_PRED      = 10;    // Predecir cada ~0.5s (reducido de 15 a 10)
+const INTERVALO_PRED      = 6;     // Predecir cada 6 frames capturados con mano (~300ms)
 const COOLDOWN_FRAMES     = 15;    // Esperar ~0.75s después de una detección confirmada
 const INTERVALO_MS        = 50;
 const JPEG_QUALITY        = 0.65;  // Mayor calidad → landmarks más precisos
@@ -207,9 +207,10 @@ function tick(timestamp) {
     ctx.drawImage(video, 0, 0, vw, vh, dx, dy, sw, sh);
 
     let hayMano = false;
+    let mpResult = null;
     try {
-        const result = handLandmarker.detectForVideo(video, timestamp);
-        hayMano = result.landmarks && result.landmarks.length > 0;
+        mpResult = handLandmarker.detectForVideo(video, timestamp);
+        hayMano  = mpResult.landmarks && mpResult.landmarks.length > 0;
     } catch (e) {
         return; // video aún no listo
     }
@@ -217,9 +218,22 @@ function tick(timestamp) {
     if (hayMano) {
         grabando = true;
         framesSinMano = 0;
-        
-        // Ventana deslizante: agregamos el frame y quitamos el más viejo si excede el máximo
-        secuenciaFrames.push(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+
+        // Extraer landmarks ya calculados por MediaPipe JS → 126 floats por frame
+        // [x0,y0,z0, ..., x20,y20,z20 | x0,y0,z0, ..., x20,y20,z20] (mano1 + mano2)
+        const puntos = [];
+        for (const mano of mpResult.landmarks.slice(0, 2)) {
+            for (const lm of mano) {
+                puntos.push(lm.x, lm.y, lm.z);
+            }
+        }
+        // Solo una mano detectada → rellenar segunda mano con ceros
+        if (mpResult.landmarks.length === 1) {
+            for (let i = 0; i < 63; i++) puntos.push(0);
+        }
+
+        // Ventana deslizante de landmarks (mucho más liviano que JPEGs)
+        secuenciaFrames.push(puntos);
         if (secuenciaFrames.length > MAX_BUFFER_SIZE) {
             secuenciaFrames.shift();
         }
@@ -338,13 +352,13 @@ async function procesarSecuencia(frames) {
     procesando = true;
 
     try {
-        // Enviar 24 frames submuestreados → el servidor interpola a 30 para el modelo
-        const framesAEnviar = submuestrear(frames, 24);
+        // Enviar hasta 30 frames de landmarks — sin JPEGs, sin MediaPipe en servidor
+        const secuenciaAEnviar = submuestrear(frames, 30);
 
-        const response = await fetch('/reconocimientos/predecir/', {
+        const response = await fetch('/reconocimientos/predecir_landmarks/', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ frames: framesAEnviar }),
+            body:    JSON.stringify({ secuencia: secuenciaAEnviar }),
         });
         const data = await response.json();
         console.log('[DEBUG] predecir continuo:', data);

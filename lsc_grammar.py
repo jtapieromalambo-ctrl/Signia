@@ -212,9 +212,16 @@ MÓDULO 8 — ADJETIVOS, ADVERBIOS Y CUANTIFICADORES
     "muchos amigos"    → MUCHOS AMIGO
     "poco dinero"      → POCO DINERO
 
-8.4 DEMOSTRATIVOS: van DESPUÉS del sustantivo (similar al adjetivo).
+8.4 DEMOSTRATIVOS ADJETIVOS: van DESPUÉS del sustantivo que modifican.
     "ese carro"        → CARRO ESE
     "esta casa"        → CASA ESTA
+
+8.5 DEMOSTRATIVOS PRONOMINALES (sujeto u objeto sin sustantivo explícito):
+    Cuando "esto", "eso", "aquello", "este", "ese" funcionan como pronombre
+    (sin sustantivo al que referirse), CONSÉRVALO como token.
+    "Esto es una prueba"   → ESTO PRUEBA  (ESTO = sujeto demostrativo)
+    "Eso me gusta"         → ESO YO GUSTAR
+    NUNCA elimines un demostrativo que sea el único sujeto de la oración.
 
 ════════════════════════════════════════════════════════════════
 MÓDULO 9 — PRONOMBRES Y REFERENCIA ESPACIAL
@@ -223,18 +230,30 @@ MÓDULO 9 — PRONOMBRES Y REFERENCIA ESPACIAL
 9.1 Pronombres personales estándar (siempre en MAYÚSCULAS sin tilde):
     YO, TU, EL, ELLA, NOSOTROS, USTEDES, ELLOS, ELLAS
 
-9.2 Pronombres reflexivos: se expresan con el mismo pronombre personal
+9.2 PRONOMBRES POSESIVOS → conviértelos al pronombre personal equivalente:
+    mi, mío, mía           → YO
+    tu, tuyo, tuya         → TU
+    su, suyo, suya         → EL  (o ELLA si el referente es femenino claro)
+    nuestro, nuestra       → NOSOTROS
+    vuestro, vuestra       → USTEDES
+    sus, suyos, suyas      → ELLOS  (ajusta según contexto)
+    En LSC la posesión se expresa con el pronombre personal DESPUÉS del objeto:
+    "mi libro"      → YO LIBRO
+    "nuestro proyecto" → PROYECTO NOSOTROS
+    "tu casa"       → TU CASA
+
+9.3 Pronombres reflexivos: se expresan con el mismo pronombre personal
     + el verbo reflexivo si existe como seña.
     "Me caí"  → YO CAER
     "Se durmió" → EL DORMIR
 
-9.3 Pronombres de objeto (me, te, le, nos, les): en LSC se omiten cuando
+9.4 Pronombres de objeto (me, te, le, nos, les): en LSC se omiten cuando
     el verbo direccional ya señala al referente. Inclúyelos solo si son
     enfáticos o si el verbo NO es direccional.
     "Te llamo"    → YO TU LLAMAR  (verbo direccional)
     "Le doy agua" → YO EL AGUA DAR
 
-9.4 El sujeto YO puede omitirse cuando está CLARAMENTE implícito en
+9.5 El sujeto YO puede omitirse cuando está CLARAMENTE implícito en
     contexto de primera persona, pero inclúyelo por defecto para mayor
     claridad en la traducción automática.
 
@@ -357,6 +376,17 @@ types:          subj obj    verb  facial
 ENTRADA: "Buenos días, ¿cómo está usted?"
 SALIDA tokens: BUENOS_DIAS TU COMO [EF:CEJAS_FRUNCIDAS]
 types:          greeting    subj wh  facial
+
+ENTRADA: "esto es una prueba de nuestro proyecto web"
+SALIDA tokens: ESTO PRUEBA PROYECTO WEB NOSOTROS
+types:          dem  obj    obj      adj  subject
+(Explicación: ESTO = demostrativo-sujeto; "es" = cópula vacía eliminada;
+ "una" = artículo eliminado; "de" = preposición eliminada;
+ "nuestro" → NOSOTROS posesivo al final; orden tópico-comentario)
+
+ENTRADA: "nuestro proyecto web es muy importante"
+SALIDA tokens: PROYECTO WEB NOSOTROS MUY IMPORTANTE
+types:          obj      adj  subject  adv adj
 
 ════════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA
