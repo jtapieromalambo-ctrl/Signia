@@ -555,9 +555,9 @@
                                  onclick="abrirModalMensaje({
                                      nombre: '{{ msg.nombre|escapejs }}',
                                      correo: '{{ msg.correo|escapejs }}',
-                                     observacion: '{{ msg.observacion|default:\"—\"|escapejs }}',
+                                     observacion: '{{ msg.observacion|default:"—"|escapejs }}',
                                      mensaje: '{{ msg.mensaje|escapejs }}',
-                                     fecha: '{{ msg.fecha|date:\"d/m/Y H:i\"|escapejs }}'
+                                     fecha: '{{ msg.fecha|date:"d/m/Y H:i"|escapejs }}'
                                  })"
                                  title="Ver mensaje completo (Haz clic para ampliar)">
                                 {{ msg.mensaje }}
