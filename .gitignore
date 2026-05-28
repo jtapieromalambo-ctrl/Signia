@@ -13,8 +13,8 @@ __pycache__/
 db.sqlite3
 db.sqlite3-journal
 
-# Archivos subidos por los usuarios
-media/
+# Archivos subidos por los usuarios (mantener los videos de referencia en media/videos/)
+media/video_señas/
 
 # Archivos estáticos recolectados (producción)
 staticfiles/
