@@ -18,65 +18,109 @@
     </div>
     <div class="form-body">
 
-      {% if observacion_enviada %}
-        <div class="success-box">
-          <strong>¡Gracias por tu observación!</strong>
-          <p style="font-weight:400; color:#166534;">Hemos recibido tu mensaje y observación. La tendremos en cuenta para mejorar Signia.</p>
-          <a href="{% url 'contacto' %}" style="display: inline-flex; align-items: center; gap: 0.3rem;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-              Volver al formulario
-          </a>
-        </div>
-
-      {% elif enviado %}
-        <div class="success-box">
-          <div class="success-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-          </div>
-          <strong>¡Mensaje enviado correctamente!</strong>
-          <p style="font-weight:400; color:#166534;">Te responderemos lo antes posible.</p>
-          <a href="{% url 'contacto' %}" style="display: inline-flex; align-items: center; gap: 0.3rem;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-              Volver al formulario
-          </a>
-        </div>
-
-      {% else %}
-
-        {% if messages %}
-          {% for message in messages %}
-            <div class="error-box">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-
-        <form method="post" action="{% url 'contacto' %}">
-          {% csrf_token %}
-          <div class="field">
-            <label>Nombre completo</label>
-            <input type="text" name="nombre" placeholder="Tu nombre completo" required />
-          </div>
-          <div class="field">
-            <label>Correo electrónico</label>
-            <input type="email" name="correo" placeholder="tucorreo@ejemplo.com" required />
-          </div>
-          <div class="field">
-            <label>Observación</label>
-            <input type="text" name="observacion" placeholder="¿En qué podemos ayudarte?" />
-          </div>
-          <div class="field">
-            <label>Tu mensaje</label>
-            <textarea name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
-          </div>
-          <br>
-          <div class="botones">
-            <button type="submit" class="btn-submit">Enviar mensaje</button>
-          </div>
-        </form>
-
+      {% if messages %}
+        {% for message in messages %}
+          <div class="error-box">{{ message }}</div>
+        {% endfor %}
       {% endif %}
+
+      <form method="post" action="{% url 'contacto' %}">
+        {% csrf_token %}
+        <div class="field">
+          <label>Nombre completo</label>
+          <input type="text" name="nombre" placeholder="Tu nombre completo" required />
+        </div>
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" name="correo" placeholder="tucorreo@ejemplo.com" required />
+        </div>
+        <div class="field">
+          <label>Observación</label>
+          <input type="text" name="observacion" placeholder="¿En qué podemos ayudarte?" />
+        </div>
+        <div class="field">
+          <label>Tu mensaje</label>
+          <textarea name="mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
+        </div>
+        <br>
+        <div class="botones">
+          <button type="submit" class="btn-submit">Enviar mensaje</button>
+        </div>
+      </form>
 
     </div>
   </div>
+
+  {# ── Modal de Éxito Flotante Animado ── #}
+  {% if enviado or observacion_enviada %}
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-modal" id="successModal">
+      
+      <!-- Círculo de Éxito animado con SVG Check -->
+      <div class="success-icon-wrap">
+        <div class="success-icon-ring"></div>
+        <div class="success-icon-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      </div>
+      
+      <h2>
+        {% if observacion_enviada %}
+          ¡Gracias por tu observación!
+        {% else %}
+          ¡Mensaje enviado con éxito!
+        {% endif %}
+      </h2>
+      
+      <p>
+        {% if observacion_enviada %}
+          Hemos recibido tu mensaje y observación. La tendremos en cuenta para mejorar Signia.
+        {% else %}
+          Te responderemos lo antes posible. Gracias por escribirnos.
+        {% endif %}
+      </p>
+      
+      <button class="btn-back" id="btnBack" data-url="{% url 'contacto' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 19-7-7 7-7"/>
+          <path d="M19 12H5"/>
+        </svg>
+        Volver al formulario
+      </button>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const btnBack = document.getElementById('btnBack');
+      const overlay = document.getElementById('successOverlay');
+      const modal = document.getElementById('successModal');
+      
+      if (btnBack && overlay && modal) {
+          btnBack.addEventListener('click', (e) => {
+              e.preventDefault();
+              const targetUrl = btnBack.getAttribute('data-url');
+              
+              // Aplicar animación de salida inversa (Slide Up suave)
+              modal.classList.add('exit-anim');
+              overlay.classList.add('exit-anim');
+              
+              // Redirigir suavemente al terminar la animación
+              modal.addEventListener('animationend', () => {
+                  window.location.href = targetUrl;
+              }, { once: true });
+              
+              // Redirección de respaldo (fallback)
+              setTimeout(() => {
+                  window.location.href = targetUrl;
+              }, 450);
+          });
+      }
+  });
+  </script>
+  {% endif %}
 
   <div class="hero">
     <h1><svg xmlns="http://www.w3.org/2000/svg" 
