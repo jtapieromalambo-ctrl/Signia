@@ -550,10 +550,30 @@
                         <td><span class="label-chip">{{ msg.nombre }}</span></td>
                         <td style="color:#2563EB;">{{ msg.correo }}</td>
                         <td style="color:#64748B;">{{ msg.observacion|default:"—" }}</td>
-                        <td style="max-width:220px;">{{ msg.mensaje }}</td>
+                        <td class="mensaje-cell-td">
+                            <div class="mensaje-static-preview" title="{{ msg.mensaje }}">
+                                {{ msg.mensaje }}
+                            </div>
+                        </td>
                         <td class="date-cell">{{ msg.fecha|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            <!-- Sin confirm() ni form POST — usa el modal -->
+                        <td class="acciones-cell">
+                            <!-- Botón para ver mensaje completo (Modal flotante) -->
+                            <button class="btn-edit-sm" 
+                                    onclick="abrirModalMensaje({
+                                        nombre: '{{ msg.nombre|escapejs }}',
+                                        correo: '{{ msg.correo|escapejs }}',
+                                        observacion: '{{ msg.observacion|default:"—"|escapejs }}',
+                                        mensaje: '{{ msg.mensaje|escapejs }}',
+                                        fecha: '{{ msg.fecha|date:"d/m/Y H:i"|escapejs }}'
+                                    })"
+                                    title="Ver mensaje completo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Botón para eliminar -->
                             <button class="btn-danger-sm"
                                     data-delete-url="{% url 'eliminar_mensaje_contacto' msg.id %}"
                                     onclick="abrirModalEliminar({
@@ -562,7 +582,8 @@
                                         nombre: '{{ msg.nombre|escapejs }}',
                                         sub: '{{ msg.correo|escapejs }}',
                                         btn: this
-                                    })">
+                                    })"
+                                    title="Eliminar mensaje">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
                                 viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" 
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -645,6 +666,55 @@
             <span style="margin: 0 0.35rem; color: var(--text-dim); font-size:0.7rem;">·</span>
             <span class="del-modal-footer-key">Enter</span>
             <span class="del-modal-footer-text">para confirmar</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL DE DETALLE DE MENSAJE — Vista flotante completa
+     ═══════════════════════════════════════════════════════ -->
+<div class="msg-overlay" id="msgOverlay" role="dialog" aria-modal="true" aria-labelledby="msgModalTitle" onclick="cerrarMsgModalClick(event)">
+    <div class="msg-modal" id="msgModal">
+        <div class="msg-modal-stripe"></div>
+        <div class="msg-modal-body">
+            <div class="msg-modal-icon-wrap">
+                <div class="msg-modal-icon-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+            </div>
+            <h2 class="msg-modal-title" id="msgModalTitle">Detalle de Mensaje</h2>
+            
+            <div class="msg-details-grid">
+                <div class="msg-detail-item">
+                    <span class="msg-detail-label">Nombre</span>
+                    <span class="msg-detail-val" id="viewMsgNombre">—</span>
+                </div>
+                <div class="msg-detail-item">
+                    <span class="msg-detail-label">Correo</span>
+                    <span class="msg-detail-val" id="viewMsgCorreo">—</span>
+                </div>
+                <div class="msg-detail-item">
+                    <span class="msg-detail-label">Observación</span>
+                    <span class="msg-detail-val" id="viewMsgObservacion">—</span>
+                </div>
+                <div class="msg-detail-item">
+                    <span class="msg-detail-val-date" id="viewMsgFecha">—</span>
+                </div>
+            </div>
+            
+            <div class="msg-content-box">
+                <span class="msg-content-label">Mensaje Completo</span>
+                <div class="msg-content-text" id="viewMsgTexto">—</div>
+            </div>
+            
+            <div class="msg-modal-actions">
+                <button class="msg-btn-close" onclick="cerrarMsgModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -847,13 +917,39 @@ document.getElementById('delOverlay').addEventListener('click', function(e) {
 
 // Cerrar con Escape, confirmar con Enter
 document.addEventListener('keydown', function(e) {
-    if (!document.getElementById('delOverlay').classList.contains('open')) return;
-    if (e.key === 'Escape') cerrarModal();
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        confirmarEliminar();
+    if (document.getElementById('delOverlay').classList.contains('open')) {
+        if (e.key === 'Escape') cerrarModal();
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            confirmarEliminar();
+        }
+    } else if (document.getElementById('msgOverlay').classList.contains('open')) {
+        if (e.key === 'Escape') cerrarMsgModal();
     }
 });
+
+/* ── Modal de Detalle de Mensaje ── */
+function abrirModalMensaje({ nombre, correo, observacion, mensaje, fecha }) {
+    document.getElementById('viewMsgNombre').textContent = nombre;
+    document.getElementById('viewMsgCorreo').textContent = correo;
+    document.getElementById('viewMsgObservacion').textContent = observacion;
+    document.getElementById('viewMsgFecha').textContent = 'Recibido el: ' + fecha;
+    document.getElementById('viewMsgTexto').textContent = mensaje;
+    
+    document.getElementById('msgOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarMsgModal() {
+    document.getElementById('msgOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function cerrarMsgModalClick(e) {
+    if (e.target === document.getElementById('msgOverlay')) {
+        cerrarMsgModal();
+    }
+}
 
 /* ═══════════════════════════════════════════════════════════
    TOAST GLOBAL
