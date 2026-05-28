@@ -5,6 +5,15 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/usuarios/admin_video.css' %}">
+<style>
+@keyframes spin-anim {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.spin-anim {
+    animation: spin-anim 1.5s linear infinite;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -544,7 +553,7 @@
                         <td style="max-width:220px;">{{ msg.mensaje }}</td>
                         <td class="date-cell">{{ msg.fecha|date:"d/m/Y H:i" }}</td>
                         <td>
-                            <!-- ✅ Sin confirm() ni form POST — usa el modal -->
+                            <!-- Sin confirm() ni form POST — usa el modal -->
                             <button class="btn-danger-sm"
                                     data-delete-url="{% url 'eliminar_mensaje_contacto' msg.id %}"
                                     onclick="abrirModalEliminar({
@@ -646,6 +655,12 @@
 <script>
 const CSRF = '{{ csrf_token }}';
 let editandoId = null;
+
+// SVG Icon constants
+const SVG_CHECK = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:0.35rem;"><path d="M20 6 9 17l-5-5"/></svg>`;
+const SVG_ERROR = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:0.35rem;"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+const SVG_WARN = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:0.35rem;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+const SVG_SPIN = `<svg xmlns="http://www.w3.org/2000/svg" class="spin-anim" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:0.35rem;"><path d="M5 2h14M5 22h14M19 2v4c0 4-3 7-7 7s-7-3-7-7V2M12 13c-4 0-7 3-7 7v2h14v-2c0-4-3-7-7-7Z"/></svg>`;
 
 /* ═══════════════════════════════════════════════════════════
    MODAL DE ELIMINACIÓN
@@ -845,7 +860,19 @@ document.addEventListener('keydown', function(e) {
 ═══════════════════════════════════════════════════════════ */
 function mostrarToastGlobal(msg, esError = false) {
     const t = document.getElementById('toast-global');
-    t.textContent = msg;
+    let formattedMsg = msg;
+    if (formattedMsg.startsWith('<svg')) {
+        // Already has SVG, do nothing
+    } else if (formattedMsg.startsWith('\u26A0\uFE0F') || formattedMsg.startsWith('\u26A0')) {
+        formattedMsg = SVG_WARN + (formattedMsg.startsWith('\u26A0\uFE0F') ? formattedMsg.slice(3) : formattedMsg.slice(1)).trim();
+    } else if (formattedMsg.startsWith('\u2705')) {
+        formattedMsg = SVG_CHECK + formattedMsg.slice(1).trim();
+    } else if (formattedMsg.startsWith('\u274C')) {
+        formattedMsg = SVG_ERROR + formattedMsg.slice(1).trim();
+    } else {
+        formattedMsg = (esError ? SVG_ERROR : SVG_CHECK) + formattedMsg;
+    }
+    t.innerHTML = formattedMsg;
     t.className = 'toast' + (esError ? ' error' : '');
     void t.offsetWidth;
     t.classList.add('show');
@@ -1032,10 +1059,10 @@ async function subirReconocimiento() {
         })
         .then(r => r.json())
         .then(data => {
-            if (data.ok) { subidos++; statusEl.textContent = '✅ Subido'; statusEl.className = 'preview-status ok'; agregarFilaReconocimiento(data.video); }
-            else         { errores++; statusEl.textContent = '❌ Error'; statusEl.className = 'preview-status error'; inputEl.classList.remove('subiendo'); }
+            if (data.ok) { subidos++; statusEl.innerHTML = SVG_CHECK + ' Subido'; statusEl.className = 'preview-status ok'; agregarFilaReconocimiento(data.video); }
+            else         { errores++; statusEl.innerHTML = SVG_ERROR + ' Error'; statusEl.className = 'preview-status error'; inputEl.classList.remove('subiendo'); }
         })
-        .catch(() => { errores++; statusEl.textContent = '❌ Red'; statusEl.className = 'preview-status error'; inputEl.classList.remove('subiendo'); })
+        .catch(() => { errores++; statusEl.innerHTML = SVG_ERROR + ' Red'; statusEl.className = 'preview-status error'; inputEl.classList.remove('subiendo'); })
         .finally(() => { completados++; progressBar.style.width = Math.round((completados/total)*100)+'%'; progressLbl.textContent = `${completados} de ${total} completados...`; });
     });
 
@@ -1122,7 +1149,7 @@ function verificarSelectAllRec() {
 async function renombrarLoteReconocimiento() {
     const nuevoNombre = document.getElementById('recBatchName').value.trim();
     if (!nuevoNombre) {
-        mostrarToastGlobal('⚠️ Escribe el nuevo nombre de seña', true);
+        mostrarToastGlobal(SVG_WARN + ' Escribe el nuevo nombre de seña', true);
         return;
     }
     const checkboxes = document.querySelectorAll('.rec-checkbox:checked');
@@ -1157,7 +1184,7 @@ async function renombrarLoteReconocimiento() {
     });
     
     await Promise.all(promesas);
-    mostrarToastGlobal(`✅ Se renombraron ${checkboxes.length} video(s)`);
+    mostrarToastGlobal(SVG_CHECK + ` Se renombraron ${checkboxes.length} video(s)`);
     document.getElementById('recBatchName').value = '';
     document.getElementById('recSelectAll').checked = false;
     toggleSelectAllRec(false);
@@ -1194,8 +1221,10 @@ function eliminarLoteReconocimiento() {
 function editarTraductor(id, nombre) {
     editandoId = id;
     document.getElementById('nombre-seña').value = nombre;
-    document.getElementById('form-titulo').textContent = '✏️ Editando: ' + nombre;
-    document.getElementById('btn-guardar-label').textContent = '💾 Actualizar';
+    const svgEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:0.35rem;"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>`;
+    const svgSave = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:0.35rem;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+    document.getElementById('form-titulo').innerHTML = svgEdit + ' Editando: ' + nombre;
+    document.getElementById('btn-guardar-label').innerHTML = svgSave + ' Actualizar';
     document.getElementById('form-traductor').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -1257,7 +1286,7 @@ function actualizarFilaTraductor(v) {
 function filaTraductor(v) {
     return `
         <td><span class="label-chip">${v.nombre}</span></td>
-        <td><a href="${v.video_url}" target="_blank" class="ver-link">▶ Ver video</a></td>
+        <td><a href="${v.video_url}" target="_blank" class="ver-link" style="display: inline-flex; align-items: center; gap: 0.3rem;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg> Ver video</a></td>
         <td class="acciones-cell">
             <button class="btn-edit-sm" onclick="editarTraductor(${v.id},'${v.nombre}')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1282,7 +1311,19 @@ function actualizarContador(id, delta) {
 function mostrarToast(id, msg, esError = false) {
     const t = document.getElementById(id);
     if (!t) return;
-    t.textContent = msg;
+    let formattedMsg = msg;
+    if (formattedMsg.startsWith('<svg')) {
+        // Already has SVG, do nothing
+    } else if (formattedMsg.startsWith('\u26A0\uFE0F') || formattedMsg.startsWith('\u26A0')) {
+        formattedMsg = SVG_WARN + (formattedMsg.startsWith('\u26A0\uFE0F') ? formattedMsg.slice(3) : formattedMsg.slice(1)).trim();
+    } else if (formattedMsg.startsWith('\u2705')) {
+        formattedMsg = SVG_CHECK + formattedMsg.slice(1).trim();
+    } else if (formattedMsg.startsWith('\u274C')) {
+        formattedMsg = SVG_ERROR + formattedMsg.slice(1).trim();
+    } else {
+        formattedMsg = (esError ? SVG_ERROR : SVG_CHECK) + formattedMsg;
+    }
+    t.innerHTML = formattedMsg;
     t.className = 'toast' + (esError ? ' error' : '');
     void t.offsetWidth;
     t.classList.add('show');
@@ -1335,11 +1376,11 @@ async function iniciarEntrenamiento() {
     try {
         const res  = await fetch('/reconocimientos/admin-videos/entrenar/', { method: 'POST', headers: { 'X-CSRFToken': CSRF } });
         const data = await res.json();
-        if (!data.ok) { label.textContent = '⚠️ ' + (data.error || 'Error al iniciar'); label.className = 'train-status-label error'; btn.disabled = false; return; }
-        label.textContent = '⏳ Extrayendo landmarks y entrenando...';
+        if (!data.ok) { label.innerHTML = SVG_WARN + ' ' + (data.error || 'Error al iniciar'); label.className = 'train-status-label error'; btn.disabled = false; return; }
+        label.innerHTML = SVG_SPIN + ' Extrayendo landmarks y entrenando...';
         bloquearGrabacion(true);
         _pollingInterval = setInterval(verificarEstado, 3000);
-    } catch { label.textContent = '❌ Error de conexión'; label.className = 'train-status-label error'; btn.disabled = false; }
+    } catch { label.innerHTML = SVG_ERROR + ' Error de conexión'; label.className = 'train-status-label error'; btn.disabled = false; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1523,12 +1564,12 @@ function verificarSelectAllCam() {
 function aplicarNombreLote() {
     const nuevoNombre = document.getElementById('camBatchName').value.trim();
     if (!nuevoNombre) {
-        mostrarToastGlobal('⚠️ Escribe un nombre para aplicar', true);
+        mostrarToastGlobal(SVG_WARN + ' Escribe un nombre para aplicar', true);
         return;
     }
     const checkboxes = document.querySelectorAll('.cam-saved-checkbox:checked');
     if (checkboxes.length === 0) {
-        mostrarToastGlobal('⚠️ Selecciona al menos un video', true);
+        mostrarToastGlobal(SVG_WARN + ' Selecciona al menos un video', true);
         return;
     }
     checkboxes.forEach(cb => {
@@ -1550,7 +1591,7 @@ function aplicarNombreLote() {
     document.getElementById('camSelectAll').checked = false;
     document.getElementById('camSelectAll').indeterminate = false;
     toggleSelectAllCam(false);
-    mostrarToastGlobal('✅ Nombre aplicado a los videos seleccionados');
+    mostrarToastGlobal(SVG_CHECK + ' Nombre aplicado a los videos seleccionados');
 }
 
 function previsualizarCam(idx) {
@@ -1615,7 +1656,7 @@ async function subirGrabacionesCamara() {
         const fd       = new FormData();
         fd.append('label', nombre);
         fd.append('video', file);
-        if (statusEl) { statusEl.textContent = '⏳'; statusEl.className = 'cam-saved-status uploading'; }
+        if (statusEl) { statusEl.innerHTML = SVG_SPIN; statusEl.className = 'cam-saved-status uploading'; }
         return fetch('/reconocimientos/admin-videos/reconocimiento/subir/', {
             method: 'POST',
             headers: { 'X-CSRFToken': CSRF },
@@ -1625,16 +1666,16 @@ async function subirGrabacionesCamara() {
         .then(data => {
             if (data.ok) {
                 subidos++;
-                if (statusEl) { statusEl.textContent = '✅'; statusEl.className = 'cam-saved-status ok'; }
+                if (statusEl) { statusEl.innerHTML = SVG_CHECK; statusEl.className = 'cam-saved-status ok'; }
                 agregarFilaReconocimiento(data.video);
             } else {
                 errores++;
-                if (statusEl) { statusEl.textContent = '❌'; statusEl.className = 'cam-saved-status error'; }
+                if (statusEl) { statusEl.innerHTML = SVG_ERROR; statusEl.className = 'cam-saved-status error'; }
             }
         })
         .catch(() => {
             errores++;
-            if (statusEl) { statusEl.textContent = '❌'; statusEl.className = 'cam-saved-status error'; }
+            if (statusEl) { statusEl.innerHTML = SVG_ERROR; statusEl.className = 'cam-saved-status error'; }
         })
         .finally(() => {
             completados++;
@@ -1651,7 +1692,7 @@ async function subirGrabacionesCamara() {
         // Limpiar solo los subidos con éxito
         _camSavedBlobs = _camSavedBlobs.filter((_, i) => {
             const s = document.getElementById(`cam-status-${i}`);
-            return s && s.textContent === '❌';
+            return s && s.classList.contains('error');
         });
         renderSavedList();
         progWrap.style.display = 'none';
@@ -1668,7 +1709,7 @@ async function verificarEstado() {
             const label = document.getElementById('trainStatusLabel');
             const btn   = document.getElementById('btnTrain');
             bar.className = 'train-progress-inner'; bar.style.width = '100%';
-            label.textContent = '✅ Modelo entrenado y cargado en memoria'; label.className = 'train-status-label ok';
+            label.innerHTML = SVG_CHECK + ' Modelo entrenado y cargado en memoria'; label.className = 'train-status-label ok';
             btn.disabled = false;
 
             // Borrar todas las filas de la tabla de videos pendientes
@@ -1703,7 +1744,7 @@ async function chequearEntrenamientoAlCargar() {
             wrap.style.display = 'block';
             bar.className = 'train-progress-inner indeterminate';
             label.className = 'train-status-label';
-            label.textContent = '⏳ Extrayendo landmarks y entrenando...';
+            label.innerHTML = SVG_SPIN + ' Extrayendo landmarks y entrenando...';
             
             // Bloquear grabación
             bloquearGrabacion(true);
