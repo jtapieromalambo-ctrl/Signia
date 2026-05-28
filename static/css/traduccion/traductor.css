@@ -45,8 +45,9 @@ body {
     border-radius: 16px;
     padding: 0;
     width: 100%;
-    max-width: 840px;
-    height: calc(100dvh - 120px);
+    max-width: 1024px; /* Aumentado de 840px para que el contenedor principal sea más grande */
+    height: auto;      /* Permitir altura dinámica para alojar un video más grande */
+    min-height: calc(100dvh - 120px);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
     overflow: hidden;
 }
@@ -170,8 +171,9 @@ label {
 /* ── 8. CONTENEDOR DE VIDEO ───────────────────────────────── */
 .video {
     width: 100%;
-    flex: 1;
-    min-height: 200px;
+    aspect-ratio: 16 / 9; /* Relación de aspecto ideal para video */
+    min-height: 380px;    /* Aumentado significativamente para que sea más grande */
+    max-height: 520px;
     border-radius: 12px;
     background: var(--gris-suave);
     border: 1.5px solid #e5e7eb;
