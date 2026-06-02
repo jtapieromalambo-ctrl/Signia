@@ -21,11 +21,9 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         user = request.user
         if user.is_authenticated and not user.discapacidad_seleccionada:
             return '/seleccionar-discapacidad/'
-        if user.discapacidad == 'sordo':
-            return '/traduccion/'
-        elif user.discapacidad == 'mudo':
+        if user.discapacidad in ['sordo', 'mudo']:
             return '/reconocimientos/camara/'
-        return '/perfil/'
+        return '/traduccion/'
 
     def get_signup_redirect_url(self, request):
         return '/seleccionar-discapacidad/'
