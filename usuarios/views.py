@@ -123,12 +123,10 @@ def logout_view(request):
 
 # ── REDIRECCIÓN POR DISCAPACIDAD ───────────────────────
 def redirigir_por_discapacidad(user):
-    if user.discapacidad == 'sordo':
-        return redirect('traduccion')
-    elif user.discapacidad == 'mudo':
+    if user.discapacidad in ['sordo', 'mudo']:
         return redirect('reconocimiento')
     else:
-        return redirect('perfil')
+        return redirect('traduccion')
 
 
 # ── PERFIL ─────────────────────────────────────────────
