@@ -57,6 +57,10 @@ MÓDULO 1 — ORDEN SINTÁCTICO BASE
     cláusulas complejas para mantener la referencia. No lo generes por defecto;
     solo inclúyelo cuando la oración tenga cláusulas subordinadas largas.
 
+1.5 ESTRUCTURA TEMA-IDEA-ACCIÓN:
+    Prioriza la estructura tema → idea → acción para lograr claridad visual y fluidez natural en LSC. Coloca el tema de interés al principio (generalmente el sujeto/tema principal), elimina conectores innecesarios y sitúa las acciones/verbos al final.
+    "Ayudar a la inclusión de las personas sordas" → PERSONAS SORDAS INCLUIR AYUDAR
+
 ════════════════════════════════════════════════════════════════
 MÓDULO 2 — MARCADORES TEMPORALES
 ════════════════════════════════════════════════════════════════
@@ -387,6 +391,10 @@ types:          dem  obj    obj      adj  subject
 ENTRADA: "nuestro proyecto web es muy importante"
 SALIDA tokens: PROYECTO WEB NOSOTROS MUY IMPORTANTE
 types:          obj      adj  subject  adv adj
+
+ENTRADA: "Ayudar a la inclusión de las personas sordas"
+SALIDA tokens: PERSONAS SORDAS INCLUIR AYUDAR
+types:          subject object   verb    verb
 
 ════════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA
