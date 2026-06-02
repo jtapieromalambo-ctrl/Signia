@@ -365,6 +365,13 @@ async function procesarSecuencia(frames) {
 
         const sena = data.seña || '';
 
+        // Si ya no estamos grabando (la mano se bajó y se limpió el estado),
+        // ignoramos cualquier predicción tardía para evitar duplicar el texto.
+        if (!grabando) {
+            console.log(`[CANDIDATA] 🛑 Ignorando predicción tardía "${sena}" porque la mano ya se bajó`);
+            return;
+        }
+
         // Modal de groserías
         if (sena && typeof GroseriasModal !== 'undefined' && GroseriasModal.verificarSena(sena)) {
             GroseriasModal.mostrar(sena, 'sena');
