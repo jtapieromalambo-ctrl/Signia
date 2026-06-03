@@ -54,8 +54,12 @@
                 <span class="video-placeholder">Sin video base</span>
             {% endif %}
 
-            <video id="videoA" width="100%" muted playsinline preload="auto" style="display:none"></video>
-            <video id="videoB" width="100%" muted playsinline preload="auto" style="display:none"></video>
+            {# Elementos de video dinámicos (uno por cada seña de la cola para precarga total) #}
+            {% for url in urls_videos %}
+                <video class="video-item" data-index="{{ forloop.counter0 }}" width="100%" muted playsinline preload="auto" style="display:none">
+                    <source src="{{ url }}" type="video/mp4">
+                </video>
+            {% endfor %}
         </div>
 
         {# ── Resultado LSC en orden LSC — panel permanente ──────────────── #}

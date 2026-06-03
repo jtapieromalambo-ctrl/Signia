@@ -47,10 +47,17 @@ def _obtener_vocabulario_bd() -> list[str]:
     """
     Retorna todos los nombres de videos disponibles en la BD.
     Se usa para que la IA detecte faltantes con precisión.
-    Se cachea en memoria por sesión del proceso (se recarga si la BD cambia).
+    Se cachea en memoria por 10 minutos para evitar consultas recurrentes.
     """
+    from django.core.cache import cache
+    vocab = cache.get('vocabulario_lsc')
+    if vocab is not None:
+        return vocab
+
     try:
-        return list(video.objects.values_list('nombre', flat=True))
+        vocab = list(video.objects.values_list('nombre', flat=True))
+        cache.set('vocabulario_lsc', vocab, 600)  # Caché por 10 minutos (600s)
+        return vocab
     except Exception:
         return []
 
