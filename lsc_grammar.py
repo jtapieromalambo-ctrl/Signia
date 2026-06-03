@@ -61,6 +61,26 @@ MÓDULO 1 — ORDEN SINTÁCTICO BASE
     Prioriza la estructura tema → idea → acción para lograr claridad visual y fluidez natural en LSC. Coloca el tema de interés al principio (generalmente el sujeto/tema principal), elimina conectores innecesarios y sitúa las acciones/verbos al final.
     "Ayudar a la inclusión de las personas sordas" → PERSONAS SORDAS INCLUIR AYUDAR
 
+1.6 PRIORIDAD DE CONTEXTO ESPACIAL E INSTITUCIONAL:
+    En frases de bienvenida, presentación o introducción, el CONTEXTO (lugar, institución,
+    evento) ocupa la posición inicial porque en LSC el espacio se establece PRIMERO.
+    Después viene la IDEA PRINCIPAL (qué sucede), y los saludos/expresiones afectivas
+    quedan AL FINAL como remate comunicativo.
+
+    REGLA: Contexto (lugar/institución) → Idea/Estado → Saludo/Expresión afectiva
+
+    Ejemplos:
+    "Hola, bienvenidos al SENA"        → SENA BIENVENIDOS HOLA
+    "Bienvenidos a nuestra institución" → INSTITUCION BIENVENIDOS
+    "Bienvenidos a Colombia"            → COLOMBIA BIENVENIDOS
+    "Hola, bienvenidos a la clase"      → CLASE BIENVENIDOS HOLA
+    "Buenos días, bienvenidos al SENA" → SENA BIENVENIDOS BUENOS_DIAS
+
+    NOTA: Esta regla prevalece sobre la regla de saludos al inicio (Módulo 3.4)
+    ÚNICAMENTE cuando hay un contexto espacial/institucional explícito combinado
+    con un saludo o bienvenida. En saludos simples sin contexto ("Hola", "Buenos días")
+    el saludo sigue en primera posición.
+
 ════════════════════════════════════════════════════════════════
 MÓDULO 2 — MARCADORES TEMPORALES
 ════════════════════════════════════════════════════════════════
@@ -395,6 +415,26 @@ types:          obj      adj  subject  adv adj
 ENTRADA: "Ayudar a la inclusión de las personas sordas"
 SALIDA tokens: PERSONAS SORDAS INCLUIR AYUDAR
 types:          subject object   verb    verb
+
+ENTRADA: "Hola, bienvenidos al SENA"
+SALIDA tokens: SENA BIENVENIDOS HOLA
+types:          other other       greeting
+(Explicación: SENA = contexto institucional va PRIMERO; BIENVENIDOS = idea principal;
+ HOLA = expresión afectiva de remate; "al" = preposición eliminada;
+ Módulo 1.6: Contexto → Idea → Saludo)
+
+ENTRADA: "Buenos días, bienvenidos al SENA"
+SALIDA tokens: SENA BIENVENIDOS BUENOS_DIAS
+types:          other other       greeting
+
+ENTRADA: "Bienvenidos a nuestra clase de hoy"
+SALIDA tokens: HOY CLASE BIENVENIDOS
+types:          time other other
+(Explicación: HOY = marcador temporal al inicio; CLASE = contexto; BIENVENIDOS = idea)
+
+ENTRADA: "Hola, bienvenido a Colombia"
+SALIDA tokens: COLOMBIA BIENVENIDO HOLA
+types:          other    other      greeting
 
 ════════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA
