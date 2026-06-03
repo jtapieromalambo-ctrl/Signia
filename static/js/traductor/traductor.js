@@ -1,141 +1,91 @@
 // ─── REFERENCIAS AL DOM ───────────────────────────────────────────────
 const videoBase = document.getElementById('videoBase');
-const videoA    = document.getElementById('videoA');
-const videoB    = document.getElementById('videoB');
 
-// ─── DOUBLE BUFFERING ─────────────────────────────────────────────────
-let activo       = videoA;
-let siguiente    = videoB;
+// ─── ESTADO DEL REPRODUCTOR MULTI-VIDEO ────────────────────────────────
+let videosCola   = []; // Elementos <video> de la cola actual
 let indiceActual = 0;
 
-// ─── CROSS-FADE: mostrar elNuevo sobre elViejo sin parpadeo ──────────
-// Funciona en escritorio y móvil (iOS Safari + Android Chrome).
-// Muestra el nuevo video (opacity 0 → 1) y desvanece el viejo (1 → 0)
-// en el mismo frame de pintura, eliminando el flash negro entre videos.
-function _mostrarVideo(elNuevo, elViejo, esElPrimero) {
-    // Preparar nuevo: invisible pero en el DOM para que el browser lo pinte
-    elNuevo.style.opacity = '0';
-    elNuevo.style.display = 'block';
-
-    elNuevo.play()
-        .then(() => {
-            requestAnimationFrame(() => {
-                // Fade in del nuevo
-                elNuevo.style.transition = 'opacity 0.2s ease';
-                elNuevo.style.opacity    = '1';
-
-                // Pausar y fade out del viejo simultáneamente
-                elViejo.pause();
-                elViejo.style.transition = 'opacity 0.2s ease';
-                elViejo.style.opacity    = '0';
-
-                if (esElPrimero && videoBase) {
-                    videoBase.style.transition = 'opacity 0.2s ease';
-                    videoBase.style.opacity    = '0';
-                }
-
-                // Limpiar después de la transición
-                setTimeout(() => {
-                    elViejo.style.display    = 'none';
-                    elViejo.style.transition = '';
-                    elViejo.style.opacity    = '';
-
-                    if (esElPrimero && videoBase) {
-                        videoBase.style.display    = 'none';
-                        videoBase.style.transition = '';
-                        videoBase.style.opacity    = '';
-                    }
-
-                    elNuevo.style.transition = '';
-                }, 220);
-            });
-        })
-        .catch(() => {
-            // Móvil: play() bloqueado (sin gesto de usuario) — mostrar de todas formas
-            elNuevo.style.opacity = '1';
-            elViejo.pause();
-            elViejo.style.display = 'none';
-            if (esElPrimero && videoBase) videoBase.style.display = 'none';
-            // Reintentar en 400ms (iOS suele aceptar tras breve pausa)
-            setTimeout(() => elNuevo.play().catch(() => {}), 400);
-        });
+// Inicializa los listeners de finalización para los videos existentes
+function _inicializarVideos() {
+    videosCola = Array.from(document.querySelectorAll('.video-item'));
+    
+    // Configurar cada video en la cola
+    videosCola.forEach((videoEl, index) => {
+        // Remover listeners anteriores para evitar duplicados
+        videoEl.onended = null;
+        videoEl.onended = () => reproducirSiguiente();
+        
+        // Precargar activamente
+        videoEl.load();
+    });
 }
 
 // ─── FUNCIÓN PRINCIPAL: reproducirSiguiente() ─────────────────────────
 function reproducirSiguiente() {
-
-    if (indiceActual < colaVideos.length) {
-        const elNuevo     = siguiente;
-        const elViejo     = activo;
+    if (indiceActual < videosCola.length) {
+        const elNuevo     = videosCola[indiceActual];
+        const elViejo     = (indiceActual === 0) ? null : videosCola[indiceActual - 1];
         const esElPrimero = (indiceActual === 0);
-        const url         = colaVideos[indiceActual];
 
-        elNuevo.oncanplay = () => {
-            elNuevo.oncanplay = null; // evitar doble disparo
+        // Mostrar nuevo elemento
+        elNuevo.style.display = 'block';
 
-            // Swap de roles
-            [activo, siguiente] = [elNuevo, elViejo];
-            indiceActual++;
-
-            // Cross-fade sin parpadeo
-            _mostrarVideo(elNuevo, elViejo, esElPrimero);
-
-            // Precarga el próximo DESPUÉS de que el viejo esté oculto
-            // (evita cambiar src en un elemento aún visible durante fade-out)
-            setTimeout(() => {
-                if (indiceActual < colaVideos.length) {
-                    siguiente.src = colaVideos[indiceActual];
-                    siguiente.load();
+        elNuevo.play()
+            .then(() => {
+                // CORTE INSTANTÁNEO: Ocultar el viejo al instante
+                if (elViejo) {
+                    elViejo.pause();
+                    elViejo.style.display = 'none';
                 }
-            }, 230);
-        };
 
-        elNuevo.src = url;
-        elNuevo.load();
+                if (esElPrimero && videoBase) {
+                    videoBase.pause();
+                    videoBase.style.display = 'none';
+                }
+                
+                // Mover índice al siguiente
+                indiceActual++;
+            })
+            .catch(() => {
+                // Fallback para reproducir si hay bloqueos del navegador
+                if (elViejo) {
+                    elViejo.pause();
+                    elViejo.style.display = 'none';
+                }
+                if (esElPrimero && videoBase) {
+                    videoBase.pause();
+                    videoBase.style.display = 'none';
+                }
+                indiceActual++;
+                setTimeout(() => elNuevo.play().catch(() => {}), 10);
+            });
 
     } else {
-        // ─── COLA TERMINADA: vuelve al video base con cross-fade ──────
+        // ─── COLA TERMINADA: vuelve al video base con corte directo ──────
+        // Detener y ocultar el último video reproducido
+        if (videosCola.length > 0) {
+            const ultimoVideo = videosCola[videosCola.length - 1];
+            ultimoVideo.pause();
+            ultimoVideo.style.display = 'none';
+        }
+
         indiceActual = 0;
-        const elViejo = activo;
 
         if (videoBase) {
-            videoBase.style.opacity = '0';
             videoBase.style.display = 'block';
             videoBase.play().catch(() => {});
-
-            requestAnimationFrame(() => {
-                videoBase.style.transition = 'opacity 0.2s ease';
-                videoBase.style.opacity    = '1';
-
-                elViejo.pause();
-                elViejo.style.transition = 'opacity 0.2s ease';
-                elViejo.style.opacity    = '0';
-
-                setTimeout(() => {
-                    elViejo.style.display    = 'none';
-                    elViejo.style.transition = '';
-                    elViejo.style.opacity    = '';
-                    videoBase.style.transition = '';
-                }, 220);
-            });
-        } else {
-            elViejo.pause();
-            elViejo.style.display = 'none';
         }
     }
 }
 
-// ─── EVENTOS "ENDED" ──────────────────────────────────────────────────
-videoA.addEventListener('ended', reproducirSiguiente);
-videoB.addEventListener('ended', reproducirSiguiente);
-
-// Arranca si Django ya envió videos (búsqueda por texto en carga inicial)
-if (colaVideos.length > 0) reproducirSiguiente();
+// Inicializar videos de la carga inicial
+_inicializarVideos();
+if (videosCola.length > 0) {
+    reproducirSiguiente();
+}
 
 
 // ─── HELPER: Actualizar UI desde respuesta AJAX ───────────────────────
-// Consolida 3 updates (lsc-resultado + label + toast) en un solo lugar,
-// eliminando duplicación entre enviarTextoAlBackend y MediaRecorder.
 function _actualizarUi(doc) {
     // 1. Strip LSC permanente (tokens en orden LSC)
     const resViejo = document.getElementById('lsc-resultado');
@@ -174,30 +124,23 @@ function _arrancarToast(toast, duracion) {
 
 // ─── HELPER: Parsear y aplicar nueva cola de videos ───────────────────
 function _actualizarVideos(doc) {
-    let nuevasColas = [];
-    doc.querySelectorAll('script').forEach(script => {
-        const match = script.textContent.match(/const colaVideos\s*=\s*\[([\s\S]*?)\];/);
-        if (match) {
-            const urlsTexto = match[1].trim();
-            if (urlsTexto.length > 0) {
-                nuevasColas = urlsTexto
-                    .split(',')
-                    .map(s => s.trim().replace(/['"]/g, ''))
-                    .filter(s => s.length > 0);
-            }
-        }
-    });
+    // Remover videos dinámicos viejos del DOM
+    const contenedor = document.getElementById('contenedorVideo');
+    if (contenedor) {
+        // Eliminar todos los videos viejos excepto el videoBase
+        contenedor.querySelectorAll('.video-item').forEach(el => el.remove());
+        
+        // Agregar los nuevos elementos de video desde el documento parseado
+        doc.querySelectorAll('.video-item').forEach(el => {
+            contenedor.appendChild(el.cloneNode(true));
+        });
+    }
 
-    if (nuevasColas.length > 0) {
-        // Cancelar cargas/callbacks pendientes
-        activo.oncanplay  = null;
-        siguiente.oncanplay = null;
-        activo.pause();
+    // Re-inicializar e iniciar reproducción
+    indiceActual = 0;
+    _inicializarVideos();
 
-        indiceActual = 0;
-        colaVideos.length = 0;
-        nuevasColas.forEach(url => colaVideos.push(url));
-
+    if (videosCola.length > 0) {
         reproducirSiguiente();
     } else {
         mostrarNoEncontrado();
