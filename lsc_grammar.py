@@ -544,6 +544,17 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
     if not texto_espanol or not texto_espanol.strip():
         return _respuesta_vacia()
 
+    # ── Caché: evitar llamadas repetidas a Groq para el mismo texto ───────
+    import hashlib
+    from django.core.cache import cache as django_cache
+
+    texto_norm = texto_espanol.strip().lower()
+    cache_key = "lsc_" + hashlib.sha256(texto_norm.encode("utf-8")).hexdigest()[:16]
+    cached = django_cache.get(cache_key)
+    if cached is not None:
+        print(f"⚡ LSC Grammar: resultado desde caché para '{texto_espanol.strip()}'")
+        return cached
+
     # ── Preprocesar texto hablado (sin puntuación) ────────────────────────────
     texto_procesado = _preprocesar_texto_hablado(texto_espanol)
 
@@ -597,6 +608,8 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
 
             respuesta = _normalizar_respuesta(data, vocabulario_disponible)
             respuesta["modelo_usado"] = modelo
+            # Guardar en caché por 30 minutos (1800s)
+            django_cache.set(cache_key, respuesta, 1800)
             return respuesta
 
         except json.JSONDecodeError as e:
