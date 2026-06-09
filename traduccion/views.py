@@ -62,11 +62,51 @@ def _obtener_vocabulario_bd() -> list[str]:
         return []
 
 
-def _buscar_video_en_bd(fragmento: str):
+def _obtener_videos_dict() -> dict:
     """
-    Busca un video en la BD por nombre exacto (case-insensitive).
-    Retorna el objeto video o None.
+    Retorna un diccionario {nombre_upper: objeto_video} con todos los videos.
+    Se cachea en memoria por 10 minutos para evitar N+1 queries.
     """
+    from django.core.cache import cache
+    vdict = cache.get('videos_dict_lsc')
+    if vdict is not None:
+        return vdict
+
+    try:
+        vdict = {v.nombre.upper(): v for v in video.objects.all()}
+        cache.set('videos_dict_lsc', vdict, 600)
+        return vdict
+    except Exception:
+        return {}
+
+
+def _obtener_video_base():
+    """
+    Retorna el video base, cacheado para evitar queries repetidas.
+    """
+    from django.core.cache import cache
+    vbase = cache.get('video_base_lsc')
+    if vbase is not None:
+        return vbase if vbase != '__none__' else None
+
+    try:
+        vbase = video.objects.get(nombre__iexact='base')
+        cache.set('video_base_lsc', vbase, 600)
+        return vbase
+    except video.DoesNotExist:
+        cache.set('video_base_lsc', '__none__', 600)
+        return None
+
+
+def _buscar_video_en_bd(fragmento: str, videos_dict: dict | None = None):
+    """
+    Busca un video por nombre exacto (case-insensitive).
+    Si se provee videos_dict, busca en el diccionario (O(1)).
+    Si no, hace query individual (fallback).
+    """
+    if videos_dict is not None:
+        return videos_dict.get(fragmento.upper())
+
     try:
         return video.objects.get(nombre__iexact=fragmento)
     except video.DoesNotExist:
@@ -75,7 +115,7 @@ def _buscar_video_en_bd(fragmento: str):
         return None
 
 
-def _buscar_token_con_fallbacks(token: str, estrategia_faltantes: dict):
+def _buscar_token_con_fallbacks(token: str, estrategia_faltantes: dict, videos_dict: dict | None = None):
     """
     Intenta encontrar un video para un token LSC, aplicando estrategias de fallback:
       1. Búsqueda exacta del token
@@ -92,7 +132,7 @@ def _buscar_token_con_fallbacks(token: str, estrategia_faltantes: dict):
     info = {"found": False, "strategy": "none", "original": token_upper, "used": token_para_bd}
 
     # 1. Búsqueda directa (con espacios si era expresión multipalabra)
-    v = _buscar_video_en_bd(token_para_bd)
+    v = _buscar_video_en_bd(token_para_bd, videos_dict)
     if v:
         info["found"] = True
         return v, info
@@ -102,7 +142,7 @@ def _buscar_token_con_fallbacks(token: str, estrategia_faltantes: dict):
 
     if estrategia.startswith("synonym:"):
         alternativa = estrategia.split(":", 1)[1].strip()
-        v = _buscar_video_en_bd(alternativa)
+        v = _buscar_video_en_bd(alternativa, videos_dict)
         if v:
             info.update({"found": True, "strategy": "synonym", "used": alternativa})
             return v, info
@@ -120,12 +160,7 @@ def buscar_video(request):
     modelo_usado = None     # Modelo de IA utilizado o 'fallback'
     aviso_lsc = None        # Mensaje si la IA usó fallback
     lsc_metadata = {}       # Tipo de oración, expresión facial, etc.
-    video_base = None
-
-    try:
-        video_base = video.objects.get(nombre__iexact='base')
-    except video.DoesNotExist:
-        video_base = None
+    video_base = _obtener_video_base()
 
     if request.method == 'POST':
         palabras_texto = None
@@ -195,6 +230,9 @@ def buscar_video(request):
 
             print("🤟 Tokens LSC:", tokens_lsc)
 
+            # ── Precargar todos los videos en un dict (1 sola query) ──────────
+            videos_dict = _obtener_videos_dict()
+
             # ── Búsqueda de videos por token ──────────────────────────────────
             # La IA ya reordenó los tokens en el orden LSC correcto.
             # Aquí intentamos búsqueda multi-token (frases compuestas) + single token.
@@ -205,7 +243,7 @@ def buscar_video(request):
                 # Intento de frases compuestas (máx 3 tokens contiguos)
                 for longitud in range(min(3, len(tokens_lsc) - i), 0, -1):
                     fragmento = ' '.join(tokens_lsc[i:i + longitud])
-                    v, info = _buscar_token_con_fallbacks(fragmento, estrategia_faltantes)
+                    v, info = _buscar_token_con_fallbacks(fragmento, estrategia_faltantes, videos_dict)
 
                     if v:
                         resultados.append(v)

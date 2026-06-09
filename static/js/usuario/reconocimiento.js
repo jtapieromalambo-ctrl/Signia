@@ -45,7 +45,7 @@ const INTERVALO_PRED      = 6;     // Predecir cada 6 frames capturados con mano
 const COOLDOWN_FRAMES     = 15;    // Esperar ~0.75s después de una detección confirmada
 const INTERVALO_MS        = 50;
 const JPEG_QUALITY        = 0.65;  // Mayor calidad → landmarks más precisos
-const UMBRAL_CONFIANZA    = 80;    // Confianza mínima para mostrar inmediatamente
+const UMBRAL_CONFIANZA    = 55;    // Confianza mínima para mostrar inmediatamente
 const UMBRAL_CONFIANZA_ALTA = 80;  // Mantener coherencia con el umbral alto
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
