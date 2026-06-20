@@ -4,9 +4,16 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
-import os 
+from django.http import JsonResponse
+import os
+
+
+def health(request):
+    return JsonResponse({'status': 'ok'})
+
 
 urlpatterns = [
+    path('health/', health, name='health'),
     path('admin/', admin.site.urls),
     path('', include('usuarios.urls')),
     path('', include('traduccion.urls')),

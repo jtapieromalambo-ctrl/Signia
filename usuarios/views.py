@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from .forms import RegistroForm, EditarPerfilForm
 from .models import Usuario
@@ -48,9 +48,10 @@ def panel_admin_videos(request):
 def index(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            return redirect('panel_admin_videos') 
+            return redirect('panel_admin_videos')
         return redirigir_por_discapacidad(request.user)
-    return render(request, 'usuarios/index.html')
+    videos_traductor = list(VideoTraductor.objects.all().order_by('nombre'))
+    return render(request, 'usuarios/index.html', {'videos_traductor': videos_traductor})
 
 
 # ── LOGIN ──────────────────────────────────────────────
@@ -360,7 +361,7 @@ def contacto(request):
                         subject=f'🚨 Nueva queja/contacto de {nombre} - Signia',
                         body=f'Nombre: {nombre}\nCorreo: {correo}\n\nObservación:\n{observacion}\n\nMensaje:\n{mensaje}',
                         from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=['osorioescobardavidfelipe@gmail.com'],
+                        to=[settings.ADMIN_EMAIL],
                     )
                     email_msg.attach_alternative(html_contacto, "text/html")
                     email_msg.send(fail_silently=True)
@@ -390,7 +391,32 @@ def reconocimiento(request):
 
 # ── RECUPERAR CONTRASEÑA CON CÓDIGO ───────────────────
 
-import random
+import secrets
+import logging
+import threading
+
+logger = logging.getLogger(__name__)
+
+# ── Rate limiting simple en memoria ───────────────────
+_rl_lock = threading.Lock()
+_rl_intentos: dict[str, list] = {}   # ip → [timestamps]
+_RL_MAX = 5        # max intentos
+_RL_VENTANA = 300  # segundos (5 minutos)
+
+
+def _rate_limit_exceeded(ip: str) -> bool:
+    """Devuelve True si la IP superó el límite de intentos."""
+    import time
+    ahora = time.monotonic()
+    with _rl_lock:
+        historial = _rl_intentos.get(ip, [])
+        historial = [t for t in historial if ahora - t < _RL_VENTANA]
+        if len(historial) >= _RL_MAX:
+            _rl_intentos[ip] = historial
+            return True
+        historial.append(ahora)
+        _rl_intentos[ip] = historial
+        return False
 
 def recuperar_password(request):
     if request.method == 'POST':
@@ -408,7 +434,7 @@ def recuperar_password(request):
                 return render(request, 'registration/recuperar.html')
 
         # ── Este bloque debe estar FUERA del try/except ──
-        codigo = str(random.randint(100000, 999999))
+        codigo = str(secrets.randbelow(900000) + 100000)
         request.session['reset_codigo'] = codigo
         request.session['reset_email']  = email
 
@@ -467,6 +493,11 @@ def recuperar_password(request):
         
 def verificar_codigo(request):
     if request.method == 'POST':
+        ip = request.META.get('REMOTE_ADDR', 'unknown')
+        if _rate_limit_exceeded(f'otp_reset_{ip}'):
+            messages.error(request, 'Demasiados intentos. Espera 5 minutos.')
+            return render(request, 'registration/verificar_codigo.html')
+
         codigo_ingresado = request.POST.get('codigo', '').strip()
         codigo_guardado  = request.session.get('reset_codigo')
 
@@ -571,59 +602,6 @@ def eliminar_mensaje_contacto(request, mensaje_id):
         return JsonResponse({'ok': True})
         return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
 
-#verificacion del corrreo
-def verificar_otp(request):
-    email = request.session.get('email_verificacion')
-    
-    if not email:
-        messages.error(request, 'Sesión expirada. Intenta de nuevo.')
-        return redirect('solicitar_verificacion')
-    
-    if request.method == 'POST':
-        codigo_ingresado = request.POST.get('codigo')
-        
-        try:
-            usuario = Usuario.objects.get(email=email)
-            otp = CodigoOTP.objects.filter(
-                usuario=usuario,
-                codigo=codigo_ingresado,
-                usado=False
-            ).last()
-            
-            if otp and otp.esta_vigente():
-                otp.usado = True
-                otp.save()
-                usuario.email_verificado = True
-                usuario.save()
-                del request.session['email_verificacion']
-
-                # Login después de verificar
-                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
-
-                # Correo de bienvenida
-                try:
-                    send_mail(
-                        subject='¡Bienvenido a Signia! 🤟',
-                        message=f'Hola {usuario.username},\n\n¡Gracias por registrarte en Signia!\n\nEl equipo de Signia',
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[usuario.email],
-                        fail_silently=True,
-                    )
-                except Exception:
-                    pass
-
-                messages.success(request, '¡Correo verificado correctamente!')
-                return redirigir_por_discapacidad(usuario)
-            
-            else:
-                messages.error(request, 'Código incorrecto o expirado.')
-        
-        except Usuario.DoesNotExist:
-            messages.error(request, 'Usuario no encontrado.')
-    
-    return render(request, 'usuarios/verificar_otp.html')
-
-
 def enviar_otp(usuario):
     otp = CodigoOTP.generar(usuario)
     
@@ -667,14 +645,19 @@ def solicitar_verificacion(request):
 # Vista 2: El usuario ingresa el código OTP
 def verificar_otp(request):
     email = request.session.get('email_verificacion')
-    
+
     if not email:
         messages.error(request, 'Sesión expirada. Intenta de nuevo.')
         return redirect('solicitar_verificacion')
-    
+
     if request.method == 'POST':
+        ip = request.META.get('REMOTE_ADDR', 'unknown')
+        if _rate_limit_exceeded(f'otp_verify_{ip}'):
+            messages.error(request, 'Demasiados intentos. Espera 5 minutos.')
+            return render(request, 'usuarios/verificar_otp.html')
+
         codigo_ingresado = request.POST.get('codigo')
-        
+
         try:
             usuario = Usuario.objects.get(email=email)
             otp = CodigoOTP.objects.filter(
@@ -682,21 +665,17 @@ def verificar_otp(request):
                 codigo=codigo_ingresado,
                 usado=False
             ).last()
-            
+
             if otp and otp.esta_vigente():
                 otp.usado = True
                 otp.save()
+                usuario.email_verificado = True
+                usuario.save()
+                del request.session['email_verificacion']
 
-                print(f"🔍 email_verificado = {usuario.email_verificado}")
-    
-            if not usuario.email_verificado:
-                print(f"📧 Intentando enviar correo a {usuario.email}")
+                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+
                 try:
-                    # ... el html_bienvenida y el envío
-                    correo.send(fail_silently=False)
-                    print(f"✅ Correo enviado exitosamente a {usuario.email}")
-                except Exception as e:
-                    print(f"❌ Error al enviar correo: {e}")
                     html_bienvenida = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#E8F3FC;font-family:Arial,sans-serif;">
@@ -713,8 +692,7 @@ def verificar_otp(request):
           <td style="padding:32px;">
             <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hola <strong>{usuario.username}</strong>,</p>
             <p style="color:#374151;font-size:15px;margin:0 0 24px;line-height:1.6;">
-              ¡Tu cuenta en <strong>Signia</strong> ha sido creada exitosamente! 🎉<br>
-              Ahora puedes acceder a todas las herramientas de comunicación.
+              ¡Tu cuenta en <strong>Signia</strong> ha sido creada exitosamente! 🎉
             </p>
             <div style="background:#EFF6FF;border-radius:16px;padding:20px;margin:0 0 24px;">
               <p style="color:#1E40AF;font-size:14px;margin:0 0 10px;font-weight:700;">¿Qué puedes hacer en Signia?</p>
@@ -741,24 +719,19 @@ def verificar_otp(request):
                         to=[usuario.email],
                     )
                     correo.attach_alternative(html_bienvenida, "text/html")
-                    correo.send(fail_silently=False)
-
-                usuario.email_verificado = True
-                usuario.save()
-                del request.session['email_verificacion']
-
-                login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+                    correo.send(fail_silently=True)
+                except Exception as e:
+                    logger.error('Error enviando correo de bienvenida a %s: %s', usuario.email, e)
 
                 messages.success(request, '¡Correo verificado correctamente!')
                 request.session['show_disability_modal'] = True
                 return redirigir_por_discapacidad(usuario)
-
             else:
                 messages.error(request, 'Código incorrecto o expirado.')
-        
+
         except Usuario.DoesNotExist:
             messages.error(request, 'Usuario no encontrado.')
-    
+
     return render(request, 'usuarios/verificar_otp.html')
 
 
