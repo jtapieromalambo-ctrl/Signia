@@ -138,7 +138,9 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
+_admin_email = config('ADMIN_EMAIL', default='admin@signia.app')
+DEFAULT_FROM_EMAIL = f'Signia <{_admin_email}>'
+ADMIN_EMAIL = _admin_email
 
 # ── ALLAUTH ────────────────────────────────────────────
 SITE_ID = config("SITE_ID", default=1, cast=int)
@@ -209,3 +211,42 @@ if railway_domain:
 # Configuración crucial para que Django sepa que está bajo HTTPS detrás del proxy de Railway
 # Esto arregla el error "redirect_uri_mismatch" de Google (http vs https)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# ── LOGGING ────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': config('DJANGO_LOG_LEVEL', default='WARNING'),
+            'propagate': False,
+        },
+        'usuarios': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'reconocimientos': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
