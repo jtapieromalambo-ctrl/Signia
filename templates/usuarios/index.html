@@ -70,14 +70,18 @@
 
     <div class="hero-visual">
       <div class="visual-card">
-        <p class="visual-title">Señas del abecedario</p>
+        <p class="visual-title">Lengua de señas colombiana</p>
 
         <div class="video-wrapper">
-          <video id="sign-video" src="{% static 'señas.mp4' %}" autoplay muted loop playsinline></video>
+          {% if videos_traductor %}
+            <video id="sign-video" muted playsinline style="opacity:0;"></video>
+          {% else %}
+            <video id="sign-video" src="{% static 'señas.mp4' %}" autoplay muted loop playsinline></video>
+          {% endif %}
         </div>
 
         <div class="translation-box">
-          <p id="sign-translation" class="sign-translation-text">–</p>
+          <p id="sign-translation" class="sign-translation-text" style="opacity:0;">–</p>
         </div>
 
         <div class="visual-stat">
@@ -87,6 +91,73 @@
       </div>
     </div>
   </section>
+
+  {% if videos_traductor %}
+  <style>
+    #sign-translation { transition: opacity 0.4s ease, transform 0.4s ease; }
+    #sign-video       { transition: opacity 0.4s ease; }
+  </style>
+  <script>
+    (function () {
+      const lista = [
+        {% for v in videos_traductor %}
+        { url: "{{ v.video.url }}", nombre: "{{ v.nombre|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+      if (!lista.length) return;
+
+      const videoEl = document.getElementById('sign-video');
+      const labelEl = document.getElementById('sign-translation');
+      const FADE    = 400;
+      let   idx     = 0;
+
+      function mostrar() {
+        videoEl.play().catch(() => {});
+        videoEl.style.opacity = '1';
+        labelEl.style.opacity = '1';
+      }
+
+      function cargar(entrada) {
+        labelEl.textContent     = entrada.nombre;
+        labelEl.style.transform = 'translateY(0)';
+
+        // Limpiar src antes de cambiar para forzar recarga aunque sea la misma URL
+        videoEl.removeAttribute('src');
+        videoEl.load();
+
+        videoEl.src = entrada.url;
+
+        // Registrar listener ANTES de load()
+        videoEl.addEventListener('canplay', function onReady() {
+          videoEl.removeEventListener('canplay', onReady);
+          clearTimeout(timer);
+          mostrar();
+        });
+
+        // Fallback por si canplay no dispara (ej. formato no soportado)
+        const timer = setTimeout(mostrar, 5000);
+
+        videoEl.load();
+      }
+
+      function irA(nuevoIdx) {
+        idx = nuevoIdx % lista.length;
+
+        videoEl.style.opacity = '0';
+        labelEl.style.opacity = '0';
+        labelEl.style.transform = 'translateY(6px)';
+
+        setTimeout(() => cargar(lista[idx]), FADE);
+      }
+
+      videoEl.addEventListener('ended', () => irA(idx + 1));
+      videoEl.addEventListener('error', () => irA(idx + 1));
+
+      // Arranque
+      cargar(lista[0]);
+    })();
+  </script>
+  {% endif %}
 
   <!-- FEATURES -->
   <section class="features">
@@ -192,33 +263,6 @@
   </div>
 
   <script>
-    /* ── Hero video translation ticker ── */
-    const video = document.getElementById('sign-video');
-    const translationEl = document.getElementById('sign-translation');
-
-    const signs = [
-      { start: 0, end: 3, text: "Hola" },
-      { start: 3, end: 6, text: "¿Cómo estás?" },
-    ];
-
-    function updateTranslation() {
-      const t = video.currentTime;
-      const current = signs.find(s => t >= s.start && t < s.end);
-      const newText = current ? current.text : "–";
-
-      if (translationEl.textContent !== newText) {
-        translationEl.style.opacity = '0';
-        setTimeout(() => {
-          translationEl.textContent = newText;
-          translationEl.style.opacity = '1';
-        }, 150);
-      }
-      requestAnimationFrame(updateTranslation);
-    }
-
-    video.addEventListener('loadedmetadata', () => requestAnimationFrame(updateTranslation));
-    if (video.readyState >= 1) requestAnimationFrame(updateTranslation);
-
     /* ── Hamburger / Mobile menu ── */
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mobileMenu   = document.getElementById('mobileMenu');
