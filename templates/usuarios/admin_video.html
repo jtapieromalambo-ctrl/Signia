@@ -6,6 +6,9 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/usuarios/admin_video.css' %}">
 <style>
+/* Reservar espacio del scrollbar para que el ancho no cambie entre pestañas */
+body { overflow-y: scroll !important; overflow-x: hidden !important; }
+
 @keyframes spin-anim {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }

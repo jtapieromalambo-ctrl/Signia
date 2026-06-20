@@ -258,7 +258,7 @@ body {
 
 /* ── Panels ─────────────────────────────────────────────── */
 .tab-panel { display: none; }
-.tab-panel.active { display: block; }
+.tab-panel.active { display: block; min-height: 700px; }
 
 /* ── Info banner ────────────────────────────────────────── */
 .section-info {
