@@ -152,6 +152,10 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID', default=''),
+            'secret':    config('GOOGLE_CLIENT_SECRET', default=''),
+        },
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {
             'access_type': 'online',
@@ -208,9 +212,9 @@ if railway_domain:
     ALLOWED_HOSTS.append(railway_domain)
     CSRF_TRUSTED_ORIGINS = [f'https://{railway_domain}']
 
-# Configuración crucial para que Django sepa que está bajo HTTPS detrás del proxy de Railway
-# Esto arregla el error "redirect_uri_mismatch" de Google (http vs https)
+# Configuración para Railway (proxy HTTPS)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # ── LOGGING ────────────────────────────────────────────
 LOGGING = {
