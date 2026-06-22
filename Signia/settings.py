@@ -8,8 +8,6 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-railway'
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -157,6 +155,7 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
             'prompt': 'select_account',
         },
+        'VERIFIED_EMAIL': True,
     },
     'facebook': {
         'METHOD': 'oauth2',
@@ -164,6 +163,9 @@ SOCIALACCOUNT_PROVIDERS = {
         'FIELDS': ['id', 'email', 'name'],
     }
 }
+
+# Configuración adicional de allauth para OAuth
+SOCIALACCOUNT_RAISE_EXCEPTIONS = False  # Para debugging
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
@@ -200,17 +202,41 @@ import os
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY', default='')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com', '.up.railway.app']
+# ── DOMINIOS PERMITIDOS (CORRECCIÓN) ──────────────────
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '10.4.1.54',
+    'ycg31qz6.up.railway.app',  # Tu dominio específico de Railway
+    '*.onrender.com',
+    '*.up.railway.app',
+]
 
-# Railway specific domains
+# Agregar dominio personalizado si existe
 railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
-if railway_domain:
+if railway_domain and railway_domain not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(railway_domain)
-    CSRF_TRUSTED_ORIGINS = [f'https://{railway_domain}']
 
-# Configuración para Railway (proxy HTTPS)
+# ── CONFIGURACIÓN HTTPS & SEGURIDAD (RAILWAY) ──────────
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
+
+# Solo si NO está en DEBUG (producción)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# CSRF y Origins permitidos
+CSRF_TRUSTED_ORIGINS = [
+    'https://ycg31qz6.up.railway.app',
+    'https://www.ycg31qz6.up.railway.app',
+]
+if railway_domain:
+    CSRF_TRUSTED_ORIGINS.extend([
+        f'https://{railway_domain}',
+        f'https://www.{railway_domain}',
+    ])
 
 # ── LOGGING ────────────────────────────────────────────
 LOGGING = {
