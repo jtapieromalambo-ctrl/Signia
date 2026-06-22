@@ -7,5 +7,11 @@
         "*test.py"
     ],
     "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/ENT/Scripts/python.exe",
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.env.windows": {
+        "VIRTUAL_ENV": "${workspaceFolder}/ENT",
+        "PATH": "${workspaceFolder}/ENT/Scripts;${env:PATH}"
+    }
 }
