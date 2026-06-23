@@ -48,11 +48,11 @@ def _cargar_modelo():
             modelo = pickle.load(f)
         with open(ENCODER_PATH, 'rb') as f:
             encoder = pickle.load(f)
-        print('[MODEL] ✅ Modelo cargado en memoria')
+        print('[MODEL] OK Modelo cargado en memoria')
     else:
         modelo  = None
         encoder = None
-        print('[MODEL] ⚠️  No hay modelo entrenado todavía — entrena desde el panel admin')
+        print('[MODEL] WARN No hay modelo entrenado todavia - entrena desde el panel admin')
 
 _cargar_modelo()
 
