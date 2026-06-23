@@ -51,41 +51,72 @@
     </div>
   </div>
 
-  {# ── Modal de Éxito Flotante Animado ── #}
+  {# ── Modal de Éxito ── #}
   {% if enviado or observacion_enviada %}
-  <div class="success-overlay" id="successOverlay">
-    <div class="success-modal" id="successModal">
-      
-      <!-- Círculo de Éxito animado con SVG Check -->
-      <div class="success-icon-wrap">
-        <div class="success-icon-ring"></div>
-        <div class="success-icon-bg">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <style>
+    #successOverlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(232,243,252,0.85);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 99999; padding: 1.5rem; box-sizing: border-box;
+      animation: fadeIn .3s ease;
+    }
+    #successModal {
+      background: #fff; border: 1px solid #BFDBFE; border-radius: 24px;
+      padding: 2.5rem 2rem; max-width: 460px; width: 100%;
+      box-shadow: 0 20px 60px rgba(37,99,235,0.18);
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 1.1rem;
+      animation: slideDown .45s cubic-bezier(.34,1.56,.64,1);
+    }
+    .s-icon-wrap { position: relative; width: 78px; height: 78px; }
+    .s-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: rgba(34,197,94,.12);
+      animation: pulse 2s ease infinite;
+    }
+    .s-circle {
+      position: absolute; top: 5px; left: 5px;
+      width: 68px; height: 68px; border-radius: 50%;
+      background: rgba(34,197,94,.18);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .s-circle svg { stroke: #22c55e; animation: pop .4s .15s cubic-bezier(.34,1.56,.64,1) both; }
+    #successModal h2 { font-size: 1.5rem; font-weight: 700; color: #1E293B; margin: 0; }
+    #successModal p  { font-size: .95rem; color: #64748B; line-height: 1.6; margin: 0; }
+    #btnBack {
+      margin-top: .5rem; display: inline-flex; align-items: center;
+      gap: .5rem; background: linear-gradient(135deg,#2563EB,#3B82F6);
+      color: #fff; border: none; border-radius: 12px;
+      padding: .75rem 1.75rem; font-size: .95rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 14px rgba(37,99,235,.3);
+      transition: transform .2s, box-shadow .2s;
+    }
+    #btnBack:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideDown{ from { opacity:0; transform:translateY(-60px) scale(.92) } to { opacity:1; transform:none } }
+    @keyframes pulse    { 0%,100%{transform:scale(.85);opacity:.8} 50%{transform:scale(1.15);opacity:.2} }
+    @keyframes pop      { from{transform:scale(0)} to{transform:scale(1)} }
+    #successOverlay.hide { animation: fadeIn .35s ease reverse forwards; }
+  </style>
+
+  <div id="successOverlay">
+    <div id="successModal">
+      <div class="s-icon-wrap">
+        <div class="s-ring"></div>
+        <div class="s-circle">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
       </div>
-      
-      <h2>
-        {% if observacion_enviada %}
-          ¡Gracias por tu observación!
-        {% else %}
-          ¡Mensaje enviado con éxito!
-        {% endif %}
-      </h2>
-      
-      <p>
-        {% if observacion_enviada %}
-          Hemos recibido tu mensaje y observación. La tendremos en cuenta para mejorar Signia.
-        {% else %}
-          Te responderemos lo antes posible. Gracias por escribirnos.
-        {% endif %}
-      </p>
-      
-      <button class="btn-back" id="btnBack" data-url="{% url 'contacto' %}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m12 19-7-7 7-7"/>
-          <path d="M19 12H5"/>
+      <h2>{% if observacion_enviada %}¡Gracias por tu observación!{% else %}¡Mensaje enviado!{% endif %}</h2>
+      <p>{% if observacion_enviada %}Hemos recibido tu mensaje y observación. La tendremos en cuenta para mejorar Signia.{% else %}Te responderemos lo antes posible. Gracias por escribirnos.{% endif %}</p>
+      <button id="btnBack">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
         </svg>
         Volver al formulario
       </button>
@@ -93,31 +124,10 @@
   </div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-      const btnBack = document.getElementById('btnBack');
-      const overlay = document.getElementById('successOverlay');
-      const modal = document.getElementById('successModal');
-      
-      if (btnBack && overlay && modal) {
-          btnBack.addEventListener('click', (e) => {
-              e.preventDefault();
-              const targetUrl = btnBack.getAttribute('data-url');
-              
-              // Aplicar animación de salida inversa (Slide Up suave)
-              modal.classList.add('exit-anim');
-              overlay.classList.add('exit-anim');
-              
-              // Redirigir suavemente al terminar la animación
-              modal.addEventListener('animationend', () => {
-                  window.location.href = targetUrl;
-              }, { once: true });
-              
-              // Redirección de respaldo (fallback)
-              setTimeout(() => {
-                  window.location.href = targetUrl;
-              }, 450);
-          });
-      }
+  document.getElementById('btnBack').addEventListener('click', function() {
+    var overlay = document.getElementById('successOverlay');
+    overlay.classList.add('hide');
+    setTimeout(function(){ window.location.href = '{% url "contacto" %}'; }, 350);
   });
   </script>
   {% endif %}
