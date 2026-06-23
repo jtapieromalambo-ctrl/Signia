@@ -1,6 +1,23 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from allauth.socialaccount.models import SocialApp
+from django.conf import settings
+
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
+
+    def get_app(self, request, provider, client_id=None):
+        config = settings.SOCIALACCOUNT_PROVIDERS.get(provider, {}).get('APP', {})
+        if config and config.get('client_id'):
+            app = SocialApp(
+                provider=provider,
+                client_id=config['client_id'],
+                secret=config.get('secret', ''),
+                key=config.get('key', ''),
+            )
+            app.pk = 0
+            return app
+        return super().get_app(request, provider, client_id=client_id)
+
 
     def is_open_for_signup(self, request, sociallogin):
         email = sociallogin.account.extra_data.get('email', '')
