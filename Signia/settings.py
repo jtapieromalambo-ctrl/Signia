@@ -207,7 +207,9 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '10.4.1.54',
-    'ycg31qz6.up.railway.app',  # Tu dominio específico de Railway
+    'ycg31qz6.up.railway.app',
+    'signia.click',  
+    'www.signia.click',  
     '*.onrender.com',
     '*.up.railway.app',
 ]
@@ -231,6 +233,8 @@ if not DEBUG:
 CSRF_TRUSTED_ORIGINS = [
     'https://ycg31qz6.up.railway.app',
     'https://www.ycg31qz6.up.railway.app',
+    'https://signia.click',  
+    'https://www.signia.click',
 ]
 if railway_domain:
     CSRF_TRUSTED_ORIGINS.extend([
