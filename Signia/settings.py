@@ -142,6 +142,7 @@ ADMIN_EMAIL = _admin_email
 
 # ── ALLAUTH ────────────────────────────────────────────
 SITE_ID = config("SITE_ID", default=1, cast=int)
+SITE_DOMAIN = config("SITE_DOMAIN", default="www.signia.click")
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -150,6 +151,11 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID', default=''),
+            'secret': config('GOOGLE_CLIENT_SECRET', default=''),
+            'key': '',
+        },
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {
             'access_type': 'online',
