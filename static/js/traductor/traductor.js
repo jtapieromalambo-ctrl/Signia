@@ -161,8 +161,7 @@ let procesando = false;
 // los elementos de video y permite que play() funcione sin gesto directo.
 document.addEventListener('touchstart', function _unlockIos() {
     if (videoBase) videoBase.play().catch(() => {});
-    videoA.load();
-    videoB.load();
+    videosCola.forEach(v => v.load());
     document.removeEventListener('touchstart', _unlockIos);
 }, { once: true, passive: true });
 
@@ -253,6 +252,7 @@ function enviarTextoAlBackend(texto) {
     }
 
     const formData = new FormData(formulario);
+    formData.delete('audio'); // Evitar que el input de archivo vacío active la ruta de audio en el backend
     formData.set('palabra', texto);
 
     fetch(window.location.href, { method: 'POST', body: formData })
@@ -344,6 +344,7 @@ function iniciarModoMediaRecorder() {
 const notificacion = document.getElementById('notificacionNoEncontrado');
 
 function mostrarNoEncontrado() {
+    if (!notificacion) return;
     notificacion.style.display   = 'flex';
     notificacion.style.animation = 'none';
     notificacion.offsetHeight; // Fuerza reflow
