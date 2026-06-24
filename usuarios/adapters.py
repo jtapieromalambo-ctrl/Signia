@@ -1,11 +1,22 @@
+import logging
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialApp
 from django.conf import settings
+
+logger = logging.getLogger('usuarios')
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def get_app(self, request, provider, client_id=None):
+        if settings.DEBUG and request and provider == 'google':
+            try:
+                callback = request.build_absolute_uri(
+                    f'/accounts/{provider}/login/callback/'
+                )
+                logger.info(f'[OAUTH DEBUG] redirect_uri que se enviará a Google: {callback}')
+            except Exception:
+                pass
         config = settings.SOCIALACCOUNT_PROVIDERS.get(provider, {}).get('APP', {})
         if config and config.get('client_id'):
             app = SocialApp(
