@@ -552,7 +552,7 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
     cache_key = "lsc_" + hashlib.sha256(texto_norm.encode("utf-8")).hexdigest()[:16]
     cached = django_cache.get(cache_key)
     if cached is not None:
-        print(f"⚡ LSC Grammar: resultado desde caché para '{texto_espanol.strip()}'")
+        print(f"[LSC] Cache hit para '{texto_espanol.strip()}'")
         return cached
 
     # ── Preprocesar texto hablado (sin puntuación) ────────────────────────────
@@ -604,7 +604,7 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
             data = json.loads(raw)
 
             if modelo != MODELOS_GROQ[0]:
-                print(f"ℹ️ LSC Grammar: usando modelo de respaldo '{modelo}'")
+                print(f"[LSC] Usando modelo de respaldo '{modelo}'")
 
             respuesta = _normalizar_respuesta(data, vocabulario_disponible)
             respuesta["modelo_usado"] = modelo
@@ -614,7 +614,7 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
 
         except json.JSONDecodeError as e:
             # JSON inválido no depende del modelo, no tiene sentido reintentar
-            print(f"⚠️ LSC Grammar: JSON inválido con modelo '{modelo}': {e}")
+            print(f"[LSC] JSON invalido con modelo '{modelo}': {e}")
             return _fallback_sin_ia(texto_espanol)
 
         except Exception as e:
@@ -623,15 +623,15 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
 
             # Rate limit (429), sobrecarga (503) o modelo descontinuado → probar siguiente modelo
             if "429" in error_str or "503" in error_str or "rate_limit" in error_str.lower() or "model_decommissioned" in error_str.lower():
-                print(f"⚠️ LSC Grammar: modelo '{modelo}' sin cupo o descontinuado, probando siguiente...")
+                print(f"[LSC] Modelo '{modelo}' sin cupo, probando siguiente...")
                 continue
 
             # Otro error (auth, red) → no tiene sentido reintentar
-            print(f"⚠️ LSC Grammar: Error Groq con modelo '{modelo}': {e}")
+            print(f"[LSC] Error Groq con modelo '{modelo}': {e}")
             return _fallback_sin_ia(texto_espanol)
 
     # Todos los modelos agotados → fallback básico
-    print(f"⚠️ LSC Grammar: todos los modelos Groq agotados. Último error: {ultimo_error}")
+    print(f"[LSC] Todos los modelos Groq agotados. Ultimo error: {ultimo_error}")
     return _fallback_sin_ia(texto_espanol)
 
 
