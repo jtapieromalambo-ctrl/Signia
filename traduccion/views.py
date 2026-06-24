@@ -24,9 +24,9 @@ def _get_whisper_model():
         with _whisper_lock:
             if _whisper_model is None:
                 from faster_whisper import WhisperModel
-                print('[Whisper] ⏳ Cargando modelo base...')
+                print('[Whisper] Cargando modelo base...')
                 _whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
-                print('[Whisper] ✅ Modelo cargado')
+                print('[Whisper] Modelo cargado')
     return _whisper_model
 
 
@@ -175,34 +175,34 @@ def buscar_video(request):
                 f.write(audio_file.read())
 
             tamanio = os.path.getsize(ruta)
-            print("✅ Tamaño audio:", tamanio, "bytes")
+            print("[Audio] Tamano:", tamanio, "bytes")
 
             if tamanio > 1000:
                 try:
                     segments, info = _get_whisper_model().transcribe(ruta, language='es', beam_size=5)
                     palabras_texto = " ".join(segment.text for segment in segments)
-                    print("🎤 Whisper escuchó:", palabras_texto)
+                    print("[Whisper] Transcripcion:", palabras_texto)
                 except Exception as e:
-                    print("❌ Error Whisper:", e)
+                    print("[Whisper] Error:", e)
 
             time.sleep(0.5)
             try:
                 if os.path.exists(ruta):
                     os.remove(ruta)
-                    print("🗑️ Archivo eliminado")
+                    print("[Audio] Archivo temporal eliminado")
             except Exception as e:
-                print("⚠️ No se pudo eliminar:", e)
+                print("[Audio] No se pudo eliminar:", e)
 
         # ── CASO 2: Texto escrito ─────────────────────────────────────────────
         else:
             palabras_texto = request.POST.get('palabra')
-            print("⌨️ Texto escrito:", palabras_texto)
+            print("[Texto] Recibido:", palabras_texto)
 
         # ── PROCESAMIENTO CON CAPA GRAMATICAL LSC ────────────────────────────
         if palabras_texto and palabras_texto.strip():
             # La IA recibe el texto original completo
             texto_para_ia = palabras_texto.strip()
-            print("📝 Texto para IA LSC:", texto_para_ia)
+            print("[LSC] Procesando:", texto_para_ia)
 
             # Obtener vocabulario disponible en BD para detección de faltantes
             vocabulario_bd = _obtener_vocabulario_bd()
@@ -220,7 +220,7 @@ def buscar_video(request):
             # Aviso si la IA no estaba disponible (usó fallback)
             if resultado_lsc.get("error"):
                 aviso_lsc = resultado_lsc["error"]
-                print("⚠️ LSC fallback:", aviso_lsc)
+                print("[LSC] Fallback:", aviso_lsc)
                 
             modelo_usado = resultado_lsc.get("modelo_usado")
 
@@ -228,7 +228,7 @@ def buscar_video(request):
             tokens_lsc = tokens_para_busqueda(resultado_lsc)
             estrategia_faltantes = resultado_lsc.get("estrategia_faltantes", {})
 
-            print("🤟 Tokens LSC:", tokens_lsc)
+            print("[LSC] Tokens:", tokens_lsc)
 
             # ── Precargar todos los videos en un dict (1 sola query) ──────────
             videos_dict = _obtener_videos_dict()
@@ -248,7 +248,7 @@ def buscar_video(request):
                     if v:
                         resultados.append(v)
                         info_tokens.append({**info, "tokens_usados": tokens_lsc[i:i + longitud]})
-                        print(f"✅ Video encontrado: '{fragmento}' → '{info['used']}'")
+                        print(f"[Video] Encontrado: '{fragmento}' -> '{info['used']}'")
                         i += longitud
                         encontrado = True
                         break
@@ -263,7 +263,7 @@ def buscar_video(request):
                         "used":          token_faltante,
                         "tokens_usados": [token_faltante],
                     })
-                    print(f"❌ Sin video para token LSC: '{token_faltante}'")
+                    print(f"[Video] Sin video para: '{token_faltante}'")
                     i += 1
 
             # ── Guardar en historial ───────────────────────────────────────────
