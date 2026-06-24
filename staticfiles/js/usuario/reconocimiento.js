@@ -39,14 +39,14 @@ const CANDIDATA_TIMEOUT_MS = 1000; // Máximo tiempo esperando confirmación (re
 const TIMEOUT_SIN_SENA_MS = 10000; // 10 segundos sin seña → limpiar palabra
 
 const FRAMES_SIN_MANO_MAX = 12;    // Más tolerancia a pérdidas breves de tracking
-const MIN_FRAMES_SEÑA     = 10;    // Frames mínimos (reducido de 15 a 10 para mayor rapidez)
+const MIN_FRAMES_SEÑA     = 6;     // Frames mínimos antes de la primera predicción
 const MAX_BUFFER_SIZE     = 60;    // Ventana de ~3s (permite señas más largas)
-const INTERVALO_PRED      = 10;    // Predecir cada ~0.5s (reducido de 15 a 10)
+const INTERVALO_PRED      = 6;     // Predecir cada 6 frames capturados con mano (~300ms)
 const COOLDOWN_FRAMES     = 15;    // Esperar ~0.75s después de una detección confirmada
 const INTERVALO_MS        = 50;
 const JPEG_QUALITY        = 0.65;  // Mayor calidad → landmarks más precisos
-const UMBRAL_CONFIANZA    = 55;    // Confianza mínima para de corrido
-const UMBRAL_CONFIANZA_ALTA = 80;  // Confianza para confirmar inmediatamente sin esperar la segunda predicción
+const UMBRAL_CONFIANZA    = 55;    // Confianza mínima para mostrar inmediatamente
+const UMBRAL_CONFIANZA_ALTA = 80;  // Mantener coherencia con el umbral alto
 
 // ── MediaPipe — import dinámico desde ruta Django ────────────────────
 async function iniciarMediaPipe() {
@@ -207,9 +207,10 @@ function tick(timestamp) {
     ctx.drawImage(video, 0, 0, vw, vh, dx, dy, sw, sh);
 
     let hayMano = false;
+    let mpResult = null;
     try {
-        const result = handLandmarker.detectForVideo(video, timestamp);
-        hayMano = result.landmarks && result.landmarks.length > 0;
+        mpResult = handLandmarker.detectForVideo(video, timestamp);
+        hayMano  = mpResult.landmarks && mpResult.landmarks.length > 0;
     } catch (e) {
         return; // video aún no listo
     }
@@ -217,9 +218,22 @@ function tick(timestamp) {
     if (hayMano) {
         grabando = true;
         framesSinMano = 0;
-        
-        // Ventana deslizante: agregamos el frame y quitamos el más viejo si excede el máximo
-        secuenciaFrames.push(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+
+        // Extraer landmarks ya calculados por MediaPipe JS → 126 floats por frame
+        // [x0,y0,z0, ..., x20,y20,z20 | x0,y0,z0, ..., x20,y20,z20] (mano1 + mano2)
+        const puntos = [];
+        for (const mano of mpResult.landmarks.slice(0, 2)) {
+            for (const lm of mano) {
+                puntos.push(lm.x, lm.y, lm.z);
+            }
+        }
+        // Solo una mano detectada → rellenar segunda mano con ceros
+        if (mpResult.landmarks.length === 1) {
+            for (let i = 0; i < 63; i++) puntos.push(0);
+        }
+
+        // Ventana deslizante de landmarks (mucho más liviano que JPEGs)
+        secuenciaFrames.push(puntos);
         if (secuenciaFrames.length > MAX_BUFFER_SIZE) {
             secuenciaFrames.shift();
         }
@@ -332,76 +346,58 @@ function confirmarCandidata() {
     console.log(`[CONFIRM] ✅ Seña confirmada: "${sena}" (${confianza}%)`);
 }
 
-// ── Predicción con sistema de confirmación ───────────────────────────
+// ── Predicción — mostrar inmediatamente si confianza >= mínimo ───────
 async function procesarSecuencia(frames) {
     if (procesando) return;
     procesando = true;
 
     try {
-        // Enviar 24 frames submuestreados → el servidor interpola a 30 para el modelo
-        const framesAEnviar = submuestrear(frames, 24);
+        const secuenciaAEnviar = submuestrear(frames, 30);
 
-        const response = await fetch('/reconocimientos/predecir/', {
+        const response = await fetch('/reconocimientos/predecir_landmarks/', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ frames: framesAEnviar }),
+            body:    JSON.stringify({ secuencia: secuenciaAEnviar }),
         });
         const data = await response.json();
-        console.log('[DEBUG] predecir continuo:', data);
+        console.log('[DEBUG] predecir:', data);
 
-        const sena = data.seña || '';
+        const sena      = data.seña || '';
+        const confianza = data.confianza || 0;
+
+        if (!sena || sena === 'reposo' || confianza < UMBRAL_CONFIANZA) return;
 
         // Modal de groserías
-        if (sena && typeof GroseriasModal !== 'undefined' && GroseriasModal.verificarSena(sena)) {
+        if (typeof GroseriasModal !== 'undefined' && GroseriasModal.verificarSena(sena)) {
             GroseriasModal.mostrar(sena, 'sena');
-            procesando = false;
             return;
         }
 
-        if (sena && sena !== 'reposo' && data.confianza >= UMBRAL_CONFIANZA) {
-            // Confirmación inmediata si la confianza es muy alta
-            if (data.confianza >= UMBRAL_CONFIANZA_ALTA) {
-                candidataPendiente = { seña: sena, confianza: data.confianza, timestamp: Date.now() };
-                console.log(`[CANDIDATA] 🚀 Confirmación inmediata (alta confianza): "${sena}" (${data.confianza}%)`);
-                confirmarCandidata();
-                return;
-            }
-
-            if (!candidataPendiente) {
-                // ── Primera predicción: guardar como candidata, NO mostrar ──
-                candidataPendiente = { seña: sena, confianza: data.confianza, timestamp: Date.now() };
-                console.log(`[CANDIDATA] 🔶 Nueva candidata: "${sena}" (${data.confianza}%)`);
-
-                // Safety net: si pasan 1s sin confirmación ni cambio, confirmar automáticamente
-                if (timerCandidataTimeout) clearTimeout(timerCandidataTimeout);
-                timerCandidataTimeout = setTimeout(() => {
-                    console.log(`[CANDIDATA] ⏰ Timeout — confirmando candidata automáticamente`);
-                    confirmarCandidata();
-                }, CANDIDATA_TIMEOUT_MS);
-
-            } else if (sena === candidataPendiente.seña) {
-                // ── Segunda predicción igual → CONFIRMAR ──
-                // Usar la confianza más alta entre ambas
-                if (data.confianza > candidataPendiente.confianza) {
-                    candidataPendiente.confianza = data.confianza;
-                }
-                console.log(`[CANDIDATA] ✅ Confirmada por segunda predicción: "${sena}"`);
-                confirmarCandidata();
-
-            } else {
-                // ── Segunda predicción diferente → el gesto evolucionó ──
-                // Reemplazar candidata (ej: "gracias" → "buenos días")
-                console.log(`[CANDIDATA] 🔄 Cambió: "${candidataPendiente.seña}" → "${sena}"`);
-                candidataPendiente = { seña: sena, confianza: data.confianza, timestamp: Date.now() };
-
-                // Reiniciar timeout con la nueva candidata
-                if (timerCandidataTimeout) clearTimeout(timerCandidataTimeout);
-                timerCandidataTimeout = setTimeout(() => {
-                    console.log(`[CANDIDATA] ⏰ Timeout — confirmando candidata automáticamente`);
-                    confirmarCandidata();
-                }, CANDIDATA_TIMEOUT_MS);
-            }
+        // Evitar duplicados consecutivos
+        if (sena === ultimaSenaDetectada) {
+            console.log(`[RESULT] 🛑 Ignorando "${sena}" para evitar repetición`);
+            return;
         }
+
+        // ── Mostrar resultado inmediatamente ─────────────────────────
+        console.log(`[RESULT] ✅ "${sena}" (${confianza}%) — mostrando`);
+
+        ultimaSenaDetectada = sena;
+        cooldownActivo = COOLDOWN_FRAMES;
+
+        señaActual.textContent     = sena.toUpperCase();
+        confianzaTexto.textContent = 'Confianza: ' + confianza + '%';
+
+        if (modoVoz) {
+            hablar(sena);
+        } else {
+            textoAcumulado += (textoAcumulado ? ' ' : '') + sena;
+            resultado.classList.add('activo');
+            resultado.innerHTML = '<div id="historial">' + textoAcumulado + '</div>';
+        }
+
+        reiniciarTimerInactividad();
+
     } catch (err) {
         console.error('[DEBUG] Error:', err);
     } finally {
