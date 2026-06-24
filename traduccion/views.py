@@ -166,7 +166,7 @@ def buscar_video(request):
         palabras_texto = None
 
         # ── CASO 1: Audio del micrófono ──────────────────────────────────────
-        if 'audio' in request.FILES:
+        if 'audio' in request.FILES and request.FILES['audio'].size > 0:
             audio_file = request.FILES['audio']
             nombre_archivo = f'temp_audio_{uuid.uuid4().hex}.webm'
             ruta = os.path.join(TEMP_DIR, nombre_archivo)
