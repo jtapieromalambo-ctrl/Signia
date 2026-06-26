@@ -763,6 +763,22 @@ label {
         height: 100vh;
     }
 
+    /* Footer fijo en la parte inferior */
+    footer.main-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        margin: 0;
+        padding: 0.45rem 1rem;
+        font-size: 0.75rem;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     /* Contenedor principal fijo: nunca cambia de tamaño aunque el navegador
        muestre/oculte la barra de direcciones al hacer scroll */
     .con {
@@ -770,11 +786,11 @@ label {
         top: 64px;   /* altura del navbar */
         left: 0;
         right: 0;
-        bottom: 0;
+        bottom: 36px; /* altura del footer */
         margin: 0;
         border-radius: 0;
         min-height: unset;
-        height: calc(100vh - 64px);
+        height: auto;
         width: 100%;
         max-width: 100%;
         overflow: hidden;
