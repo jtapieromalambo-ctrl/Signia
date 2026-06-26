@@ -627,6 +627,50 @@
   });
 </script>
 
+<script>
+// Auto-ocultar FABs en móvil: se deslizan al costado cuando no hay scroll
+(function () {
+  var BREAKPOINT  = 768;
+  var HIDE_DELAY  = 2200; // ms sin scroll antes de ocultar
+  var INIT_DELAY  = 2800; // ms inicial visibles al cargar
+
+  function isMobile() { return window.innerWidth <= BREAKPOINT; }
+
+  function getFabs() {
+    return document.querySelectorAll('.fab-manual, .fab-recom');
+  }
+
+  function hideFabs() {
+    getFabs().forEach(function (f) { f.classList.add('fab--hidden'); });
+  }
+
+  function showFabs() {
+    getFabs().forEach(function (f) { f.classList.remove('fab--hidden'); });
+  }
+
+  var hideTimer;
+
+  function onScroll() {
+    if (!isMobile()) return;
+    showFabs();
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hideFabs, HIDE_DELAY);
+  }
+
+  if (isMobile()) {
+    // Esconder tras el delay inicial
+    hideTimer = setTimeout(hideFabs, INIT_DELAY);
+
+    window.addEventListener('scroll',    onScroll, { passive: true });
+    document.addEventListener('touchmove', onScroll, { passive: true });
+
+    // Re-evaluar al rotar dispositivo
+    window.addEventListener('resize', function () {
+      if (!isMobile()) { showFabs(); clearTimeout(hideTimer); }
+    });
+  }
+})();
+</script>
 
 </body>
 </html>

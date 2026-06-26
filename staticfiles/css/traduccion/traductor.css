@@ -595,10 +595,13 @@ label {
   transition: padding 0.30s cubic-bezier(.4, 0, .2, 1),
               gap     0.30s cubic-bezier(.4, 0, .2, 1),
               box-shadow 0.20s ease,
-              background 0.20s ease;
+              background 0.20s ease,
+              transform 0.38s cubic-bezier(.4, 0, .2, 1);
 }
 .fab-recom:hover  { padding: 14px 20px 14px 16px; gap: 9px; background: #047857; box-shadow: 0 6px 24px rgba(5, 150, 105, 0.42); }
 .fab-recom:active { transform: scale(0.97); }
+/* Ocultar deslizando a la derecha (solo móvil, aplicado por JS) */
+.fab--hidden.fab-recom { transform: translateX(calc(100% + 60px)) !important; }
 .fab-recom svg    { width: 22px; height: 22px; flex-shrink: 0; transition: transform 0.20s ease; }
 .fab-recom:hover svg { transform: scale(1.10); }
 
@@ -753,23 +756,48 @@ label {
 @media (max-width: 768px) {
     .panel-recom { width: 340px; }
 
-    .con {
-        margin: 8px auto;
-        height: auto;
-        min-height: calc(100dvh - 80px);
-        border-radius: 12px;
+    /* Bloquear scroll del body: el contenedor ocupa todo el viewport restante */
+    body {
+        overflow: hidden;
+        height: 100dvh;
+        height: 100vh;
     }
-    
+
+    /* Contenedor principal fijo: nunca cambia de tamaño aunque el navegador
+       muestre/oculte la barra de direcciones al hacer scroll */
+    .con {
+        position: fixed;
+        top: 64px;   /* altura del navbar */
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        border-radius: 0;
+        min-height: unset;
+        height: calc(100vh - 64px);
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    /* El interior del contenedor sí puede scrollear */
+    .inner {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        flex: 1;
+        min-height: 0;
+    }
+
     .gap {
         padding: 16px 20px;
     }
-    
+
     .titulo-seccion {
         font-size: 1.2rem;
     }
 
     .video {
-        min-height: 180px;
+        min-height: 160px;
         aspect-ratio: 4 / 3;
         height: auto;
     }
