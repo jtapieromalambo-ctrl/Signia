@@ -94,6 +94,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
+# Archivos servidos en la raíz del sitio (robots.txt, verificaciones, etc.)
+WHITENOISE_ROOT = BASE_DIR / 'rootfiles'
+
 MEDIA_ROOT = BASE_DIR / "media"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'

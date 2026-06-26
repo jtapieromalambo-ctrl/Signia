@@ -26,11 +26,6 @@ urlpatterns = [
         'document_root': os.path.join(settings.BASE_DIR, 'static'),
     }),
 
-    path('googleca96cff507878622.html', serve, {
-        'path': 'googleca96cff507878622.html',
-        'document_root': os.path.join(settings.BASE_DIR, 'static'),
-    }),
-
     path('password-reset/',
          auth_views.PasswordResetView.as_view(template_name='registration/password_reset.html'),
          name='password_reset'),
