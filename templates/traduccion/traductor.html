@@ -236,5 +236,162 @@
 <script src="{% static 'js/modal_groserias/groserias.js' %}"></script>
 <script src="{% static 'js/traductor/traductor.js' %}"></script>
 
+{# ── FAB Recomendaciones (solo en el traductor) ─────────────────── #}
+<button
+  onclick="openRecom()"
+  class="fab-recom"
+  title="Ver frases recomendadas"
+  aria-label="Ver frases recomendadas"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+    <path d="M9 18h6"/>
+    <path d="M10 22h4"/>
+  </svg>
+  <span class="fab-recom__label">Recomendaciones</span>
+</button>
+
+{# ── Panel Recomendaciones ────────────────────────────────────────── #}
+<div id="panel-recom" class="panel-recom-overlay" role="dialog" aria-modal="true" aria-label="Frases recomendadas">
+  <div class="panel-recom">
+
+    <div class="panel-recom__header">
+      <span class="panel-recom__title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+          <path d="M9 18h6"/>
+          <path d="M10 22h4"/>
+        </svg>
+        Frases recomendadas
+      </span>
+      <button class="panel-recom__close" onclick="closeRecom()" aria-label="Cerrar panel">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-recom__body">
+      <p class="panel-recom__hint">Haz clic en cualquier frase para escribirla automáticamente en el traductor.</p>
+
+      <div class="panel-recom__cat">
+        <p class="panel-recom__cat-title">Saludos</p>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Hola, buenas noches. ¿Cómo estás?
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Buenos días. Yo estoy bien, gracias.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Buenas tardes, bienvenido.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Hola, ¿cómo estás? Yo estoy bien.
+        </button>
+      </div>
+
+      <div class="panel-recom__cat">
+        <p class="panel-recom__cat-title">Cortesía y respuestas</p>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Por favor, ayuda a la persona Sorda.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Yo estoy bien. Nosotros estamos bien.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Con gusto te ayudo. Gracias a ti.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Bienvenido a SENA. Con gusto te ayudamos.
+        </button>
+      </div>
+
+      <div class="panel-recom__cat">
+        <p class="panel-recom__cat-title">Aprendizaje</p>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Yo soy aprendiz. Aprendo lengua de señas.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Nosotros aprendemos en SENA.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Nosotros aprendemos con inclusión.
+        </button>
+      </div>
+
+      <div class="panel-recom__cat">
+        <p class="panel-recom__cat-title">Identidad e inclusión</p>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Yo soy una persona Sorda. Soy aprendiz.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          La inclusión ayuda a todas las personas.
+        </button>
+        <button class="panel-recom__phrase" onclick="usarFrase(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Nosotros ayudamos con inclusión y respeto.
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var overlay = document.getElementById('panel-recom');
+
+  function openRecom() {
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeRecom() {
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function usarFrase(btn) {
+    var texto = btn.textContent.trim();
+    var input = document.getElementById('palabra');
+    if (input) {
+      input.value = texto;
+      input.focus();
+    }
+    closeRecom();
+  }
+
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeRecom();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeRecom();
+  });
+
+  window.openRecom  = openRecom;
+  window.closeRecom = closeRecom;
+  window.usarFrase  = usarFrase;
+})();
+</script>
 
 {% endblock %}
