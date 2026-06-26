@@ -588,11 +588,14 @@ body.disc-modal-activo nav.main-nav {
   white-space: nowrap;
   transition: padding 0.30s cubic-bezier(.4, 0, .2, 1),
               gap     0.30s cubic-bezier(.4, 0, .2, 1),
-              box-shadow 0.20s ease, 
-              background 0.20s ease;
+              box-shadow 0.20s ease,
+              background 0.20s ease,
+              transform 0.38s cubic-bezier(.4, 0, .2, 1);
 }
 .fab-manual:hover  { padding: 14px 20px 14px 16px; gap: 9px; background: #0C447C; box-shadow: 0 6px 24px rgba(24, 95, 165, 0.40); }
 .fab-manual:active { transform: scale(0.97); }
+/* Ocultar deslizando a la derecha (solo móvil, aplicado por JS) */
+.fab--hidden.fab-manual { transform: translateX(calc(100% + 60px)) !important; }
 .fab-manual svg    { width: 22px; height: 22px; flex-shrink: 0; transition: transform 0.20s ease; }
 .fab-manual:hover svg { transform: scale(1.10); }
 
