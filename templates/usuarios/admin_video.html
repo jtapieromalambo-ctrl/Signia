@@ -219,9 +219,7 @@ body { overflow-y: scroll !important; overflow-x: hidden !important; }
                 fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </span> Mensajes de Contacto
-            {% if total_mensajes %}
-                <span style="background:#2563EB;color:white;font-size:0.7rem;padding:0.15rem 0.55rem;border-radius:999px;margin-left:0.4rem;">{{ total_mensajes }}</span>
-            {% endif %}
+            <span id="badge-mensajes" {% if not total_mensajes %}hidden{% endif %} style="background:#2563EB;color:white;font-size:0.7rem;padding:0.15rem 0.55rem;border-radius:999px;margin-left:0.4rem;">{{ total_mensajes }}</span>
         </button>
     </div>
 
@@ -984,6 +982,12 @@ async function confirmarEliminar() {
             }
             await _eliminarFetch(url, 'POST', () => {
                 document.querySelector(`#tabla-mensajes tr[data-id="${id}"]`)?.remove();
+                const badge = document.getElementById('badge-mensajes');
+                if (badge) {
+                    const n = (parseInt(badge.textContent) || 1) - 1;
+                    badge.textContent = n;
+                    n > 0 ? badge.removeAttribute('hidden') : badge.setAttribute('hidden', '');
+                }
                 mostrarToastGlobal('Mensaje eliminado correctamente');
             });
         }
