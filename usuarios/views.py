@@ -797,12 +797,12 @@ def seleccionar_discapacidad(request):
                     )
                     correo.attach_alternative(html_bienvenida, "text/html")
                     correo.send(fail_silently=False)
-                    print(f"✅ Correo de bienvenida enviado a {request.user.email}")
+                    print(f"[OK] Correo de bienvenida enviado a {request.user.email}")
                     
                     request.user.email_verificado = True
                     request.user.save()
                 except Exception as e:
-                    print(f"❌ Error al enviar correo: {e}")
+                    print(f"[ERROR] Error al enviar correo: {e}")
 
             return redirigir_por_discapacidad(request.user)
 
