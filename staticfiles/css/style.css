@@ -347,9 +347,14 @@ footer.main-footer {
 
 /* ── 8. MENSAJES AUTO-DISMISS ── */
 .alert-container {
-  max-width: 860px;
-  margin: 1rem auto 0;
-  padding: 0 1.5rem;
+  position: fixed;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 90%;
+  max-width: 480px;
+  pointer-events: none;
 }
 
 .alert-msg {
@@ -363,6 +368,8 @@ footer.main-footer {
   margin-bottom: 0.75rem;
   animation: slideIn 0.3s ease;
   transition: opacity 0.5s, transform 0.5s;
+  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
 .alert-msg.success  { background: #dcfce7; border: 1.5px solid #86efac; color: #16a34a; }

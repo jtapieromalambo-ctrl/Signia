@@ -66,12 +66,6 @@
       <form method="post" action="{% url 'home' %}">
         {% csrf_token %}
 
-        {% if messages %}
-          {% for message in messages %}
-            <div class="error-msg">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-
         <div class="field">
           <label for="username">Usuario</label>
           <div class="input-wrap">

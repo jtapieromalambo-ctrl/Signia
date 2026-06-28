@@ -508,7 +508,7 @@
         if (modal) modal.remove();
     }
 
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.is_superuser %}
     const INACTIVIDAD_MS = 20 * 60 * 1000;
     const AVISO_ANTES_MS = 60 * 1000;
     let timerInactividad;
