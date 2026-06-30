@@ -249,72 +249,29 @@ def eliminar_cuenta(request):
 # ── CONTACTO ───────────────────────────────────────────
 def contacto(request):
     form = ContactoForm()
+    enviado = False
     observacion_enviada = False
+
     if request.method == 'POST':
         form = ContactoForm(request.POST)
         if form.is_valid():
             form.save()
-            if form.cleaned_data.get('observacion'):
+            enviado = True
+
+            nombre      = form.cleaned_data.get('nombre')
+            correo      = form.cleaned_data.get('correo')
+            observacion = form.cleaned_data.get('observacion') or ''
+            mensaje     = form.cleaned_data.get('mensaje')
+
+            if observacion:
                 observacion_enviada = True
 
-                nombre     = form.cleaned_data.get('nombre')
-                correo     = form.cleaned_data.get('correo')
-                observacion = form.cleaned_data.get('observacion')
-                mensaje    = form.cleaned_data.get('mensaje')
-
-                try:
-                    html_contacto = f"""<!DOCTYPE html>
-<html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#F1F5F9;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:40px 0;">
-    <tr><td align="center">
-      <table width="520" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
-
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#DC2626,#EF4444);padding:32px;text-align:center;">
-            <h1 style="color:white;margin:0;font-size:22px;">🚨 Nueva Queja / Contacto</h1>
-            <p style="color:#FECACA;margin:8px 0 0;font-size:14px;">Signia - Panel de administración</p>
-          </td>
-        </tr>
-
-        <!-- Info del usuario -->
-        <tr>
-          <td style="padding:28px 32px 0;">
-            <p style="color:#6B7280;font-size:13px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Información del remitente</p>
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding:10px 14px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;">
-                  <table width="100%">
-                    <tr>
-                      <td width="20" style="color:#2563EB;font-size:16px;">👤</td>
-                      <td>
-                        <p style="margin:0;font-size:12px;color:#9CA3AF;">Nombre</p>
-                        <p style="margin:0;font-size:15px;color:#1E293B;font-weight:700;">{nombre}</p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr><td style="height:8px;"></td></tr>
-              <tr>
-                <td style="padding:10px 14px;background:#F8FAFC;border-radius:10px;">
-                  <table width="100%">
-                    <tr>
-                      <td width="20" style="color:#2563EB;font-size:16px;">📧</td>
-                      <td>
-                        <p style="margin:0;font-size:12px;color:#9CA3AF;">Correo electrónico</p>
-                        <p style="margin:0;font-size:15px;color:#2563EB;font-weight:700;">{correo}</p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- Observación -->
+            # Notificar al admin por todos los mensajes (con o sin observacion)
+            try:
+                tiene_obs = bool(observacion)
+                header_color = 'linear-gradient(135deg,#DC2626,#EF4444)' if tiene_obs else 'linear-gradient(135deg,#2563EB,#3B82F6)'
+                header_icon  = '🚨 Nueva Queja / Contacto' if tiene_obs else '💬 Nuevo Mensaje de Contacto'
+                obs_bloque   = f"""
         <tr>
           <td style="padding:20px 32px 0;">
             <p style="color:#6B7280;font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">⚠️ Observación / Queja</p>
@@ -322,9 +279,51 @@ def contacto(request):
               <p style="color:#991B1B;font-size:14px;margin:0;line-height:1.7;">{observacion}</p>
             </div>
           </td>
-        </tr>
+        </tr>""" if tiene_obs else ''
 
-        <!-- Mensaje -->
+                html_contacto = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:40px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:white;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+        <tr>
+          <td style="background:{header_color};padding:32px;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:22px;">{header_icon}</h1>
+            <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px;">Signia - Panel de administración</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 32px 0;">
+            <p style="color:#6B7280;font-size:13px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Información del remitente</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding:10px 14px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;">
+                  <table width="100%"><tr>
+                    <td width="20" style="color:#2563EB;font-size:16px;">👤</td>
+                    <td>
+                      <p style="margin:0;font-size:12px;color:#9CA3AF;">Nombre</p>
+                      <p style="margin:0;font-size:15px;color:#1E293B;font-weight:700;">{nombre}</p>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr><td style="height:8px;"></td></tr>
+              <tr>
+                <td style="padding:10px 14px;background:#F8FAFC;border-radius:10px;">
+                  <table width="100%"><tr>
+                    <td width="20" style="color:#2563EB;font-size:16px;">📧</td>
+                    <td>
+                      <p style="margin:0;font-size:12px;color:#9CA3AF;">Correo electrónico</p>
+                      <p style="margin:0;font-size:15px;color:#2563EB;font-weight:700;">{correo}</p>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {obs_bloque}
         <tr>
           <td style="padding:20px 32px 28px;">
             <p style="color:#6B7280;font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">💬 Mensaje</p>
@@ -333,46 +332,34 @@ def contacto(request):
             </div>
           </td>
         </tr>
-
-        <!-- Footer -->
         <tr>
           <td style="background:#F8FAFC;padding:16px 32px;border-top:1px solid #E2E8F0;">
-            <table width="100%">
-              <tr>
-                <td>
-                  <p style="color:#9CA3AF;font-size:12px;margin:0;">
-                    📅 Recibido: {timezone.now().strftime('%d/%m/%Y a las %H:%M')}
-                  </p>
-                </td>
-                <td align="right">
-                  <p style="color:#9CA3AF;font-size:12px;margin:0;">© 2026 Signia 🤟</p>
-                </td>
-              </tr>
-            </table>
+            <table width="100%"><tr>
+              <td><p style="color:#9CA3AF;font-size:12px;margin:0;">📅 Recibido: {timezone.now().strftime('%d/%m/%Y a las %H:%M')}</p></td>
+              <td align="right"><p style="color:#9CA3AF;font-size:12px;margin:0;">© 2026 Signia 🤟</p></td>
+            </tr></table>
           </td>
         </tr>
-
       </table>
     </td></tr>
   </table>
 </body></html>"""
 
-                    email_msg = EmailMultiAlternatives(
-                        subject=f'🚨 Nueva queja/contacto de {nombre} - Signia',
-                        body=f'Nombre: {nombre}\nCorreo: {correo}\n\nObservación:\n{observacion}\n\nMensaje:\n{mensaje}',
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        to=[settings.ADMIN_EMAIL],
-                    )
-                    email_msg.attach_alternative(html_contacto, "text/html")
-                    email_msg.send(fail_silently=True)
-                except Exception:
-                    pass
-
-            else:
-                return redirect('contacto')
+                subject = f'🚨 Nueva queja de {nombre} - Signia' if tiene_obs else f'💬 Nuevo mensaje de {nombre} - Signia'
+                email_msg = EmailMultiAlternatives(
+                    subject=subject,
+                    body=f'Nombre: {nombre}\nCorreo: {correo}\n\nObservación:\n{observacion}\n\nMensaje:\n{mensaje}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.ADMIN_EMAIL],
+                )
+                email_msg.attach_alternative(html_contacto, "text/html")
+                email_msg.send(fail_silently=True)
+            except Exception:
+                pass
 
     return render(request, 'usuarios/contacto.html', {
         'form': form,
+        'enviado': enviado,
         'observacion_enviada': observacion_enviada,
     })
 
@@ -810,12 +797,12 @@ def seleccionar_discapacidad(request):
                     )
                     correo.attach_alternative(html_bienvenida, "text/html")
                     correo.send(fail_silently=False)
-                    print(f"✅ Correo de bienvenida enviado a {request.user.email}")
+                    print(f"[OK] Correo de bienvenida enviado a {request.user.email}")
                     
                     request.user.email_verificado = True
                     request.user.save()
                 except Exception as e:
-                    print(f"❌ Error al enviar correo: {e}")
+                    print(f"[ERROR] Error al enviar correo: {e}")
 
             return redirigir_por_discapacidad(request.user)
 

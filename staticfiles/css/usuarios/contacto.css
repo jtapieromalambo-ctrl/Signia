@@ -200,15 +200,184 @@ body { background: var(--bg); }
 
 .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
 
-/* ── MENSAJES ── */
-.success-box {
-  background: #DCFCE7; border: 1.5px solid #86EFAC;
-  border-radius: 12px; padding: 1.5rem; color: #16A34A;
-  font-weight: 600; font-size: 1rem;
-  display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center;
+/* ── SUCCESS MODAL OVERLAY (MENSAJES) ── */
+.success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(232, 243, 252, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1.5rem;
+  opacity: 1;
+  transition: opacity 0.4s ease;
 }
-.success-box span { font-size: 2.5rem; }
-.success-box a { color: var(--blue-primary); font-size: 0.9rem; margin-top: 0.5rem; }
+
+.success-overlay.exit-anim {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.success-modal {
+  background: var(--white);
+  border: 1px solid #BFDBFE;
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+  animation: slideDownIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: top center;
+}
+
+.success-modal.exit-anim {
+  animation: slideUpOut 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+/* Animaciones */
+@keyframes slideDownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideUpOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.9);
+  }
+}
+
+/* Ícono de éxito animado premium */
+.success-icon-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 0.5rem;
+}
+
+.success-icon-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.1);
+  animation: pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.success-icon-bg {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 70px;
+  height: 70px;
+  background: rgba(34, 197, 94, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22c55e;
+}
+
+.success-icon-bg svg {
+  width: 38px;
+  height: 38px;
+  stroke: #22c55e;
+  animation: scaleCheck 0.4s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+}
+
+@keyframes scaleCheck {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.success-modal h2 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.success-modal p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.btn-back {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--blue-primary), var(--blue-mid));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+}
+
+.btn-back svg {
+  transition: transform 0.2s;
+}
+
+.btn-back:hover svg {
+  transform: translateX(-3px);
+}
 
 .error-box {
   background: #FEE2E2; border: 1.5px solid #FCA5A5;

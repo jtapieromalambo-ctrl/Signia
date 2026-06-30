@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
     <link rel="icon" type="image/png" href="{% static 'css/img/signia_favicon.png' %}">
+    <meta name="google-site-verification" content="6_nVN6QSf0VoKs-jPV7BsxJZTkaLG9-RpQJAkeqiJHg" />
 </head>
 
 <body>
@@ -224,7 +225,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ear"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3 3 0 1 1-6 0"/><path d="M10.3 12a2.5 2.5 0 1 0 3.4 3.4"/></svg>
                 Sordo — Texto → Señas
             </div>
-            <a href="{% url 'traduccion' %}" class="modal-btn">Ir al Traductor →</a>
+            <a href="{% url 'reconocimiento' %}" class="modal-btn">Continuar →</a>
         {% elif user.discapacidad == 'mudo' %}
             <div class="modal-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hand"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
@@ -246,7 +247,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
                 Acceso general
             </div>
-            <a href="{% url 'perfil' %}" class="modal-btn">Ver mi perfil →</a>
+            <a href="{% url 'traduccion' %}" class="modal-btn">Continuar →</a>
         {% endif %}
     </div>
 </div>
@@ -288,71 +289,120 @@
 </footer>
 
 <!-- ── BANNER COOKIES ── -->
-<div id="cookie-banner" style="
-  display: none;
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: #1E293B;
-  color: #E2E8F0;
-  padding: 1rem 2rem;
-  z-index: 9999;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
-  font-family: 'Poppins', sans-serif;
-">
-  <div style="max-width: 1100px; margin: 0 auto; display: flex; align-items: center;
-              justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+<style>
+  #cookie-banner {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #1E293B;
+    color: #E2E8F0;
+    padding: 1rem 2rem;
+    z-index: 9999;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
+    font-family: 'Poppins', sans-serif;
+  }
+  .ck-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .ck-text {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .ck-text svg { flex-shrink: 0; }
+  .ck-text p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: #CBD5E1;
+  }
+  .ck-text a { color: #60A5FA; text-decoration: underline; font-weight: 600; }
+  .ck-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ck-link {
+    font-size: 0.83rem;
+    color: #94A3B8;
+    text-decoration: underline;
+  }
+  .ck-btn-secondary {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #94A3B8;
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.2s;
+  }
+  .ck-btn-primary {
+    background: #2563EB;
+    border: none;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-    <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:260px;">
-      <span style="font-size:1.5rem;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cookie"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
-      </span>
-      <p style="margin:0; font-size:0.88rem; line-height:1.6; color:#CBD5E1;">
+  /* Tablet */
+  @media (max-width: 640px) {
+    #cookie-banner { padding: 1rem 1.25rem; }
+    .ck-inner { flex-direction: column; align-items: stretch; gap: 0.875rem; }
+    .ck-actions { justify-content: flex-end; }
+    .ck-link { display: none; }
+  }
+
+  /* Móvil pequeño */
+  @media (max-width: 400px) {
+    #cookie-banner { padding: 0.875rem 1rem; }
+    .ck-text p { font-size: 0.82rem; }
+    .ck-actions { flex-direction: column; gap: 0.5rem; }
+    .ck-btn-secondary,
+    .ck-btn-primary { width: 100%; justify-content: center; }
+  }
+</style>
+
+<div id="cookie-banner">
+  <div class="ck-inner">
+
+    <div class="ck-text">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+      <p>
         Usamos cookies para mejorar tu experiencia en Signia. Al continuar navegando, aceptas nuestra
-        <a href="{% url 'politica_cookies' %}" target="_blank"
-           style="color:#60A5FA; text-decoration:underline; font-weight:600;">Política de Cookies</a>
+        <a href="{% url 'politica_cookies' %}" target="_blank">Política de Cookies</a>
         y nuestros
-        <a href="{% url 'terminos' %}" target="_blank"
-           style="color:#60A5FA; text-decoration:underline; font-weight:600;">Términos y Condiciones</a>.
+        <a href="{% url 'terminos' %}" target="_blank">Términos y Condiciones</a>.
       </p>
     </div>
 
-    <div style="display:flex; gap:0.75rem; flex-shrink:0; align-items:center;">
-      <a href="{% url 'politica_cookies' %}" target="_blank"
-         style="font-size:0.83rem; color:#94A3B8; text-decoration:underline; white-space:nowrap;">
-        Más información
-      </a>
-      <button onclick="rechazarCookies()" style="
-        background: transparent;
-        border: 1px solid #475569;
-        color: #94A3B8;
-        padding: 0.5rem 1.25rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        font-family: 'Poppins', sans-serif;
-        white-space: nowrap;
-        transition: all 0.2s;
-      ">Solo esenciales</button>
-      <button onclick="aceptarCookies()" style="
-        background: #2563EB;
-        border: none;
-        color: white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: 'Poppins', sans-serif;
-        white-space: nowrap;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      ">
+    <div class="ck-actions">
+      <a href="{% url 'politica_cookies' %}" target="_blank" class="ck-link">Más información</a>
+      <button onclick="rechazarCookies()" class="ck-btn-secondary">Solo esenciales</button>
+      <button onclick="aceptarCookies()" class="ck-btn-primary">
         Aceptar todo
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       </button>
     </div>
+
   </div>
 </div>
 
@@ -458,7 +508,7 @@
         if (modal) modal.remove();
     }
 
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.is_superuser %}
     const INACTIVIDAD_MS = 20 * 60 * 1000;
     const AVISO_ANTES_MS = 60 * 1000;
     let timerInactividad;
@@ -578,6 +628,50 @@
   });
 </script>
 
+<script>
+// Auto-ocultar FABs en móvil: se deslizan al costado cuando no hay scroll
+(function () {
+  var BREAKPOINT  = 768;
+  var HIDE_DELAY  = 2200; // ms sin scroll antes de ocultar
+  var INIT_DELAY  = 2800; // ms inicial visibles al cargar
+
+  function isMobile() { return window.innerWidth <= BREAKPOINT; }
+
+  function getFabs() {
+    return document.querySelectorAll('.fab-manual, .fab-recom');
+  }
+
+  function hideFabs() {
+    getFabs().forEach(function (f) { f.classList.add('fab--hidden'); });
+  }
+
+  function showFabs() {
+    getFabs().forEach(function (f) { f.classList.remove('fab--hidden'); });
+  }
+
+  var hideTimer;
+
+  function onScroll() {
+    if (!isMobile()) return;
+    showFabs();
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hideFabs, HIDE_DELAY);
+  }
+
+  if (isMobile()) {
+    // Esconder tras el delay inicial
+    hideTimer = setTimeout(hideFabs, INIT_DELAY);
+
+    window.addEventListener('scroll',    onScroll, { passive: true });
+    document.addEventListener('touchmove', onScroll, { passive: true });
+
+    // Re-evaluar al rotar dispositivo
+    window.addEventListener('resize', function () {
+      if (!isMobile()) { showFabs(); clearTimeout(hideTimer); }
+    });
+  }
+})();
+</script>
 
 </body>
 </html>

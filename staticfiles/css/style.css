@@ -33,6 +33,9 @@ body {
   overflow-x: hidden;
   background: transparent;
   margin: 0;
+  overscroll-behavior: none;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── 3. FONDO ANIMADO ── */
@@ -75,7 +78,7 @@ nav.main-nav {
   padding: 0 2.5rem;
   height: 64px;
   box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
-  position: sticky;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -339,14 +342,19 @@ footer.main-footer {
   font-size: 0.85rem;
   color: #64748b;
   border-top: 1px solid #e2e8f0;
-  margin-top: 4rem;
+  margin-top: auto;
 }
 
 /* ── 8. MENSAJES AUTO-DISMISS ── */
 .alert-container {
-  max-width: 860px;
-  margin: 1rem auto 0;
-  padding: 0 1.5rem;
+  position: fixed;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 90%;
+  max-width: 480px;
+  pointer-events: none;
 }
 
 .alert-msg {
@@ -360,6 +368,8 @@ footer.main-footer {
   margin-bottom: 0.75rem;
   animation: slideIn 0.3s ease;
   transition: opacity 0.5s, transform 0.5s;
+  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
 .alert-msg.success  { background: #dcfce7; border: 1.5px solid #86efac; color: #16a34a; }
@@ -522,6 +532,7 @@ footer.main-footer {
   /* El menú móvil hereda el user-menu dentro suyo */
   .nav-mobile-menu .user-menu {
     display: flex;
+    flex-direction: column;
     justify-content: flex-start;
     margin-left: 0;
   }
@@ -530,6 +541,15 @@ footer.main-footer {
     width: 100%;
     border-radius: 10px;
     padding: 0.6rem 1rem;
+  }
+
+  .nav-mobile-menu .user-dropdown {
+    width: 100%;
+    position: static;
+    box-shadow: none;
+    border: 1px solid #dbeafe;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
   }
 
   footer.main-footer {
@@ -575,11 +595,14 @@ body.disc-modal-activo nav.main-nav {
   white-space: nowrap;
   transition: padding 0.30s cubic-bezier(.4, 0, .2, 1),
               gap     0.30s cubic-bezier(.4, 0, .2, 1),
-              box-shadow 0.20s ease, 
-              background 0.20s ease;
+              box-shadow 0.20s ease,
+              background 0.20s ease,
+              transform 0.38s cubic-bezier(.4, 0, .2, 1);
 }
 .fab-manual:hover  { padding: 14px 20px 14px 16px; gap: 9px; background: #0C447C; box-shadow: 0 6px 24px rgba(24, 95, 165, 0.40); }
 .fab-manual:active { transform: scale(0.97); }
+/* Ocultar deslizando a la derecha (solo móvil, aplicado por JS) */
+.fab--hidden.fab-manual { transform: translateX(calc(100% + 60px)) !important; }
 .fab-manual svg    { width: 22px; height: 22px; flex-shrink: 0; transition: transform 0.20s ease; }
 .fab-manual:hover svg { transform: scale(1.10); }
 
