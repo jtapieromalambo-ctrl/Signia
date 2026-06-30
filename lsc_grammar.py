@@ -57,6 +57,30 @@ MÓDULO 1 — ORDEN SINTÁCTICO BASE
     cláusulas complejas para mantener la referencia. No lo generes por defecto;
     solo inclúyelo cuando la oración tenga cláusulas subordinadas largas.
 
+1.5 ESTRUCTURA TEMA-IDEA-ACCIÓN:
+    Prioriza la estructura tema → idea → acción para lograr claridad visual y fluidez natural en LSC. Coloca el tema de interés al principio (generalmente el sujeto/tema principal), elimina conectores innecesarios y sitúa las acciones/verbos al final.
+    "Ayudar a la inclusión de las personas sordas" → PERSONAS SORDAS INCLUIR AYUDAR
+
+1.6 PRIORIDAD DE CONTEXTO ESPACIAL E INSTITUCIONAL:
+    En frases de bienvenida, presentación o introducción, el CONTEXTO (lugar, institución,
+    evento) ocupa la posición inicial porque en LSC el espacio se establece PRIMERO.
+    Después viene la IDEA PRINCIPAL (qué sucede), y los saludos/expresiones afectivas
+    quedan AL FINAL como remate comunicativo.
+
+    REGLA: Contexto (lugar/institución) → Idea/Estado → Saludo/Expresión afectiva
+
+    Ejemplos:
+    "Hola, bienvenidos al SENA"        → SENA BIENVENIDOS HOLA
+    "Bienvenidos a nuestra institución" → INSTITUCION BIENVENIDOS
+    "Bienvenidos a Colombia"            → COLOMBIA BIENVENIDOS
+    "Hola, bienvenidos a la clase"      → CLASE BIENVENIDOS HOLA
+    "Buenos días, bienvenidos al SENA" → SENA BIENVENIDOS BUENOS_DIAS
+
+    NOTA: Esta regla prevalece sobre la regla de saludos al inicio (Módulo 3.4)
+    ÚNICAMENTE cuando hay un contexto espacial/institucional explícito combinado
+    con un saludo o bienvenida. En saludos simples sin contexto ("Hola", "Buenos días")
+    el saludo sigue en primera posición.
+
 ════════════════════════════════════════════════════════════════
 MÓDULO 2 — MARCADORES TEMPORALES
 ════════════════════════════════════════════════════════════════
@@ -388,6 +412,30 @@ ENTRADA: "nuestro proyecto web es muy importante"
 SALIDA tokens: PROYECTO WEB NOSOTROS MUY IMPORTANTE
 types:          obj      adj  subject  adv adj
 
+ENTRADA: "Ayudar a la inclusión de las personas sordas"
+SALIDA tokens: PERSONAS SORDAS INCLUIR AYUDAR
+types:          subject object   verb    verb
+
+ENTRADA: "Hola, bienvenidos al SENA"
+SALIDA tokens: SENA BIENVENIDOS HOLA
+types:          other other       greeting
+(Explicación: SENA = contexto institucional va PRIMERO; BIENVENIDOS = idea principal;
+ HOLA = expresión afectiva de remate; "al" = preposición eliminada;
+ Módulo 1.6: Contexto → Idea → Saludo)
+
+ENTRADA: "Buenos días, bienvenidos al SENA"
+SALIDA tokens: SENA BIENVENIDOS BUENOS_DIAS
+types:          other other       greeting
+
+ENTRADA: "Bienvenidos a nuestra clase de hoy"
+SALIDA tokens: HOY CLASE BIENVENIDOS
+types:          time other other
+(Explicación: HOY = marcador temporal al inicio; CLASE = contexto; BIENVENIDOS = idea)
+
+ENTRADA: "Hola, bienvenido a Colombia"
+SALIDA tokens: COLOMBIA BIENVENIDO HOLA
+types:          other    other      greeting
+
 ════════════════════════════════════════════════════════════════
 FORMATO DE RESPUESTA
 ════════════════════════════════════════════════════════════════
@@ -496,6 +544,17 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
     if not texto_espanol or not texto_espanol.strip():
         return _respuesta_vacia()
 
+    # ── Caché: evitar llamadas repetidas a Groq para el mismo texto ───────
+    import hashlib
+    from django.core.cache import cache as django_cache
+
+    texto_norm = texto_espanol.strip().lower()
+    cache_key = "lsc_" + hashlib.sha256(texto_norm.encode("utf-8")).hexdigest()[:16]
+    cached = django_cache.get(cache_key)
+    if cached is not None:
+        print(f"[LSC] Cache hit para '{texto_espanol.strip()}'")
+        return cached
+
     # ── Preprocesar texto hablado (sin puntuación) ────────────────────────────
     texto_procesado = _preprocesar_texto_hablado(texto_espanol)
 
@@ -545,15 +604,17 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
             data = json.loads(raw)
 
             if modelo != MODELOS_GROQ[0]:
-                print(f"ℹ️ LSC Grammar: usando modelo de respaldo '{modelo}'")
+                print(f"[LSC] Usando modelo de respaldo '{modelo}'")
 
             respuesta = _normalizar_respuesta(data, vocabulario_disponible)
             respuesta["modelo_usado"] = modelo
+            # Guardar en caché por 30 minutos (1800s)
+            django_cache.set(cache_key, respuesta, 1800)
             return respuesta
 
         except json.JSONDecodeError as e:
             # JSON inválido no depende del modelo, no tiene sentido reintentar
-            print(f"⚠️ LSC Grammar: JSON inválido con modelo '{modelo}': {e}")
+            print(f"[LSC] JSON invalido con modelo '{modelo}': {e}")
             return _fallback_sin_ia(texto_espanol)
 
         except Exception as e:
@@ -562,15 +623,15 @@ def convertir_a_lsc(texto_espanol: str, vocabulario_disponible: list[str] | None
 
             # Rate limit (429), sobrecarga (503) o modelo descontinuado → probar siguiente modelo
             if "429" in error_str or "503" in error_str or "rate_limit" in error_str.lower() or "model_decommissioned" in error_str.lower():
-                print(f"⚠️ LSC Grammar: modelo '{modelo}' sin cupo o descontinuado, probando siguiente...")
+                print(f"[LSC] Modelo '{modelo}' sin cupo, probando siguiente...")
                 continue
 
             # Otro error (auth, red) → no tiene sentido reintentar
-            print(f"⚠️ LSC Grammar: Error Groq con modelo '{modelo}': {e}")
+            print(f"[LSC] Error Groq con modelo '{modelo}': {e}")
             return _fallback_sin_ia(texto_espanol)
 
     # Todos los modelos agotados → fallback básico
-    print(f"⚠️ LSC Grammar: todos los modelos Groq agotados. Último error: {ultimo_error}")
+    print(f"[LSC] Todos los modelos Groq agotados. Ultimo error: {ultimo_error}")
     return _fallback_sin_ia(texto_espanol)
 
 

@@ -4,6 +4,7 @@ import threading
 import time
 import base64
 import json
+import logging
 import numpy as np
 
 from django.shortcuts import render
@@ -19,7 +20,13 @@ from mediapipe.tasks.python import BaseOptions
 from reconocimientos.models import VideoSeña
 from traduccion.models import video as VideoTraductor
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+logger = logging.getLogger(__name__)
+
+
+def _es_admin(user):
+    return user.is_authenticated and user.is_superuser
 
 # ── Rutas ─────────────────────────────────────────────────────────────
 MODELO_PATH     = 'reconocimientos/modelo/model_seq.pkl'
@@ -41,11 +48,11 @@ def _cargar_modelo():
             modelo = pickle.load(f)
         with open(ENCODER_PATH, 'rb') as f:
             encoder = pickle.load(f)
-        print('[MODEL] ✅ Modelo cargado en memoria')
+        print('[MODEL] OK Modelo cargado en memoria')
     else:
         modelo  = None
         encoder = None
-        print('[MODEL] ⚠️  No hay modelo entrenado todavía — entrena desde el panel admin')
+        print('[MODEL] WARN No hay modelo entrenado todavia - entrena desde el panel admin')
 
 _cargar_modelo()
 
@@ -395,7 +402,8 @@ def detectar_mano(request):
 
         return JsonResponse({'hay_mano': bool(resultado.hand_landmarks)})
 
-    except Exception:
+    except Exception as e:
+        logger.warning('detectar_mano error: %s', e)
         return JsonResponse({'hay_mano': False})
 
 
@@ -477,14 +485,32 @@ def admin_videos(request):
 #  PANEL ADMIN — reconocimiento (subir / eliminar)
 # ══════════════════════════════════════════════════════════════════════
 
+_VIDEO_MIME_TIPOS = {'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo'}
+_VIDEO_MAX_BYTES = 100 * 1024 * 1024  # 100 MB
+
+
+def _validar_video(archivo):
+    if archivo.size > _VIDEO_MAX_BYTES:
+        return 'El archivo supera los 100 MB permitidos.'
+    content_type = getattr(archivo, 'content_type', '')
+    if content_type and content_type not in _VIDEO_MIME_TIPOS:
+        return f'Tipo de archivo no permitido: {content_type}.'
+    return None
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
+@user_passes_test(_es_admin)
 def reconocimiento_subir(request):
     label   = request.POST.get('label', '').strip()
     archivo = request.FILES.get('video')
 
     if not label or not archivo:
         return JsonResponse({'ok': False, 'error': 'Faltan datos'}, status=400)
+
+    error = _validar_video(archivo)
+    if error:
+        return JsonResponse({'ok': False, 'error': error}, status=400)
 
     instancia = VideoSeña.objects.create(label=label, video=archivo)
 
@@ -500,6 +526,7 @@ def reconocimiento_subir(request):
 
 @csrf_exempt
 @require_http_methods(["PUT"])
+@user_passes_test(_es_admin)
 def reconocimiento_editar(request, video_id):
     try:
         instancia = VideoSeña.objects.get(pk=video_id)
@@ -525,6 +552,7 @@ def reconocimiento_editar(request, video_id):
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@user_passes_test(_es_admin)
 def reconocimiento_eliminar(request, video_id):
     try:
         instancia = VideoSeña.objects.get(pk=video_id)
@@ -541,12 +569,17 @@ def reconocimiento_eliminar(request, video_id):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@user_passes_test(_es_admin)
 def traductor_crear(request):
     nombre  = request.POST.get('nombre', '').strip()
     archivo = request.FILES.get('video')
 
     if not nombre or not archivo:
         return JsonResponse({'ok': False, 'error': 'Faltan datos'}, status=400)
+
+    error = _validar_video(archivo)
+    if error:
+        return JsonResponse({'ok': False, 'error': error}, status=400)
 
     if VideoTraductor.objects.filter(nombre__iexact=nombre).exists():
         return JsonResponse({'ok': False, 'error': f'Ya existe una seña llamada "{nombre}"'}, status=400)
@@ -558,6 +591,7 @@ def traductor_crear(request):
 
 @csrf_exempt
 @require_http_methods(["PUT"])
+@user_passes_test(_es_admin)
 def traductor_editar(request, video_id):
     try:
         instancia = VideoTraductor.objects.get(pk=video_id)
@@ -579,6 +613,7 @@ def traductor_editar(request, video_id):
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@user_passes_test(_es_admin)
 def traductor_eliminar(request, video_id):
     try:
         instancia = VideoTraductor.objects.get(pk=video_id)
@@ -603,19 +638,22 @@ def _serializar_traductor(instancia):
 #  PANEL ADMIN — entrenamiento
 # ══════════════════════════════════════════════════════════════════════
 
+_entrenando_lock = threading.Lock()
 _entrenando = False
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@user_passes_test(_es_admin)
 def entrenar_modelo(request):
     global _entrenando
-    if _entrenando:
-        return JsonResponse({'ok': False, 'error': 'Ya hay un entrenamiento en curso'})
+    with _entrenando_lock:
+        if _entrenando:
+            return JsonResponse({'ok': False, 'error': 'Ya hay un entrenamiento en curso'})
+        _entrenando = True
 
     def tarea():
         global _entrenando, modelo, encoder
-        _entrenando = True
         try:
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.preprocessing import LabelEncoder
@@ -770,9 +808,10 @@ def entrenar_modelo(request):
         except Exception as e:
             import traceback
             traceback.print_exc()
-            print(f'[Train] ❌ Error: {e}')
+            logger.error('[Train] Error: %s', e)
         finally:
-            _entrenando = False
+            with _entrenando_lock:
+                _entrenando = False
 
     threading.Thread(target=tarea, daemon=True).start()
     return JsonResponse({'ok': True})
@@ -780,12 +819,14 @@ def entrenar_modelo(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@user_passes_test(_es_admin)
 def estado_entrenamiento(request):
     return JsonResponse({'activo': _entrenando})
 
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@user_passes_test(_es_admin)
 def senas_entrenadas(request):
     """Devuelve todas las señas del modelo con efectividad real por pureza de hojas."""
     clases = _calcular_senas_entrenadas()
@@ -795,6 +836,7 @@ def senas_entrenadas(request):
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@user_passes_test(_es_admin)
 def sena_eliminar(request, nombre):
     """
     Elimina una seña del dataset acumulado y re-entrena el modelo sin ella.

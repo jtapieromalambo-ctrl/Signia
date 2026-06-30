@@ -8,8 +8,6 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-railway'
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -138,10 +136,13 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = 'Signia <osorioescobardavidfelipe@gmail.com>'
+_admin_email = config('ADMIN_EMAIL', default='admin@signia.app')
+DEFAULT_FROM_EMAIL = f'Signia <{_admin_email}>'
+ADMIN_EMAIL = _admin_email
 
 # ── ALLAUTH ────────────────────────────────────────────
 SITE_ID = config("SITE_ID", default=1, cast=int)
+SITE_DOMAIN = config("SITE_DOMAIN", default="www.signia.click")
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -150,11 +151,17 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID', default=''),
+            'secret': config('GOOGLE_CLIENT_SECRET', default=''),
+            'key': '',
+        },
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {
             'access_type': 'online',
             'prompt': 'select_account',
         },
+        'VERIFIED_EMAIL': True,
     },
     'facebook': {
         'METHOD': 'oauth2',
@@ -163,14 +170,16 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Configuración adicional de allauth para OAuth
+SOCIALACCOUNT_RAISE_EXCEPTIONS = False  # Para debugging
+
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_SIGNUP_REDIRECT_URL = '/seleccionar-discapacidad/'
 LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/'
 ACCOUNT_LOGIN_REDIRECT_URL = '/seleccionar-discapacidad/' 
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_ADAPTER = 'usuarios.adapters.SocialAccountAdapter'
@@ -198,14 +207,81 @@ import os
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY', default='')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.4.1.54', '.onrender.com', '.up.railway.app']
+# ── DOMINIOS PERMITIDOS (CORRECCIÓN) ──────────────────
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '10.4.1.54',
+    'ycg31qz6.up.railway.app',
+    'signia.click',  
+    'www.signia.click',  
+    '*.onrender.com',
+    '*.up.railway.app',
+]
 
-# Railway specific domains
+# Agregar dominio personalizado si existe
 railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
-if railway_domain:
+if railway_domain and railway_domain not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(railway_domain)
-    CSRF_TRUSTED_ORIGINS = [f'https://{railway_domain}']
 
-# Configuración crucial para que Django sepa que está bajo HTTPS detrás del proxy de Railway
-# Esto arregla el error "redirect_uri_mismatch" de Google (http vs https)
+# ── CONFIGURACIÓN HTTPS & SEGURIDAD (RAILWAY) ──────────
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+# Solo si NO está en DEBUG (producción)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# CSRF y Origins permitidos
+CSRF_TRUSTED_ORIGINS = [
+    'https://ycg31qz6.up.railway.app',
+    'https://www.ycg31qz6.up.railway.app',
+    'https://signia.click',  
+    'https://www.signia.click',
+]
+if railway_domain:
+    CSRF_TRUSTED_ORIGINS.extend([
+        f'https://{railway_domain}',
+        f'https://www.{railway_domain}',
+    ])
+
+# ── LOGGING ────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': config('DJANGO_LOG_LEVEL', default='WARNING'),
+            'propagate': False,
+        },
+        'usuarios': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'reconocimientos': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
