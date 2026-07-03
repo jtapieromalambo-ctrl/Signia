@@ -28,7 +28,23 @@
       <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
       <li><a href="{% url 'contacto' %}">Contacto</a></li>
     </ul>
+    <button class="nav-hamburger" id="navHamburger" onclick="toggleHamburger()" aria-label="Abrir menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </nav>
+
+  <!-- Menú móvil -->
+  <div class="nav-mobile-menu" id="navMobileMenu">
+    <ul>
+      <li><a href="{% url 'index' %}">Inicio</a></li>
+      <li><a href="{% url 'home' %}">Login</a></li>
+      <li><a href="{% url 'traduccion' %}">Traductor</a></li>
+      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
+      <li><a href="{% url 'contacto' %}">Contacto</a></li>
+    </ul>
+  </div>
 
   <!-- MAIN -->
   <main class="page">
@@ -400,6 +416,21 @@
     // Cerrar con Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') cerrarModal();
+    });
+  </script>
+
+  <script>
+    function toggleHamburger() {
+      document.getElementById('navHamburger').classList.toggle('open');
+      document.getElementById('navMobileMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const btn = document.getElementById('navHamburger');
+      const menu = document.getElementById('navMobileMenu');
+      if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+        btn.classList.remove('open');
+        menu.classList.remove('open');
+      }
     });
   </script>
 </body>
