@@ -23,10 +23,11 @@ staticfiles/
 *.log
 logs/
 
-# Archivos de caché del modelo y datos de entrenamiento
-reconocimientos/modelo/*.pkl
-reconocimientos/modelo/*.npy
-reconocimientos/datos/
+# Archivos generados en runtime → persisten en Railway Volume (/app/reconocimientos/modelo)
+reconocimientos/modelo/
+# hand_landmarker.task y demás archivos estáticos de datos SÍ van en git
+reconocimientos/datos/X_seq.npy
+reconocimientos/datos/y_seq.npy
 
 # Configuraciones de IDE / Editores
 .vscode/

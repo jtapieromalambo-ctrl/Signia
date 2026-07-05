@@ -30,13 +30,16 @@ def _es_admin(user):
     return user.is_authenticated and user.is_superuser
 
 # ── Rutas absolutas ancladas al directorio de este archivo ────────────
-# Funciona en cualquier entorno (local, Gunicorn, uWSGI) sin importar el CWD
+# Funciona en cualquier entorno (local, Gunicorn, uWSGI) sin importar el CWD.
+# modelo/ = archivos generados en runtime → montar Railway Volume aquí.
+# datos/  = archivos estáticos de MediaPipe → vienen del repo git.
 _APP_DIR = Path(__file__).resolve().parent.parent   # raíz del proyecto
-MODELO_PATH     = str(_APP_DIR / 'reconocimientos' / 'modelo' / 'model_seq.pkl')
-ENCODER_PATH    = str(_APP_DIR / 'reconocimientos' / 'modelo' / 'encoder_seq.pkl')
+_MODELO_DIR   = _APP_DIR / 'reconocimientos' / 'modelo'
+MODELO_PATH     = str(_MODELO_DIR / 'model_seq.pkl')
+ENCODER_PATH    = str(_MODELO_DIR / 'encoder_seq.pkl')
+DATASET_X_PATH  = str(_MODELO_DIR / 'X_seq.npy')
+DATASET_Y_PATH  = str(_MODELO_DIR / 'y_seq.npy')
 LANDMARKER_PATH = str(_APP_DIR / 'reconocimientos' / 'datos' / 'hand_landmarker.task')
-DATASET_X_PATH  = str(_APP_DIR / 'reconocimientos' / 'datos' / 'X_seq.npy')
-DATASET_Y_PATH  = str(_APP_DIR / 'reconocimientos' / 'datos' / 'y_seq.npy')
 
 FRAMES_OBJETIVO = 30
 
@@ -46,16 +49,35 @@ encoder = None
 
 def _cargar_modelo():
     global modelo, encoder
-    if os.path.exists(MODELO_PATH) and os.path.exists(ENCODER_PATH):
+    if not (os.path.exists(MODELO_PATH) and os.path.exists(ENCODER_PATH)):
+        modelo  = None
+        encoder = None
+        print('[MODEL] WARN No hay modelo entrenado todavia - entrena desde el panel admin')
+        return
+    # Verificar que el archivo no sea un puntero de Git LFS (texto, no binario pickle)
+    try:
+        with open(MODELO_PATH, 'rb') as f:
+            header = f.read(6)
+        if header[:6] != b'\x80\x05\x95' and header[:2] != b'\x80\x04' and header[:2] != b'\x80\x05':
+            # No empieza con magic byte de pickle → es un puntero LFS u otro formato
+            modelo  = None
+            encoder = None
+            print('[MODEL] WARN Archivos .pkl son punteros LFS, no binarios reales - re-entrena el modelo')
+            return
+    except Exception:
+        modelo  = None
+        encoder = None
+        return
+    try:
         with open(MODELO_PATH, 'rb') as f:
             modelo = pickle.load(f)
         with open(ENCODER_PATH, 'rb') as f:
             encoder = pickle.load(f)
         print('[MODEL] OK Modelo cargado en memoria')
-    else:
+    except Exception as e:
         modelo  = None
         encoder = None
-        print('[MODEL] WARN No hay modelo entrenado todavia - entrena desde el panel admin')
+        print(f'[MODEL] ERROR al cargar modelo: {e}')
 
 _cargar_modelo()
 
