@@ -1,51 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signia - Registro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/usuarios/login.css' %}">
-  <link rel="stylesheet" href="{% static 'css/usuarios/registro.css' %}">
-</head>
-<body>
 
-  <!-- NAVBAR -->
-  <nav>
-    <a class="nav-logo" href="{% url 'index' %}">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-        </svg>
-      </div>
-      <span class="logo-text">Signia</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="{% url 'index' %}">Inicio</a></li>
-      <li><a href="{% url 'home' %}">Login</a></li>
-      <li><a href="{% url 'traduccion' %}">Traductor</a></li>
-      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
-      <li><a href="{% url 'contacto' %}">Contacto</a></li>
-    </ul>
-    <button class="nav-hamburger" id="navHamburger" onclick="toggleHamburger()" aria-label="Abrir menú">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-  </nav>
+{% block title %}Signia — Crear cuenta{% endblock %}
 
-  <!-- Menú móvil -->
-  <div class="nav-mobile-menu" id="navMobileMenu">
-    <ul>
-      <li><a href="{% url 'index' %}">Inicio</a></li>
-      <li><a href="{% url 'home' %}">Login</a></li>
-      <li><a href="{% url 'traduccion' %}">Traductor</a></li>
-      <li><a href="{% url 'reconocimiento' %}">Reconocimiento</a></li>
-      <li><a href="{% url 'contacto' %}">Contacto</a></li>
-    </ul>
-  </div>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/usuarios/login.css' %}">
+<link rel="stylesheet" href="{% static 'css/usuarios/registro.css' %}">
+{% endblock %}
 
+{% block content %}
   <!-- MAIN -->
   <main class="page">
     <div class="registro-container">
@@ -247,7 +210,6 @@
     </div>
   </main>
 
-  <footer>© 2025 Signia · Sistema de traducción de lenguaje de señas</footer>
 <!-- MODAL TÉRMINOS / COOKIES -->
   <div id="modal-overlay" onclick="cerrarModal()"
        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
@@ -296,7 +258,9 @@
       </div>
     </div>
   </div>
+{% endblock %}
 
+{% block extra_js %}
   <script>
     // Habilitar/deshabilitar botón según checkbox
     const checkbox = document.getElementById('acepto_terminos');
@@ -418,20 +382,4 @@
       if (e.key === 'Escape') cerrarModal();
     });
   </script>
-
-  <script>
-    function toggleHamburger() {
-      document.getElementById('navHamburger').classList.toggle('open');
-      document.getElementById('navMobileMenu').classList.toggle('open');
-    }
-    document.addEventListener('click', function(e) {
-      const btn = document.getElementById('navHamburger');
-      const menu = document.getElementById('navMobileMenu');
-      if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
-        btn.classList.remove('open');
-        menu.classList.remove('open');
-      }
-    });
-  </script>
-</body>
-</html>
+{% endblock %}
