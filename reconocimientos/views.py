@@ -6,11 +6,13 @@ import base64
 import json
 import logging
 import numpy as np
+from pathlib import Path
 
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 
 import cv2
 import mediapipe as mp
@@ -28,12 +30,13 @@ logger = logging.getLogger(__name__)
 def _es_admin(user):
     return user.is_authenticated and user.is_superuser
 
-# ── Rutas ─────────────────────────────────────────────────────────────
-MODELO_PATH     = 'reconocimientos/modelo/model_seq.pkl'
-ENCODER_PATH    = 'reconocimientos/modelo/encoder_seq.pkl'
-LANDMARKER_PATH = 'reconocimientos/datos/hand_landmarker.task'
-DATASET_X_PATH  = 'reconocimientos/datos/X_seq.npy'
-DATASET_Y_PATH  = 'reconocimientos/datos/y_seq.npy'
+# ── Rutas (absolutas, ancladas a BASE_DIR para funcionar en producción) ──
+_BASE = Path(settings.BASE_DIR)
+MODELO_PATH     = str(_BASE / 'reconocimientos' / 'modelo' / 'model_seq.pkl')
+ENCODER_PATH    = str(_BASE / 'reconocimientos' / 'modelo' / 'encoder_seq.pkl')
+LANDMARKER_PATH = str(_BASE / 'reconocimientos' / 'datos' / 'hand_landmarker.task')
+DATASET_X_PATH  = str(_BASE / 'reconocimientos' / 'datos' / 'X_seq.npy')
+DATASET_Y_PATH  = str(_BASE / 'reconocimientos' / 'datos' / 'y_seq.npy')
 
 FRAMES_OBJETIVO = 30
 
