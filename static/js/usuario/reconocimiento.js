@@ -262,7 +262,8 @@ function tick(timestamp) {
             framesSinMano++;
             if (framesSinMano >= FRAMES_SIN_MANO_MAX) {
                 // Hacer una última predicción si bajó la mano y quedó algo sin evaluar
-                if (secuenciaFrames.length >= MIN_FRAMES_SEÑA && !procesando && framesAcumuladosDesdePred > 0) {
+                // Solo si NO se mostró ya una seña en este gesto (evita duplicados)
+                if (secuenciaFrames.length >= MIN_FRAMES_SEÑA && !procesando && framesAcumuladosDesdePred > 0 && ultimaSenaDetectada === '') {
                     procesarSecuencia([...secuenciaFrames]);
                 }
                 
