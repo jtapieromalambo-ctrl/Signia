@@ -26,6 +26,7 @@ let cooldownActivo = 0;
 let procesando = false;
 let framesAcumuladosDesdePred = 0;
 let timerInactividad = null;
+let prediccionCancelada = false; // Descarta fetch en vuelo si la mano bajó antes de que retornara
 
 // ── Sistema de confirmación para señas compuestas ──────────────────
 // La primera predicción se guarda como «candidata» sin mostrarla.
@@ -266,6 +267,13 @@ function tick(timestamp) {
                 if (secuenciaFrames.length >= MIN_FRAMES_SEÑA && !procesando && framesAcumuladosDesdePred > 0 && ultimaSenaDetectada === '') {
                     procesarSecuencia([...secuenciaFrames]);
                 }
+
+                // Si hay un fetch en vuelo cuando la mano baja, cancelar su resultado.
+                // Sin esto: el fetch retorna DESPUÉS del reset de ultimaSenaDetectada=''
+                // y vuelve a mostrar la misma seña (condición de carrera).
+                if (procesando) {
+                    prediccionCancelada = true;
+                }
                 
                 // Si hay candidata pendiente sin confirmar → confirmarla al bajar la mano
                 if (candidataPendiente) {
@@ -312,6 +320,7 @@ function detener() {
     procesando = false;
     framesAcumuladosDesdePred = 0;
     candidataPendiente = null;
+    prediccionCancelada = false;
     if (timerCandidataTimeout) { clearTimeout(timerCandidataTimeout); timerCandidataTimeout = null; }
     if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
     
@@ -365,6 +374,13 @@ async function procesarSecuencia(frames) {
 
         const sena      = data.seña || '';
         const confianza = data.confianza || 0;
+
+        // Descartar resultado si la mano bajó mientras este fetch estaba en vuelo
+        if (prediccionCancelada) {
+            prediccionCancelada = false;
+            console.log(`[RESULT] 🚫 Descartado "${sena}" — gesto ya terminó (race condition)`);
+            return;
+        }
 
         if (!sena || sena === 'reposo' || confianza < UMBRAL_CONFIANZA) return;
 
@@ -434,6 +450,7 @@ function limpiarHistorial() {
     procesando = false;
     framesAcumuladosDesdePred = 0;
     candidataPendiente = null;
+    prediccionCancelada = false;
     if (timerCandidataTimeout) { clearTimeout(timerCandidataTimeout); timerCandidataTimeout = null; }
     if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
     
